@@ -1,0 +1,59 @@
+// legacy proto
+syntax = "proto3";
+
+package lbtproto;
+
+option cc_generic_services = true;
+option py_generic_services = true;
+
+message ConnectServerReq {
+	enum ReqType {
+		NewConnection = 0;
+		ReConnection = 1;
+		BindSoul = 2;
+		BindAvatar = 3;
+		BindAccount = 4;
+	}
+	ReqType type = 1;
+	bytes deviceId = 2;
+	bytes clientInfo = 3;
+	bytes auth = 4;
+	bytes entityInfo = 5;
+}
+
+message ConnectServerResp {
+	enum RespType {
+		Busy = 0;
+		Connected = 1;
+		ConnectRefused = 2;
+		Reconnected = 3;
+		ReconnectRefused = 4;
+		Forbidden = 5;
+		MaxConnections = 6;
+	}
+	RespType type = 1;
+	bytes sessionId = 2;
+}
+
+message ChannelEntityInfo {
+	bytes type = 1;
+	bytes info = 2;
+	bytes entityId = 3;
+	bytes sessionId = 4;
+}
+
+message EntityMessage {
+	bytes entityId = 1;
+	bytes methodName = 2;
+	int32 index = 3;
+	bytes parameters = 4;
+	bytes sessionId = 5;
+	bytes context = 6;
+}
+
+message ChannelMessage {
+	bytes chanMsg = 1;
+	bytes sessionId = 2;
+	bytes context = 3;
+}
+

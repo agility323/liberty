@@ -1,0 +1,45 @@
+// common proto
+syntax = "proto3";
+
+package lbtproto;
+
+option cc_generic_services = true;
+option py_generic_services = true;
+
+message Void { }
+
+message ServiceInfo {
+	string addr = 1;
+	string type = 2;
+	string entityid = 3;
+}
+
+message ServiceRequest {
+	string addr = 1;
+	string reqid = 2;
+	string type = 3;
+	string method = 4;
+	bytes params = 5;
+}
+
+message ServiceReply {
+	string addr = 1;
+	string reqid = 2;
+	bytes reply = 3;
+}
+
+
+message EntityData {
+	string addr = 1;
+	string id = 2;
+	string type = 3;
+	bytes data = 4;
+}
+
+message EntityMsg {
+	string addr = 1;
+	string id = 2;
+	string method = 3;
+	bytes params = 4;
+}
+

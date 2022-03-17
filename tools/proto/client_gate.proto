@@ -1,0 +1,35 @@
+// client-gate proto
+syntax = "proto3";
+
+import "common.proto";
+import "legacy.proto";
+
+package lbtproto;
+
+option cc_generic_services = true;
+option py_generic_services = true;
+
+// client-gate rpc
+service IClientGate {
+	// legacy methods
+	rpc connectServer(ConnectServerReq) returns (Void);
+	rpc entityMessage(EntityMessage) returns (Void);
+	rpc channelMessage(ChannelMessage) returns (Void);
+
+	rpc service_request(ServiceRequest) returns (Void);
+	rpc entity_msg(EntityMsg) returns (Void);
+}
+
+// gate-client rpc
+service IClient {
+	// legacy methods
+	rpc connectResponse(ConnectServerResp) returns (Void);
+	rpc createChannelEntity(ChannelEntityInfo) returns (Void);
+	rpc entityMessage(EntityMessage) returns (Void);
+	rpc channelMessage(ChannelMessage) returns (Void);
+
+	rpc service_reply(ServiceReply) returns (Void);
+	rpc create_entity(EntityData) returns (Void);
+	rpc entity_msg(EntityMsg) returns (Void);
+}
+
