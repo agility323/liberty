@@ -29,7 +29,8 @@ type ClientGateType struct {
 type ServiceType struct {
 	Method_register_reply,
 	Method_service_request,
-	Method_entity_msg uint16
+	Method_entity_msg,
+	Method_service_shutdown uint16
 }
 
 // service - gate

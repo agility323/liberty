@@ -21,6 +21,7 @@ func initServiceMethodHandler() {
 	ServiceMethodHandler[lbtproto.Service.Method_register_reply] = Service_register_reply
 	ServiceMethodHandler[lbtproto.Service.Method_service_request] = Service_service_request
 	ServiceMethodHandler[lbtproto.Service.Method_entity_msg] = Service_entity_msg
+	ServiceMethodHandler[lbtproto.Service.Method_service_shutdown] = Service_service_shutdown
 }
 
 func processGateProto(c *lbtnet.TcpConnection, buf []byte) error {
@@ -70,6 +71,12 @@ func Service_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := CallEntityMethod(lbtutil.ObjectId(msg.Id), msg.Method, params); err != nil {
 		return err
 	}
+	return nil
+}
+
+func Service_service_shutdown(c *lbtnet.TcpConnection, buf []byte) error {
+	logger.Debug("proto recv Service_service_shutdown %v", buf)
+	Stop()
 	return nil
 }
 /********** ProtoHandler End **********/

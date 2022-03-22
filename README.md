@@ -1,1 +1,1 @@
-Liberty - A service based game server solution.
+Liberty - A service based game server framework.

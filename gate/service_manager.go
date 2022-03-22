@@ -100,7 +100,23 @@ func (sm *ServiceManager) serviceRegister(info serviceInfo) {
 	typ := info.typ
 	if index, ok := sm.serviceIndexMap[addr]; !ok {
 		sm.serviceList = append(sm.serviceList, info)
+		index = len(sm.serviceList) - 1
 		sm.serviceIndexMap[addr] = index
+		// close old service
+		for i, s := range sm.serviceList {
+			if s.typ == typ && i != index {
+				if c, ok := sm.serviceConnMap[s.addr]; ok {
+					if err := lbtproto.SendMessage(
+						c,
+						lbtproto.Service.Method_service_shutdown,
+						&lbtproto.Void{},
+						lbtnet.ByteOrder,
+					); err != nil {
+						logger.Warn("service shutdown send fail 1 - " + err.Error())
+					}
+				}
+			}
+		}
 	}
 	logger.Info("register service %s", info)
 	// reply
