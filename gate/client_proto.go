@@ -19,7 +19,7 @@ func initClientGateMethodHandler() {
 }
 
 func processClientProto(c *lbtnet.TcpConnection, buf []byte) error {
-	methodIndex, err := lbtproto.DecodeMethodIndex(buf, lbtnet.ByteOrder)
+	methodIndex, err := lbtproto.DecodeMethodIndex(buf)
 	if err != nil {
 		logger.Error("client proto fail read index %s", err.Error())
 		return errors.New("read index")

@@ -110,7 +110,6 @@ func (sm *ServiceManager) serviceRegister(info serviceInfo) {
 						c,
 						lbtproto.Service.Method_service_shutdown,
 						&lbtproto.Void{},
-						lbtnet.ByteOrder,
 					); err != nil {
 						logger.Warn("service shutdown send fail 1 - " + err.Error())
 					}
@@ -132,7 +131,6 @@ func (sm *ServiceManager) serviceRegister(info serviceInfo) {
 			c,
 			lbtproto.Service.Method_register_reply,
 			msg,
-			lbtnet.ByteOrder,
 		); err != nil {
 			logger.Warn("service register reply send fail 2 - " + err.Error())
 		}

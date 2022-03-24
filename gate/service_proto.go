@@ -21,7 +21,7 @@ func initServiceGateMethodHandler() {
 }
 
 func processServiceProto(c *lbtnet.TcpConnection, buf []byte) error {
-	methodIndex, err := lbtproto.DecodeMethodIndex(buf, lbtnet.ByteOrder)
+	methodIndex, err := lbtproto.DecodeMethodIndex(buf)
 	if err != nil {
 		logger.Error("service proto fail read index %s", err.Error())
 		return errors.New("read index")

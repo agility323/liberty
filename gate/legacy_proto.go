@@ -39,7 +39,6 @@ func lp_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
 	data, err := lbtproto.EncodeMessage(
 			lbtproto.Service.Method_service_request,
 			newmsg,
-			lbtnet.ByteOrder,
 		)
 	if err != nil {
 		return err
@@ -79,7 +78,6 @@ func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 		newbuf, err := lbtproto.EncodeMessage(
 				lbtproto.Service.Method_entity_msg,
 				newmsg,
-				lbtnet.ByteOrder,
 			)
 		if err != nil {
 			return err
@@ -96,7 +94,6 @@ func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 		data, err := lbtproto.EncodeMessage(
 				lbtproto.Service.Method_service_request,
 				newmsg,
-				lbtnet.ByteOrder,
 			)
 		if err != nil {
 			return err
@@ -122,7 +119,6 @@ func lp_sendConnectServerResp(c *lbtnet.TcpConnection, typ lbtproto.ConnectServe
 		c,
 		lbtproto.Client.Method_connectResponse,
 		msg,
-		lbtnet.ByteOrder,
 	)
 	if err != nil {
 		logger.Error("lp_sendConnectServerResp failed: SendMessage - %s", err.Error())

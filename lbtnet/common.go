@@ -11,7 +11,7 @@ import (
 
 var logger lbtutil.Logger = lbtutil.NewLogger(strconv.Itoa(os.Getpid()), "lbtnet")
 
-var ByteOrder binary.ByteOrder = binary.LittleEndian
+var byteOrder binary.ByteOrder = binary.LittleEndian
 
 type Connection interface {
 	Addr() string

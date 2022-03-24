@@ -78,7 +78,7 @@ func (c *TcpConnection) readLoop() {
 			c.Close()
 			return
 		}
-		err = binary.Read(bytes.NewReader(bufHead), ByteOrder, &bodyLen)
+		err = binary.Read(bytes.NewReader(bufHead), byteOrder, &bodyLen)
 		if err != nil || bodyLen == 0 || bodyLen > MaxMsgLen {
 			errmsg := ""
 			if err != nil { errmsg = err.Error() }

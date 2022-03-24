@@ -111,7 +111,6 @@ func (cm *ClientManager) createEntity(buf []byte) {
 	newbuf, err := lbtproto.EncodeMessage(
 			lbtproto.Client.Method_createChannelEntity,
 			newmsg,
-			lbtnet.ByteOrder,
 		)
 	if err != nil {
 		logger.Warn("createEntity fail 3 [%s] [%s]", addr, err.Error())
@@ -146,7 +145,6 @@ func (cm *ClientManager) entityMsg(buf []byte) {
 	newbuf, err := lbtproto.EncodeMessage(
 			lbtproto.Client.Method_entityMessage,
 			newmsg,
-			lbtnet.ByteOrder,
 		)
 	if err != nil {
 		logger.Warn("entityMsg fail 3 [%s] [%s]", addr, err.Error())

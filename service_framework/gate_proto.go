@@ -25,7 +25,7 @@ func initServiceMethodHandler() {
 }
 
 func processGateProto(c *lbtnet.TcpConnection, buf []byte) error {
-	methodIndex, err := lbtproto.DecodeMethodIndex(buf, lbtnet.ByteOrder)
+	methodIndex, err := lbtproto.DecodeMethodIndex(buf)
 	if err != nil {
 		logger.Error("gate proto fail read index %s", err.Error())
 		return errors.New("read index")
@@ -92,7 +92,6 @@ func sendServiceRegister(c *lbtnet.TcpConnection) {
 		c,
 		lbtproto.ServiceGate.Method_register_service,
 		msg,
-		lbtnet.ByteOrder,
 	)
 }
 
@@ -107,7 +106,6 @@ func SendServiceReply(addr, reqid string, data []byte) {
 		gateClient,
 		lbtproto.ServiceGate.Method_service_reply,
 		reply,
-		lbtnet.ByteOrder,
 	)
 	if err != nil {
 		logger.Error("SendServiceReply failed: SendMessage - %s", err.Error())
@@ -131,7 +129,6 @@ func SendCreateEntity(addr, id, typ string, data interface{}) {
 		gateClient,
 		lbtproto.ServiceGate.Method_create_entity,
 		msg,
-		lbtnet.ByteOrder,
 	)
 	if err != nil {
 		logger.Error("SendCreateEntity failed: SendMessage - %s", err.Error())
@@ -155,7 +152,6 @@ func SendEntityMsg(addr, id, method string, params interface{}) {
 		gateClient,
 		lbtproto.ServiceGate.Method_entity_msg,
 		msg,
-		lbtnet.ByteOrder,
 	)
 	if err != nil {
 		logger.Error("SendEntityMsg failed 2 %s", err.Error())
