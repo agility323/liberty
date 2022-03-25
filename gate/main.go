@@ -25,16 +25,12 @@ func main() {
 	lbtutil.SetLogLevel(Conf.LogLevel)
 
 	// service server
-	ip := Conf.ServiceServer.Ip
-	port := Conf.ServiceServer.Port
-	serviceServer := lbtnet.NewTcpServer(ip, port, ServiceConnectionCreator)
+	serviceServer := lbtnet.NewTcpServer(Conf.ServiceServerAddr, ServiceConnectionCreator)
 	logger.Info("create service server at %s", serviceServer.GetAddr())
 	serviceServer.Start()
 	serviceManager.start()
 	// client server
-	ip = Conf.ClientServer.Ip
-	port = Conf.ClientServer.Port
-	clientServer := lbtnet.NewTcpServer(ip, port, ClientConnectionCreator)
+	clientServer := lbtnet.NewTcpServer(Conf.ClientServerAddr, ClientConnectionCreator)
 	logger.Info("create client server at %s", clientServer.GetAddr())
 	clientServer.Start()
 	clientManager.start()

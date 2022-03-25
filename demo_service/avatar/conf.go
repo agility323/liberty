@@ -15,6 +15,7 @@ type mongoConfType struct {
 
 type confType struct {
 	ServiceType string `json:"service_type"`
+	GateAddr string `json:"gate_addr"`
 	LogLevel int `json:"log_level"`
 	Redis redisConfType `json:"redis"`
 	Mongo mongoConfType `json:"mongo"`
@@ -24,6 +25,7 @@ var Conf confType
 
 var defaultConf map[string]interface{} = map[string]interface{} {
 	"service_type": "avatar_service",
+	"gate_addr": "127.0.0.1:5001",
 	"log_level": lbtutil.Ldebug,
 	"redis": map[string]interface{} {
 		"addrs": []string{

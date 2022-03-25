@@ -85,7 +85,7 @@ func Service_service_shutdown(c *lbtnet.TcpConnection, buf []byte) error {
 func sendServiceRegister(c *lbtnet.TcpConnection) {
 	msg := &lbtproto.ServiceInfo{
 		Addr: c.LocalAddr(),
-		Type: ServiceType,
+		Type: serviceConf.serviceType,
 		Entityid: "",
 	}
 	lbtproto.SendMessage(

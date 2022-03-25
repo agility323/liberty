@@ -1,5 +1,6 @@
 {
 	"service_type": "avatar_service",
+	"gate_addr": "127.0.0.1:5001",
 	"redis": {
 		"addrs": [
 			"10.1.71.45:6391",

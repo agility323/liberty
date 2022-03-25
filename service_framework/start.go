@@ -12,18 +12,14 @@ var stopCh = make(chan os.Signal, 1)
 
 func Start() {
 	// check
-	if ServiceType == "" {
-		panic("service start failed: ServiceType not set")
+	if !checkServiceConf() {
+		panic("service start failed: invalid serviceConf")
 	} else {
-		logger.Info("service start %s", ServiceType)
+		logger.Info("service start with conf: %v", serviceConf)
 	}
 
-	// forged addr
-	ip := "127.0.0.1"
-	port := 5009
-
 	// gate client
-	gateClient = lbtnet.NewTcpClient(ip, port, NewGateConnectionHandler())
+	gateClient = lbtnet.NewTcpClient(serviceConf.gateAddr, NewGateConnectionHandler())
 	gateClient.StartConnect()
 
 	// wait for stop
@@ -35,7 +31,7 @@ func Start() {
 }
 
 func onStop() {
-	logger.Info("service stopped %s", ServiceType)
+	logger.Info("service stopped %s", serviceConf.serviceType)
 }
 
 func Stop() {

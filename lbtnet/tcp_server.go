@@ -19,16 +19,16 @@ type TcpServer struct {
 	cc connectionCreatorFunc
 }
 
-func NewTcpServer(ip string, port int, cc connectionCreatorFunc) *TcpServer {
-	if ip == "" { logger.Warn("tcp server ip not specified") }
-	if port == 0 { logger.Warn("tcp server port not specified") }
-	addr, err := net.ResolveTCPAddr("tcp", ip + ":" + strconv.Itoa(port))
+func NewTcpServer(addr string, cc connectionCreatorFunc) *TcpServer {
+	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
 	if err != nil {
-		panic("tcp server addr fail " + ip + ":" + strconv.Itoa(port))
+		panic("tcp server addr fail " + addr)
 	}
-	listener, err := net.ListenTCP("tcp", addr)
+	if tcpAddr.IP.String() == "" { logger.Warn("tcp server ip not specified") }
+	if tcpAddr.Port == 0 { logger.Warn("tcp server port not specified") }
+	listener, err := net.ListenTCP("tcp", tcpAddr)
 	if err != nil {
-		panic("tcp server listen fail " + ip + ":" + strconv.Itoa(port))
+		panic("tcp server listen fail " + addr)
 	}
 	server := &TcpServer{
 		started: 0,

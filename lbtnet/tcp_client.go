@@ -32,14 +32,14 @@ const (
 	CLIENT_RECONNECT_TIME int = 5
 )
 
-func NewTcpClient(ip string, port int, handler ConnectionHandler) *TcpClient {
-	addr, err := net.ResolveTCPAddr("tcp", ip + ":" + strconv.Itoa(port))
+func NewTcpClient(addr string, handler ConnectionHandler) *TcpClient {
+	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
 	if err != nil {
-		panic("tcp client addr fail " + ip + ":" + strconv.Itoa(port))
+		panic("tcp client addr fail " + addr)
 	}
 	client := &TcpClient{
 		state: ST_NOT_CONNECTED,
-		raddr: addr,
+		raddr: tcpAddr,
 		timer: nil,
 		logger: lbtutil.NewLogger(strconv.Itoa(os.Getpid()), "TcpClient"),
 		fconn: nil,
