@@ -50,8 +50,13 @@ func CallEntityMethod(id lbtutil.ObjectId, method string, params []interface{}) 
 	for i, param := range params {
 		vp := reflect.ValueOf(param)
 		if vp.Type() != rpc.pts[i] {
-			return errors.New(fmt.Sprintf("CallEntityMethod failed params mismatch 2 %s %s %s %v!=%v",
-				typ, id.Hex(), method, vp.Type(), rpc.pts[i]))
+			// avoid int8-int problem
+			if vp.CanConvert(rpc.pts[i]) {
+				vp = vp.Convert(rpc.pts[i])
+			} else {
+				return errors.New(fmt.Sprintf("CallEntityMethod failed params mismatch 2 %s %s %s %v!=%v",
+					typ, id.Hex(), method, vp.Type(), rpc.pts[i]))
+			}
 		}
 		args = append(args, vp)
 	}
