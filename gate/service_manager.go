@@ -5,6 +5,7 @@ import (
 
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtproto"
+	"github.com/agility323/liberty/lbtutil"
 )
 
 var serviceManager ServiceManager
@@ -13,16 +14,15 @@ func init() {
 	serviceManager = ServiceManager{
 		started: 0,
 		jobCh: make(chan serviceManagerJob, 20),
-		serviceConnMap: make(map[string]*lbtnet.TcpConnection),
-		serviceList: make([]serviceInfo, 0),
-		serviceIndexMap: make(map[string]int),
+		serviceMap: make(map[string]*serviceEntry),
+		serviceTypeToAddrSet: make(map[string]*lbtutil.OrderedSet),
 	}
 }
 
-type serviceInfo struct {
-	addr,
-	typ,
-	entityid string
+type serviceEntry struct {
+	addr string
+	typ string
+	c *lbtnet.TcpConnection
 }
 
 type serviceManagerJob struct {
@@ -44,9 +44,8 @@ func postServiceManagerJob(op string, jd interface{}) bool {
 type ServiceManager struct {
 	started int32
 	jobCh chan serviceManagerJob
-	serviceConnMap map[string]*lbtnet.TcpConnection
-	serviceList []serviceInfo
-	serviceIndexMap map[string]int	// addr: index in serviceList
+	serviceMap map[string]*serviceEntry
+	serviceTypeToAddrSet map[string]*lbtutil.OrderedSet
 }
 
 func (sm *ServiceManager) start() {
@@ -63,7 +62,7 @@ func (sm *ServiceManager) workLoop() {
 		} else if job.op == "disconnect" {
 			sm.serviceDisconnect(job.jd.(*lbtnet.TcpConnection))
 		} else if job.op == "register" {
-			sm.serviceRegister(job.jd.(serviceInfo))
+			sm.serviceRegister(job.jd.(serviceEntry))
 		} else if job.op == "service_request" {
 			sm.serviceRequest(job.jd.([]byte))
 		} else if job.op == "entity_msg" {
@@ -75,65 +74,66 @@ func (sm *ServiceManager) workLoop() {
 }
 
 func (sm *ServiceManager) serviceConnect(c *lbtnet.TcpConnection) {
-	sm.serviceConnMap[c.RemoteAddr()] = c
+	addr := c.RemoteAddr()
+	sm.serviceMap[addr] = &serviceEntry{addr: addr, typ: "", c: c}
 }
 
 func (sm *ServiceManager) serviceDisconnect(c *lbtnet.TcpConnection) {
 	addr := c.RemoteAddr()
-	delete(sm.serviceConnMap, addr)
-	if index, ok := sm.serviceIndexMap[addr]; ok {
-		// swap index and last, abandon last
-		l := sm.serviceList
-		lastIndex := len(l) - 1
-		lastEntry := l[lastIndex]
-		entry := l[index]
-		l[index] = lastEntry
-		sm.serviceIndexMap[lastEntry.addr] = index
-		l = l[:lastIndex]
-		delete(sm.serviceIndexMap, entry.addr)
+	if entry, ok := sm.serviceMap[addr]; ok {
+		sm.serviceTypeToAddrSet[entry.typ].Remove(addr)
+		delete(sm.serviceMap, addr)
 	}
 }
 
-func (sm *ServiceManager) serviceRegister(info serviceInfo) {
-	// register
+func (sm *ServiceManager) serviceRegister(info serviceEntry) {
 	addr := info.addr
 	typ := info.typ
-	if index, ok := sm.serviceIndexMap[addr]; !ok {
-		sm.serviceList = append(sm.serviceList, info)
-		index = len(sm.serviceList) - 1
-		sm.serviceIndexMap[addr] = index
-		// close old service
-		for i, s := range sm.serviceList {
-			if s.typ == typ && i != index {
-				if c, ok := sm.serviceConnMap[s.addr]; ok {
-					if err := lbtproto.SendMessage(
-						c,
-						lbtproto.Service.Method_service_shutdown,
-						&lbtproto.Void{},
-					); err != nil {
-						logger.Warn("service shutdown send fail 1 - " + err.Error())
-					}
+	// register
+	entry, ok := sm.serviceMap[addr]
+	if !ok {
+		logger.Warn("serviceRegister fail 1 - service not connected %v %v", entry, info)
+		return
+	}
+	if entry.typ != "" {
+		logger.Warn("serviceRegister fail 2 - service existed %v %v", entry, info)
+		return
+	}
+	entry.typ = typ
+	if _, ok = sm.serviceTypeToAddrSet[typ]; !ok {
+		sm.serviceTypeToAddrSet[typ] = lbtutil.NewOrderedSet()
+	}
+	sm.serviceTypeToAddrSet[typ].Add(addr)
+	// close old service
+	if sm.serviceTypeToAddrSet[typ].Size() > 1 {
+		vs := sm.serviceTypeToAddrSet[typ].GetAll()
+		for _, v := range vs {
+			ad := v.(string)
+			if ad == addr { continue }
+			if ent, ok := sm.serviceMap[ad]; ok {
+				if err := lbtproto.SendMessage(
+					ent.c,
+					lbtproto.Service.Method_service_shutdown,
+					&lbtproto.Void{},
+				); err != nil {
+					logger.Warn("service shutdown send fail 1 - " + err.Error())
 				}
 			}
 		}
 	}
-	logger.Info("register service %s", info)
+	logger.Info("register service %s %s", typ, addr)
 	// reply
-	if c, _ := sm.serviceConnMap[addr]; c == nil {
-		logger.Warn("service register reply send fail 1")
-	} else {
-		msg := &lbtproto.ServiceInfo{
-			Addr: addr,
-			Type: typ,
-			Entityid: info.entityid,
-		}
-		if err := lbtproto.SendMessage(
-			c,
-			lbtproto.Service.Method_register_reply,
-			msg,
-		); err != nil {
-			logger.Warn("service register reply send fail 2 - " + err.Error())
-		}
+	msg := &lbtproto.ServiceInfo{
+		Addr: addr,
+		Type: typ,
+		Entityid: "",
+	}
+	if err := lbtproto.SendMessage(
+		entry.c,
+		lbtproto.Service.Method_register_reply,
+		msg,
+	); err != nil {
+		logger.Warn("service register reply send fail - " + err.Error())
 	}
 }
 
@@ -144,24 +144,27 @@ func (sm *ServiceManager) serviceRequest(buf []byte) {
 		logger.Warn("service request fail 1")
 		return
 	}
-	typ := msg.Type
-	for _, info := range sm.serviceList {
-		if info.typ == typ {
-			if c, _ := sm.serviceConnMap[info.addr]; c == nil {
-				logger.Warn("service request fail 2 at [%s], continue ...", info.addr)
-			} else {
-				if err := c.SendData(buf); err != nil {
-					logger.Warn("service request fail 3 at [%s] [%s], continue ...", info.addr, err.Error())
-				} else {
-					logger.Debug("service request sent to %s", info.addr)
-					return
-				}
-			}
-		} else {
-			logger.Debug("service request skip service %s", info)
-		}
+	addrSet, ok := sm.serviceTypeToAddrSet[msg.Type]
+	if !ok {
+		logger.Warn("service request fail 1 - %v", msg)
+		return
 	}
-	logger.Warn("service request fail 4")
+	v := addrSet.RandomGetOne()
+	if v == nil {
+		logger.Warn("service request fail 2 - service list empty %v", msg)
+		return
+	}
+	addr := v.(string)
+	if entry, ok := sm.serviceMap[addr]; ok {
+		if err := entry.c.SendData(buf); err != nil {
+			logger.Warn("service request fail 3 at %s %s", entry.addr, err.Error())
+		} else {
+			logger.Debug("service request sent to %s", entry.addr)
+			return
+		}
+	} else {
+		logger.Warn("service request fail 4")
+	}
 }
 
 func (sm *ServiceManager) entityMsg(buf []byte) {
@@ -171,14 +174,14 @@ func (sm *ServiceManager) entityMsg(buf []byte) {
 		return
 	}
 	addr := msg.Addr
-	if c, _ := sm.serviceConnMap[addr]; c == nil {
-		logger.Warn("entityMsg fail 2 at [%s]", addr)
-	} else {
-		if err := c.SendData(buf); err != nil {
-			logger.Warn("entityMsg fail 3 at [%s] [%s]", addr, err.Error())
+	if entry, ok := sm.serviceMap[addr]; ok {
+		if err := entry.c.SendData(buf); err != nil {
+			logger.Warn("entityMsg fail 2 at [%s] [%s]", addr, err.Error())
 		} else {
 			logger.Debug("entityMsg sent to %s", addr)
 			return
 		}
+	} else {
+		logger.Warn("entityMsg fail 3 at [%s]", addr)
 	}
 }

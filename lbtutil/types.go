@@ -7,3 +7,4 @@ import (
 )
 
 type Void struct {}
+var VoidValue Void

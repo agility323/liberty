@@ -40,12 +40,12 @@ func ServiceGate_register_service(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		return err
 	}
-	info := serviceInfo{
+	entry := serviceEntry{
 		addr: msg.Addr,
 		typ: msg.Type,
-		entityid: msg.Entityid,
+		c: c,
 	}
-	postServiceManagerJob("register", info)
+	postServiceManagerJob("register", entry)
 	return nil
 }
 
