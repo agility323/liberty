@@ -16,7 +16,7 @@ func (handler *GateConnectionHandler) HandleProto(c *lbtnet.TcpConnection, buf [
 }
 
 func (handler *GateConnectionHandler) OnConnectionReady(c *lbtnet.TcpConnection) {
-	sendServiceRegister(c)
+	sendRegisterService(c)
 }
 
 func (handler *GateConnectionHandler) OnConnectionClose(c *lbtnet.TcpConnection) {

@@ -30,15 +30,20 @@ type BoostEntity struct {
 func (b *BoostEntity) Init(conAddr, srcAddr string) {
 	b.conAddr = conAddr
 	b.srcAddr = srcAddr
+	sf.RegisterClientCallback(srcAddr, b)
 }
 
 func (b *BoostEntity) Start() {
-	logger.Debug("boost entity start %s %s", b.EC.GetType(), b.EC.GetId().Hex())
+	logger.Debug("boost entity start %s", b.EC.GetId().Hex())
 	data := map[string]interface{} {
 		"EC": b.EC.Dump(),
 		"addr": b.conAddr,
 	}
 	sf.SendCreateEntity(b.srcAddr, string(b.EC.GetId()), BoostEntityType, data)
+}
+
+func (b *BoostEntity) OnClientDisconnect() {
+	logger.Debug("boost entity OnClientDisconnect %s", b.EC.GetId().Hex())
 }
 
 func (b *BoostEntity) CMD_login_startlogin_cs(token string, sdkInfo map[string]interface{}) {

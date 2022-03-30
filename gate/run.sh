@@ -1,2 +1,2 @@
 #!/bin/sh
-nohup ./gate --conf=config_c1.json > log1 &
+nohup ./gate-stable --conf=config_c1.json > log1 &

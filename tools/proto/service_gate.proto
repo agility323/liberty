@@ -7,9 +7,15 @@ package lbtproto;
 option cc_generic_services = true;
 option py_generic_services = true;
 
+message BindClientInfo {
+	string caddr = 1;
+	string saddr = 2;
+}
+
 // service-gate rpc
 service IServiceGate {
 	rpc register_service(ServiceInfo) returns (Void);
+	rpc bind_client(BindClientInfo) returns (Void);
 	rpc service_reply(ServiceReply) returns (Void);
 	rpc create_entity(EntityData) returns (Void);
 	rpc entity_msg(EntityMsg) returns (Void);
@@ -18,6 +24,7 @@ service IServiceGate {
 // gate-service rpc
 service IService {
 	rpc register_reply(ServiceInfo) returns (Void);
+	rpc client_disconnect(BindClientInfo) returns (Void);
 	rpc service_request(ServiceRequest) returns (Void);
 	rpc entity_msg(EntityMsg) returns (Void);
 	rpc service_shutdown(Void) returns (Void);

@@ -13,7 +13,7 @@ func init() {
 	clientManager = ClientManager{
 		started: 0,
 		jobCh: make(chan clientManagerJob, 20),
-		clientMap: make(map[string]*lbtnet.TcpConnection),
+		clientMap: make(map[string]*clientEntry),
 	}
 }
 
@@ -33,10 +33,15 @@ func postClientManagerJob(op string, jd interface{}) bool {
 	return false
 }
 
+type clientEntry struct {
+	c *lbtnet.TcpConnection
+	serviceAddr string
+}
+
 type ClientManager struct {
 	started int32
 	jobCh chan clientManagerJob
-	clientMap map[string]*lbtnet.TcpConnection
+	clientMap map[string]*clientEntry
 }
 
 func (cm *ClientManager) start() {
@@ -52,6 +57,8 @@ func (cm *ClientManager) workLoop() {
 			cm.clientConnect(job.jd.(*lbtnet.TcpConnection))
 		} else if job.op == "disconnect" {
 			cm.clientDisconnect(job.jd.(*lbtnet.TcpConnection))
+		} else if job.op == "bind_client" {
+			cm.bindClient(job.jd.(lbtproto.BindClientInfo))
 		} else if job.op == "service_reply" {
 			cm.serviceReply(job.jd.([]byte))
 		} else if job.op == "create_entity" {
@@ -65,11 +72,24 @@ func (cm *ClientManager) workLoop() {
 }
 
 func (cm *ClientManager) clientConnect(c *lbtnet.TcpConnection) {
-	cm.clientMap[c.RemoteAddr()] = c
+	cm.clientMap[c.RemoteAddr()] = &clientEntry{c: c, serviceAddr: ""}
 }
 
 func (cm *ClientManager) clientDisconnect(c *lbtnet.TcpConnection) {
-	delete(cm.clientMap, c.RemoteAddr())
+	addr := c.RemoteAddr()
+	entry, ok := cm.clientMap[addr]
+	if !ok { return }
+	delete(cm.clientMap, addr)
+	if entry.serviceAddr != "" {
+		info := lbtproto.BindClientInfo{Caddr: addr, Saddr: entry.serviceAddr}
+		postServiceManagerJob("client_disconnect", info)
+	}
+}
+
+func (cm *ClientManager) bindClient(info lbtproto.BindClientInfo) {
+	entry, ok := cm.clientMap[info.Caddr]
+	if !ok { return }
+	entry.serviceAddr = info.Saddr
 }
 
 func (cm *ClientManager) serviceReply(buf []byte) {
@@ -79,12 +99,12 @@ func (cm *ClientManager) serviceReply(buf []byte) {
 		return
 	}
 	addr := msg.Addr
-	c, ok := cm.clientMap[addr]
+	entry, ok := cm.clientMap[addr]
 	if !ok {
 		logger.Warn("service reply fail 2 %s", addr)
 		return
 	}
-	if err := c.SendData(buf); err != nil {
+	if err := entry.c.SendData(buf); err != nil {
 		logger.Warn("service reply fail 3 [%s] [%s]", addr, err.Error())
 		return
 	}
@@ -97,7 +117,7 @@ func (cm *ClientManager) createEntity(buf []byte) {
 		return
 	}
 	addr := msg.Addr
-	c, ok := cm.clientMap[addr]
+	entry, ok := cm.clientMap[addr]
 	if !ok {
 		logger.Warn("createEntity fail 2 %s", addr)
 		return
@@ -116,7 +136,7 @@ func (cm *ClientManager) createEntity(buf []byte) {
 		logger.Warn("createEntity fail 3 [%s] [%s]", addr, err.Error())
 		return
 	}
-	if err := c.SendData(newbuf); err != nil {
+	if err := entry.c.SendData(newbuf); err != nil {
 		logger.Warn("createEntity fail 4 [%s] [%s]", addr, err.Error())
 		return
 	}
@@ -129,7 +149,7 @@ func (cm *ClientManager) entityMsg(buf []byte) {
 		return
 	}
 	addr := msg.Addr
-	c, ok := cm.clientMap[addr]
+	entry, ok := cm.clientMap[addr]
 	if !ok {
 		logger.Warn("entityMsg fail 2 %s", addr)
 		return
@@ -150,7 +170,7 @@ func (cm *ClientManager) entityMsg(buf []byte) {
 		logger.Warn("entityMsg fail 3 [%s] [%s]", addr, err.Error())
 		return
 	}
-	if err := c.SendData(newbuf); err != nil {
+	if err := entry.c.SendData(newbuf); err != nil {
 		logger.Warn("entityMsg fail 4 [%s] [%s]", addr, err.Error())
 		return
 	}

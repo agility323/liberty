@@ -20,6 +20,8 @@ func (h *connectServerHandler) GetReply() interface{} {return nil}
 
 func (h *connectServerHandler) Process(conAddr, srcAddr string) error {
 	logger.Debug("connect server %s", srcAddr)
+	// bind avatar
+	sf.SendBindClient(conAddr, srcAddr)
 	// create avatar
 	boost := sf.CreateEntity("BoostEntity").(*BoostEntity)
 	boost.Init(conAddr, srcAddr)

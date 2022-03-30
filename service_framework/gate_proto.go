@@ -19,6 +19,7 @@ func init() {
 
 func initServiceMethodHandler() {
 	ServiceMethodHandler[lbtproto.Service.Method_register_reply] = Service_register_reply
+	ServiceMethodHandler[lbtproto.Service.Method_client_disconnect] = Service_client_disconnect
 	ServiceMethodHandler[lbtproto.Service.Method_service_request] = Service_service_request
 	ServiceMethodHandler[lbtproto.Service.Method_entity_msg] = Service_entity_msg
 	ServiceMethodHandler[lbtproto.Service.Method_service_shutdown] = Service_service_shutdown
@@ -40,6 +41,16 @@ func processGateProto(c *lbtnet.TcpConnection, buf []byte) error {
 
 func Service_register_reply(c *lbtnet.TcpConnection, buf []byte) error {
 	logger.Debug("proto recv Service_register_reply %v", buf)
+	return nil
+}
+
+func Service_client_disconnect(c *lbtnet.TcpConnection, buf []byte) error {
+	logger.Debug("proto recv Service_client_disconnect %v", buf)
+	info := &lbtproto.BindClientInfo{}
+	if err := lbtproto.DecodeMessage(buf, info); err != nil {
+		return err
+	}
+	if cb, ok := clientCallbackMap[info.Caddr]; ok { cb.OnClientDisconnect() }
 	return nil
 }
 
@@ -82,7 +93,7 @@ func Service_service_shutdown(c *lbtnet.TcpConnection, buf []byte) error {
 /********** ProtoHandler End **********/
 
 /********** ProtoSender **********/
-func sendServiceRegister(c *lbtnet.TcpConnection) {
+func sendRegisterService(c *lbtnet.TcpConnection) {
 	msg := &lbtproto.ServiceInfo{
 		Addr: c.LocalAddr(),
 		Type: serviceConf.serviceType,
@@ -91,6 +102,18 @@ func sendServiceRegister(c *lbtnet.TcpConnection) {
 	lbtproto.SendMessage(
 		c,
 		lbtproto.ServiceGate.Method_register_service,
+		msg,
+	)
+}
+
+func SendBindClient(saddr, caddr string) {
+	msg := &lbtproto.BindClientInfo{
+		Caddr: caddr,
+		Saddr: saddr,
+	}
+	lbtproto.SendMessage(
+		gateClient,
+		lbtproto.ServiceGate.Method_bind_client,
 		msg,
 	)
 }

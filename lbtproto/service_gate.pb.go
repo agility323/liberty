@@ -10,7 +10,9 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	io "io"
 	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -24,27 +26,88 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+type BindClientInfo struct {
+	Caddr string `protobuf:"bytes,1,opt,name=caddr,proto3" json:"caddr,omitempty"`
+	Saddr string `protobuf:"bytes,2,opt,name=saddr,proto3" json:"saddr,omitempty"`
+}
+
+func (m *BindClientInfo) Reset()         { *m = BindClientInfo{} }
+func (m *BindClientInfo) String() string { return proto.CompactTextString(m) }
+func (*BindClientInfo) ProtoMessage()    {}
+func (*BindClientInfo) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ff9168d185c861b5, []int{0}
+}
+func (m *BindClientInfo) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *BindClientInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_BindClientInfo.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *BindClientInfo) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BindClientInfo.Merge(m, src)
+}
+func (m *BindClientInfo) XXX_Size() int {
+	return m.Size()
+}
+func (m *BindClientInfo) XXX_DiscardUnknown() {
+	xxx_messageInfo_BindClientInfo.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_BindClientInfo proto.InternalMessageInfo
+
+func (m *BindClientInfo) GetCaddr() string {
+	if m != nil {
+		return m.Caddr
+	}
+	return ""
+}
+
+func (m *BindClientInfo) GetSaddr() string {
+	if m != nil {
+		return m.Saddr
+	}
+	return ""
+}
+
+func init() {
+	proto.RegisterType((*BindClientInfo)(nil), "lbtproto.BindClientInfo")
+}
+
 func init() { proto.RegisterFile("service_gate.proto", fileDescriptor_ff9168d185c861b5) }
 
 var fileDescriptor_ff9168d185c861b5 = []byte{
-	// 272 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x2a, 0x4e, 0x2d, 0x2a,
-	0xcb, 0x4c, 0x4e, 0x8d, 0x4f, 0x4f, 0x2c, 0x49, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2,
-	0xc8, 0x49, 0x2a, 0x01, 0xb3, 0xa4, 0x78, 0x92, 0xf3, 0x73, 0x73, 0xf3, 0xf3, 0x20, 0xe2, 0x46,
-	0x6f, 0x18, 0xb9, 0x78, 0x3c, 0x83, 0x21, 0xea, 0xdd, 0x13, 0x4b, 0x52, 0x85, 0x2c, 0xb9, 0x04,
-	0x8a, 0x52, 0xd3, 0x33, 0x8b, 0x4b, 0x52, 0x8b, 0xe2, 0xa1, 0xe6, 0x08, 0x89, 0xea, 0xc1, 0x74,
-	0xeb, 0x41, 0x95, 0x7a, 0xe6, 0xa5, 0xe5, 0x4b, 0xf1, 0x21, 0x84, 0xc3, 0xf2, 0x33, 0x53, 0x84,
-	0xcc, 0xb9, 0x78, 0x61, 0x36, 0x17, 0xa5, 0x16, 0xe4, 0x54, 0x0a, 0x89, 0x61, 0xe8, 0x0b, 0x02,
-	0x89, 0x63, 0x68, 0x34, 0xe5, 0xe2, 0x4d, 0x2e, 0x4a, 0x4d, 0x2c, 0x49, 0x8d, 0x4f, 0xcd, 0x2b,
-	0xc9, 0x2c, 0xa9, 0x14, 0x12, 0x41, 0x28, 0x70, 0x05, 0x8b, 0xb8, 0x24, 0x96, 0x24, 0x62, 0x68,
-	0x33, 0xe4, 0xe2, 0x82, 0xa8, 0x8f, 0xcf, 0x2d, 0x4e, 0x17, 0x12, 0x46, 0xd7, 0xe3, 0x5b, 0x9c,
-	0x8e, 0xae, 0xc5, 0xe8, 0x39, 0x23, 0x17, 0x07, 0xcc, 0xbb, 0x42, 0xe6, 0x5c, 0x7c, 0x70, 0xaf,
-	0x42, 0x1c, 0x4c, 0xa4, 0x47, 0xad, 0xb9, 0xf8, 0x11, 0x1e, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x11,
-	0x92, 0xc0, 0xe2, 0x55, 0xb0, 0x0c, 0x15, 0x5c, 0x2d, 0x64, 0xc4, 0x25, 0x00, 0xb3, 0xaf, 0x38,
-	0xa3, 0xb4, 0x24, 0x25, 0xbf, 0x3c, 0x4f, 0x08, 0x4d, 0x0d, 0xba, 0x1e, 0x27, 0xb9, 0x13, 0x8f,
-	0xe4, 0x18, 0x2f, 0x3c, 0x92, 0x63, 0x7c, 0xf0, 0x48, 0x8e, 0x71, 0xc2, 0x63, 0x39, 0x86, 0x0b,
-	0x8f, 0xe5, 0x18, 0x6e, 0x3c, 0x96, 0x63, 0x68, 0x60, 0x64, 0x9c, 0xc0, 0xc8, 0x98, 0xc4, 0x06,
-	0x56, 0x6b, 0x0c, 0x08, 0x00, 0x00, 0xff, 0xff, 0xc9, 0x1a, 0xb3, 0xb8, 0x2d, 0x02, 0x00, 0x00,
+	// 344 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x90, 0x31, 0x4f, 0x02, 0x31,
+	0x1c, 0xc5, 0x29, 0x89, 0x06, 0xff, 0x02, 0x62, 0x45, 0x43, 0x18, 0x1a, 0xe3, 0xe4, 0x44, 0x22,
+	0xc6, 0x10, 0xa3, 0x2e, 0xa8, 0x31, 0x0c, 0x2e, 0x98, 0xb8, 0x5e, 0x8e, 0xb6, 0x9e, 0x4d, 0xa0,
+	0xc5, 0xb6, 0x68, 0xd8, 0xfc, 0x08, 0x7c, 0x09, 0xfd, 0x2c, 0x8e, 0x8c, 0x8e, 0x06, 0xbe, 0x88,
+	0xa1, 0xe5, 0xb8, 0x70, 0x38, 0x68, 0xe2, 0xd6, 0xbe, 0xbe, 0x97, 0xf7, 0xfa, 0x03, 0x6c, 0xb8,
+	0x7e, 0x16, 0x94, 0x07, 0x51, 0x68, 0x79, 0xad, 0xaf, 0x95, 0x55, 0x38, 0xd7, 0xed, 0x58, 0x77,
+	0xaa, 0xe6, 0xa9, 0xea, 0xf5, 0x94, 0xf4, 0xfa, 0xc1, 0x39, 0x14, 0x9b, 0x42, 0xb2, 0xcb, 0xae,
+	0xe0, 0xd2, 0xb6, 0xe4, 0x83, 0xc2, 0x65, 0x58, 0xa3, 0x21, 0x63, 0xba, 0x82, 0xf6, 0xd1, 0xe1,
+	0x46, 0xdb, 0x5f, 0x66, 0xaa, 0x71, 0x6a, 0xd6, 0xab, 0xee, 0x52, 0x7f, 0xcb, 0x42, 0xbe, 0x75,
+	0xe7, 0xdb, 0x6e, 0x42, 0xcb, 0xf1, 0x29, 0x94, 0x34, 0x8f, 0x84, 0xb1, 0x5c, 0x07, 0xf3, 0x15,
+	0x78, 0xb7, 0x16, 0x77, 0xd7, 0xe6, 0xd6, 0x59, 0x4f, 0xb5, 0x98, 0xc8, 0xf7, 0x4a, 0x30, 0xdc,
+	0x80, 0xcd, 0x8e, 0x90, 0x2c, 0xa0, 0x6e, 0x0a, 0xae, 0x24, 0xcf, 0xcb, 0x03, 0x7f, 0x08, 0x16,
+	0xe2, 0x0f, 0x6b, 0xde, 0xef, 0x0e, 0xf1, 0xde, 0x4a, 0x61, 0x7b, 0xa6, 0xaf, 0x04, 0x4f, 0xa0,
+	0x40, 0x35, 0x0f, 0x2d, 0x0f, 0xb8, 0xb4, 0xc2, 0x0e, 0x71, 0x39, 0x31, 0x5c, 0x3b, 0xe5, 0x2a,
+	0xb4, 0xe1, 0x4a, 0xec, 0x08, 0xc0, 0xfb, 0x83, 0x9e, 0x89, 0xf0, 0x4e, 0x3a, 0x73, 0x6b, 0xa2,
+	0x74, 0xa4, 0xfe, 0x9e, 0x85, 0x5c, 0xcc, 0x09, 0x37, 0xa0, 0xb8, 0x60, 0xe4, 0x07, 0xff, 0x92,
+	0xd0, 0x05, 0x6c, 0x7b, 0x38, 0x01, 0x13, 0x86, 0x2a, 0x29, 0x39, 0xfd, 0x0b, 0xa7, 0x33, 0xd8,
+	0x4a, 0x38, 0x3d, 0x0d, 0xb8, 0x59, 0x0a, 0x2f, 0x48, 0xb9, 0x97, 0x7f, 0xf8, 0x34, 0xae, 0x43,
+	0x29, 0xee, 0x33, 0x8f, 0x03, 0xcb, 0xd4, 0x8b, 0xc4, 0x29, 0x4f, 0x3a, 0xd3, 0x24, 0x1f, 0x13,
+	0x82, 0xc6, 0x13, 0x82, 0xbe, 0x26, 0x04, 0x8d, 0xa6, 0x24, 0x33, 0x9e, 0x92, 0xcc, 0xe7, 0x94,
+	0x64, 0x5e, 0x11, 0x1a, 0x21, 0xd4, 0x59, 0x77, 0xde, 0xe3, 0xef, 0x00, 0x00, 0x00, 0xff, 0xff,
+	0x7a, 0x60, 0x94, 0x0e, 0xe3, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -60,6 +123,7 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type IServiceGateClient interface {
 	RegisterService(ctx context.Context, in *ServiceInfo, opts ...grpc.CallOption) (*Void, error)
+	BindClient(ctx context.Context, in *BindClientInfo, opts ...grpc.CallOption) (*Void, error)
 	ServiceReply(ctx context.Context, in *ServiceReply, opts ...grpc.CallOption) (*Void, error)
 	CreateEntity(ctx context.Context, in *EntityData, opts ...grpc.CallOption) (*Void, error)
 	EntityMsg(ctx context.Context, in *EntityMsg, opts ...grpc.CallOption) (*Void, error)
@@ -76,6 +140,15 @@ func NewIServiceGateClient(cc *grpc.ClientConn) IServiceGateClient {
 func (c *iServiceGateClient) RegisterService(ctx context.Context, in *ServiceInfo, opts ...grpc.CallOption) (*Void, error) {
 	out := new(Void)
 	err := c.cc.Invoke(ctx, "/lbtproto.IServiceGate/register_service", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *iServiceGateClient) BindClient(ctx context.Context, in *BindClientInfo, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
+	err := c.cc.Invoke(ctx, "/lbtproto.IServiceGate/bind_client", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -112,6 +185,7 @@ func (c *iServiceGateClient) EntityMsg(ctx context.Context, in *EntityMsg, opts 
 // IServiceGateServer is the server API for IServiceGate service.
 type IServiceGateServer interface {
 	RegisterService(context.Context, *ServiceInfo) (*Void, error)
+	BindClient(context.Context, *BindClientInfo) (*Void, error)
 	ServiceReply(context.Context, *ServiceReply) (*Void, error)
 	CreateEntity(context.Context, *EntityData) (*Void, error)
 	EntityMsg(context.Context, *EntityMsg) (*Void, error)
@@ -123,6 +197,9 @@ type UnimplementedIServiceGateServer struct {
 
 func (*UnimplementedIServiceGateServer) RegisterService(ctx context.Context, req *ServiceInfo) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterService not implemented")
+}
+func (*UnimplementedIServiceGateServer) BindClient(ctx context.Context, req *BindClientInfo) (*Void, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BindClient not implemented")
 }
 func (*UnimplementedIServiceGateServer) ServiceReply(ctx context.Context, req *ServiceReply) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ServiceReply not implemented")
@@ -152,6 +229,24 @@ func _IServiceGate_RegisterService_Handler(srv interface{}, ctx context.Context,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(IServiceGateServer).RegisterService(ctx, req.(*ServiceInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IServiceGate_BindClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BindClientInfo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IServiceGateServer).BindClient(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/lbtproto.IServiceGate/BindClient",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IServiceGateServer).BindClient(ctx, req.(*BindClientInfo))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -219,6 +314,10 @@ var _IServiceGate_serviceDesc = grpc.ServiceDesc{
 			Handler:    _IServiceGate_RegisterService_Handler,
 		},
 		{
+			MethodName: "bind_client",
+			Handler:    _IServiceGate_BindClient_Handler,
+		},
+		{
 			MethodName: "service_reply",
 			Handler:    _IServiceGate_ServiceReply_Handler,
 		},
@@ -240,6 +339,7 @@ var _IServiceGate_serviceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type IServiceClient interface {
 	RegisterReply(ctx context.Context, in *ServiceInfo, opts ...grpc.CallOption) (*Void, error)
+	ClientDisconnect(ctx context.Context, in *BindClientInfo, opts ...grpc.CallOption) (*Void, error)
 	ServiceRequest(ctx context.Context, in *ServiceRequest, opts ...grpc.CallOption) (*Void, error)
 	EntityMsg(ctx context.Context, in *EntityMsg, opts ...grpc.CallOption) (*Void, error)
 	ServiceShutdown(ctx context.Context, in *Void, opts ...grpc.CallOption) (*Void, error)
@@ -256,6 +356,15 @@ func NewIServiceClient(cc *grpc.ClientConn) IServiceClient {
 func (c *iServiceClient) RegisterReply(ctx context.Context, in *ServiceInfo, opts ...grpc.CallOption) (*Void, error) {
 	out := new(Void)
 	err := c.cc.Invoke(ctx, "/lbtproto.IService/register_reply", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *iServiceClient) ClientDisconnect(ctx context.Context, in *BindClientInfo, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
+	err := c.cc.Invoke(ctx, "/lbtproto.IService/client_disconnect", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -292,6 +401,7 @@ func (c *iServiceClient) ServiceShutdown(ctx context.Context, in *Void, opts ...
 // IServiceServer is the server API for IService service.
 type IServiceServer interface {
 	RegisterReply(context.Context, *ServiceInfo) (*Void, error)
+	ClientDisconnect(context.Context, *BindClientInfo) (*Void, error)
 	ServiceRequest(context.Context, *ServiceRequest) (*Void, error)
 	EntityMsg(context.Context, *EntityMsg) (*Void, error)
 	ServiceShutdown(context.Context, *Void) (*Void, error)
@@ -303,6 +413,9 @@ type UnimplementedIServiceServer struct {
 
 func (*UnimplementedIServiceServer) RegisterReply(ctx context.Context, req *ServiceInfo) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterReply not implemented")
+}
+func (*UnimplementedIServiceServer) ClientDisconnect(ctx context.Context, req *BindClientInfo) (*Void, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClientDisconnect not implemented")
 }
 func (*UnimplementedIServiceServer) ServiceRequest(ctx context.Context, req *ServiceRequest) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ServiceRequest not implemented")
@@ -332,6 +445,24 @@ func _IService_RegisterReply_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(IServiceServer).RegisterReply(ctx, req.(*ServiceInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IService_ClientDisconnect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BindClientInfo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IServiceServer).ClientDisconnect(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/lbtproto.IService/ClientDisconnect",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IServiceServer).ClientDisconnect(ctx, req.(*BindClientInfo))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -399,6 +530,10 @@ var _IService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _IService_RegisterReply_Handler,
 		},
 		{
+			MethodName: "client_disconnect",
+			Handler:    _IService_ClientDisconnect_Handler,
+		},
+		{
 			MethodName: "service_request",
 			Handler:    _IService_ServiceRequest_Handler,
 		},
@@ -414,3 +549,273 @@ var _IService_serviceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "service_gate.proto",
 }
+
+func (m *BindClientInfo) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *BindClientInfo) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *BindClientInfo) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Saddr) > 0 {
+		i -= len(m.Saddr)
+		copy(dAtA[i:], m.Saddr)
+		i = encodeVarintServiceGate(dAtA, i, uint64(len(m.Saddr)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Caddr) > 0 {
+		i -= len(m.Caddr)
+		copy(dAtA[i:], m.Caddr)
+		i = encodeVarintServiceGate(dAtA, i, uint64(len(m.Caddr)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func encodeVarintServiceGate(dAtA []byte, offset int, v uint64) int {
+	offset -= sovServiceGate(v)
+	base := offset
+	for v >= 1<<7 {
+		dAtA[offset] = uint8(v&0x7f | 0x80)
+		v >>= 7
+		offset++
+	}
+	dAtA[offset] = uint8(v)
+	return base
+}
+func (m *BindClientInfo) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Caddr)
+	if l > 0 {
+		n += 1 + l + sovServiceGate(uint64(l))
+	}
+	l = len(m.Saddr)
+	if l > 0 {
+		n += 1 + l + sovServiceGate(uint64(l))
+	}
+	return n
+}
+
+func sovServiceGate(x uint64) (n int) {
+	return (math_bits.Len64(x|1) + 6) / 7
+}
+func sozServiceGate(x uint64) (n int) {
+	return sovServiceGate(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *BindClientInfo) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowServiceGate
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: BindClientInfo: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: BindClientInfo: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Caddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowServiceGate
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthServiceGate
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthServiceGate
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Caddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Saddr", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowServiceGate
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthServiceGate
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthServiceGate
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Saddr = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipServiceGate(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthServiceGate
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func skipServiceGate(dAtA []byte) (n int, err error) {
+	l := len(dAtA)
+	iNdEx := 0
+	depth := 0
+	for iNdEx < l {
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return 0, ErrIntOverflowServiceGate
+			}
+			if iNdEx >= l {
+				return 0, io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		wireType := int(wire & 0x7)
+		switch wireType {
+		case 0:
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return 0, ErrIntOverflowServiceGate
+				}
+				if iNdEx >= l {
+					return 0, io.ErrUnexpectedEOF
+				}
+				iNdEx++
+				if dAtA[iNdEx-1] < 0x80 {
+					break
+				}
+			}
+		case 1:
+			iNdEx += 8
+		case 2:
+			var length int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return 0, ErrIntOverflowServiceGate
+				}
+				if iNdEx >= l {
+					return 0, io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				length |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if length < 0 {
+				return 0, ErrInvalidLengthServiceGate
+			}
+			iNdEx += length
+		case 3:
+			depth++
+		case 4:
+			if depth == 0 {
+				return 0, ErrUnexpectedEndOfGroupServiceGate
+			}
+			depth--
+		case 5:
+			iNdEx += 4
+		default:
+			return 0, fmt.Errorf("proto: illegal wireType %d", wireType)
+		}
+		if iNdEx < 0 {
+			return 0, ErrInvalidLengthServiceGate
+		}
+		if depth == 0 {
+			return iNdEx, nil
+		}
+	}
+	return 0, io.ErrUnexpectedEOF
+}
+
+var (
+	ErrInvalidLengthServiceGate        = fmt.Errorf("proto: negative length found during unmarshaling")
+	ErrIntOverflowServiceGate          = fmt.Errorf("proto: integer overflow")
+	ErrUnexpectedEndOfGroupServiceGate = fmt.Errorf("proto: unexpected end of group")
+)

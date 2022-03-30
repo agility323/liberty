@@ -63,6 +63,8 @@ func (sm *ServiceManager) workLoop() {
 			sm.serviceDisconnect(job.jd.(*lbtnet.TcpConnection))
 		} else if job.op == "register" {
 			sm.serviceRegister(job.jd.(serviceEntry))
+		} else if job.op == "client_disconnect" {
+			sm.clientDisconnect(job.jd.(lbtproto.BindClientInfo))
 		} else if job.op == "service_request" {
 			sm.serviceRequest(job.jd.([]byte))
 		} else if job.op == "entity_msg" {
@@ -135,6 +137,16 @@ func (sm *ServiceManager) serviceRegister(info serviceEntry) {
 	); err != nil {
 		logger.Warn("service register reply send fail - " + err.Error())
 	}
+}
+
+func (sm *ServiceManager) clientDisconnect(info lbtproto.BindClientInfo) {
+	entry, ok := sm.serviceMap[info.Saddr]
+	if !ok { return }
+	lbtproto.SendMessage(
+		entry.c,
+		lbtproto.Service.Method_client_disconnect,
+		&info,
+	)
 }
 
 func (sm *ServiceManager) serviceRequest(buf []byte) {

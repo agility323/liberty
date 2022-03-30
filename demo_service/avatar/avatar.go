@@ -27,6 +27,7 @@ type Avatar struct {
 func (a *Avatar) Init(conAddr, srcAddr string, data *avatardata.AvatarData, isNew bool) {
 	a.conAddr = conAddr
 	a.srcAddr = srcAddr
+	sf.RegisterClientCallback(srcAddr, a)
 
 	if data.Buildings == nil { data.Buildings = make(map[string]*avatardata.BuildingProp) }
 	if data.Interacts == nil { data.Interacts = avatardata.MakeInitInteractData() }
@@ -42,7 +43,7 @@ func (a *Avatar) Init(conAddr, srcAddr string, data *avatardata.AvatarData, isNe
 }
 
 func (a *Avatar) Start() {
-	logger.Debug("avatar start %s %s", a.EC.GetType(), a.EC.GetId().Hex())
+	logger.Debug("avatar start %s", a.EC.GetId().Hex())
 	data := map[string]interface{} {
 		"EC": a.EC.Dump(),
 		"addr": a.conAddr,
@@ -50,6 +51,10 @@ func (a *Avatar) Start() {
 	}
 	sf.SendCreateEntity(a.srcAddr, string(a.EC.GetId()), AvatarType, data)
 	a.afterLogin()
+}
+
+func (a *Avatar) OnClientDisconnect() {
+	logger.Debug("avatar OnClientDisconnect %s", a.EC.GetId().Hex())
 }
 
 func (a *Avatar) Save() {
