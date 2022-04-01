@@ -32,8 +32,8 @@ func lp_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
 	newmsg := &lbtproto.ServiceRequest{
 		Addr: c.RemoteAddr(),
 		Reqid: string(lbtutil.NewObjectId()),
-		Type: Conf.BoostService,
-		Method: "connect_server",
+		Type: Conf.ConnectServerHandler.Service,
+		Method: Conf.ConnectServerHandler.Method,
 		Params: pdata,
 	}
 	data, err := lbtproto.EncodeMessage(
