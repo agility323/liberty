@@ -32,7 +32,7 @@ func lp_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
 	newmsg := &lbtproto.ServiceRequest{
 		Addr: c.RemoteAddr(),
 		Reqid: string(lbtutil.NewObjectId()),
-		Type: "avatar_service",
+		Type: Conf.BoostService,
 		Method: "connect_server",
 		Params: pdata,
 	}

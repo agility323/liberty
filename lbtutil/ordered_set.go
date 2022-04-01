@@ -25,7 +25,7 @@ func (s *OrderedSet) Add(v interface{}) {
 }
 
 func (s *OrderedSet) Remove(v interface{}) {
-	i, ok := s.m[v]
+	i, ok := s.m[v]	// TODO: s(nil) bug, panic: runtime error: invalid memory address or nil pointer dereference
 	if !ok { return }
 	delete(s.m, v)
 	s.data[i] = s.data[len(s.data) - 1]

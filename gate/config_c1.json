@@ -2,5 +2,6 @@
 	"log_level": 2,
 	"client_server_addr": "10.1.71.45:4001",
 	"service_server_addr": "127.0.0.1:5001",
+	"boost_service": "avatar_service",
 	"endl": 0
 }
