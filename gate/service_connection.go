@@ -13,8 +13,8 @@ func ServiceConnectionCreator(conn net.Conn) {
 	handler := &ServiceConnectionHandler{
 	}
 	c := lbtnet.NewTcpConnection(conn, handler)
+	handler.OnConnectionReady(c)	// must be called before c.Start, or service_register may fail and later ServiceManagerJob (like serviceDisconnect) may result in panic
 	c.Start()
-	handler.OnConnectionReady(c)
 }
 
 func (handler *ServiceConnectionHandler) HandleProto(c *lbtnet.TcpConnection, data []byte) error {
