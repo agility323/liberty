@@ -34,14 +34,14 @@ func processClientProto(c *lbtnet.TcpConnection, buf []byte) error {
 
 /********** ProtoHandler **********/
 func ClientGate_service_request(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv ClientGate_service_request %v", buf)
+	//logger.Debug("proto recv ClientGate_service_request %v", buf)
 	postServiceManagerJob("service_request", buf)
 	return nil
 }
 
 func ClientGate_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv ClientGate_entity_msg %v", buf)
-	postServiceManagerJob("entity_msg", buf)	// TODO test only: send to arbitrary single service
+	//logger.Debug("proto recv ClientGate_entity_msg %v", buf)
+	postServiceManagerJob("entity_msg", buf)
 	return nil
 }
 /********** ProtoHandler End **********/

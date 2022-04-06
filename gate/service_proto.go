@@ -36,7 +36,7 @@ func processServiceProto(c *lbtnet.TcpConnection, buf []byte) error {
 }
 
 func ServiceGate_register_service(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv ServiceGate_register_service %v", buf)
+	//logger.Debug("proto recv ServiceGate_register_service %v", buf)
 	msg := &lbtproto.ServiceInfo{}
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		return err
@@ -51,7 +51,7 @@ func ServiceGate_register_service(c *lbtnet.TcpConnection, buf []byte) error {
 }
 
 func ServiceGate_bind_client(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv ServiceGate_bind_client %v", buf)
+	//logger.Debug("proto recv ServiceGate_bind_client %v", buf)
 	msg := &lbtproto.BindClientInfo{}
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		return err
@@ -61,19 +61,19 @@ func ServiceGate_bind_client(c *lbtnet.TcpConnection, buf []byte) error {
 }
 
 func ServiceGate_service_reply(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv ServiceGate_service_reply %v", buf)
+	//logger.Debug("proto recv ServiceGate_service_reply %v", buf)
 	postClientManagerJob("service_reply", buf)
 	return nil
 }
 
 func ServiceGate_create_entity(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv ServiceGate_create_entity %v", buf)
+	//logger.Debug("proto recv ServiceGate_create_entity %v", buf)
 	postClientManagerJob("create_entity", buf)
 	return nil
 }
 
 func ServiceGate_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv ServiceGate_entity_msg %v", buf)
+	//logger.Debug("proto recv ServiceGate_entity_msg %v", buf)
 	postClientManagerJob("entity_msg", buf)
 	return nil
 }

@@ -190,7 +190,7 @@ func (sm *ServiceManager) entityMsg(buf []byte) {
 		if err := entry.c.SendData(buf); err != nil {
 			logger.Warn("entityMsg fail 2 at [%s] [%s]", addr, err.Error())
 		} else {
-			logger.Debug("entityMsg sent to %s", addr)
+			logger.Debug("entity msg sent to %s", addr)
 			return
 		}
 	} else {

@@ -23,7 +23,7 @@ func initLegacyMethodHandler() {
 
 /********** ProtoHandler **********/
 func lp_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv ClientGate_connectServer %v", buf)
+	//logger.Debug("proto recv ClientGate_connectServer %v", buf)
 	msg := &lbtproto.ConnectServerReq{}
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		return err
@@ -52,7 +52,7 @@ func lp_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
 }
 
 func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv ClientGate_entityMessage %v", buf)
+	//logger.Debug("proto recv ClientGate_entityMessage %v", buf)
 	msg := &lbtproto.EntityMessage{}
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		return err

@@ -1,9 +1,9 @@
 {
-	"log_level": 2,
+	"log_level": 1,
 	"client_server_addr": "10.1.71.45:4001",
-	"service_server_addr": "127.0.0.1:5001",
+	"service_server_addr": "10.1.71.45:5001",
 	"connect_server_handler": {
-		"service": "avatar_service",
+		"service": "login_service",
 		"method": "connect_server"
 	}
 }
