@@ -10,7 +10,7 @@ import (
 
 var stopCh = make(chan os.Signal, 1)
 
-func Start() {
+func Start(cb func()) {
 	// check
 	if !checkServiceConf() {
 		panic("service start failed: invalid serviceConf")
@@ -28,6 +28,7 @@ func Start() {
 
 	// on stop
 	onStop()
+	cb()
 }
 
 func onStop() {

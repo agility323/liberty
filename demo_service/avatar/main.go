@@ -23,5 +23,8 @@ func main() {
 	sf.RegisterMethodHandlerCreator("create_avatar", func() sf.MethodHandler {return new(createAvatarHandler)})
 
 	// start
-	sf.Start()
+	sf.Start(OnShutdown)
+}
+
+func OnShutdown() {
 }
