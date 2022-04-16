@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/agility323/liberty/lbtutil"
+	sf "github.com/agility323/liberty/service_framework"
 )
 
 type redisConfType struct {
@@ -14,8 +15,7 @@ type mongoConfType struct {
 }
 
 type confType struct {
-	ServiceType string `json:"service_type"`
-	GateAddr string `json:"gate_addr"`
+	Service *sf.ServiceConfType `json:"service"`
 	LogLevel int `json:"log_level"`
 	Redis redisConfType `json:"redis"`
 	Mongo mongoConfType `json:"mongo"`
@@ -24,17 +24,24 @@ type confType struct {
 var Conf confType
 
 var defaultConf map[string]interface{} = map[string]interface{} {
-	"service_type": "avatar_service",
-	"gate_addr": "127.0.0.1:5001",
-	"log_level": lbtutil.Ldebug,
+	"service": map[string]interface{} {
+		"log_level": lbtutil.Ldebug,
+		"service_type": "avatar_service",
+		"gate_server_addr": "127.0.0.1:5001",
+		"etcd": []string {
+			"http://127.0.0.1:2379",
+			"http://127.0.0.1:2479",
+			"http://127.0.0.1:2579",
+		},
+	},
 	"redis": map[string]interface{} {
 		"addrs": []string{
-			"10.1.71.45:6391",
-			"10.1.71.45:6392",
-			"10.1.71.45:6393",
-			"10.1.71.45:6394",
-			"10.1.71.45:6395",
-			"10.1.71.45:6396",
+			"127.0.0.1:6391",
+			"127.0.0.1:6392",
+			"127.0.0.1:6393",
+			"127.0.0.1:6394",
+			"127.0.0.1:6395",
+			"127.0.0.1:6396",
 		},
 		"master_name": "",
 	},

@@ -108,7 +108,7 @@ func (c *TcpConnection) readLoop() {
 
 func (c *TcpConnection) writeLoop() {
 	for data := range c.writeCh {
-		logger.Debug("tcp conn write %s %v", c.raddr, data)
+		//logger.Debug("tcp conn write %s %v", c.raddr, data)
 		n, err := c.conn.Write(data)
 		if err != nil {
 			logger.Warn("tcp conn %s write fail %d %d %s", c.raddr, len(data), n, err.Error())

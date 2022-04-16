@@ -11,8 +11,8 @@ var logger = sf.Logger
 
 func main() {
 	// conf
+	Conf.Service = sf.GetServiceConf()
 	lbtutil.LoadConfFromCmdLine(defaultConf, os.Args[1:], &Conf)
-	sf.InitServiceConf(Conf.ServiceType, Conf.GateAddr)
 
 	// db
 	InitRedisClient(Conf.Redis.Addrs, Conf.Redis.MasterName)

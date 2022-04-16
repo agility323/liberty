@@ -6,6 +6,7 @@ import (
 	"syscall"
 
 	"github.com/agility323/liberty/lbtnet"
+	"github.com/agility323/liberty/lbtreg"
 )
 
 var stopCh = make(chan os.Signal, 1)
@@ -18,9 +19,15 @@ func Start(cb func()) {
 		logger.Info("service start with conf: %v", serviceConf)
 	}
 
-	// gate client
-	gateClient = lbtnet.NewTcpClient(serviceConf.gateAddr, NewGateConnectionHandler())
-	gateClient.StartConnect()
+	// gate server
+	gateServer := lbtnet.NewTcpServer(serviceConf.GateServerAddr, GateConnectionCreator)
+	logger.Info("create service server at %s", gateServer.GetAddr())
+	gateServer.Start()
+	gateManager.start()
+
+	// register
+	lbtreg.InitWithEtcd(serviceConf.Etcd)
+	go lbtreg.StartRegisterService(31, make(chan bool), 101, serviceConf.ServiceType, serviceConf.GateServerAddr)
 
 	// wait for stop
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
@@ -32,10 +39,10 @@ func Start(cb func()) {
 }
 
 func onStop() {
-	logger.Info("service stopped %s", serviceConf.serviceType)
+	logger.Info("service stopped %s", serviceConf.ServiceType)
 }
 
 func Stop() {
-	gateClient.Stop()
+	gateManager.stop()
 	stopCh <- syscall.SIGTERM
 }

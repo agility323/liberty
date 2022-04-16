@@ -44,7 +44,6 @@ func ServiceGate_register_service(c *lbtnet.TcpConnection, buf []byte) error {
 	entry := serviceEntry{
 		addr: msg.Addr,
 		typ: msg.Type,
-		c: c,
 	}
 	postServiceManagerJob("register", entry)
 	return nil

@@ -19,10 +19,15 @@ func init() {
 	}
 }
 
+func OnDiscoverService(services map[string][]byte) {
+	postServiceManagerJob("discover", services)
+}
+
 type serviceEntry struct {
+	connected bool
 	addr string
 	typ string
-	c *lbtnet.TcpConnection
+	cli *lbtnet.TcpClient
 }
 
 type serviceManagerJob struct {
@@ -57,7 +62,9 @@ func (sm *ServiceManager) start() {
 
 func (sm *ServiceManager) workLoop() {
 	for job := range sm.jobCh {
-		if job.op == "connect" {
+		if job.op == "discover" {
+			sm.serviceDiscover(job.jd.(map[string][]byte))
+		} else if job.op == "connect" {
 			sm.serviceConnect(job.jd.(*lbtnet.TcpConnection))
 		} else if job.op == "disconnect" {
 			sm.serviceDisconnect(job.jd.(*lbtnet.TcpConnection))
@@ -75,9 +82,34 @@ func (sm *ServiceManager) workLoop() {
 	}
 }
 
+func (sm *ServiceManager) serviceDiscover(services map[string][]byte) {
+	for addr, _ := range services {
+		entry, ok := sm.serviceMap[addr]
+		if !ok {
+			sm.serviceMap[addr] = &serviceEntry{
+				connected: false,
+				addr: addr,
+				typ: "",
+				cli: lbtnet.NewTcpClient(addr, &ServiceConnectionHandler{}),
+			}
+			sm.serviceMap[addr].cli.StartConnect()
+			continue
+		}
+		if !entry.connected {
+			logger.Warn("still connecting to service %s", addr)
+			continue
+		}
+	}
+}
+
 func (sm *ServiceManager) serviceConnect(c *lbtnet.TcpConnection) {
 	addr := c.RemoteAddr()
-	sm.serviceMap[addr] = &serviceEntry{addr: addr, typ: "", c: c}
+	if entry, ok := sm.serviceMap[addr]; ok {
+		entry.connected = true
+	} else {
+		logger.Warn("service connected with no client %s", addr)
+		c.Close()
+	}
 }
 
 func (sm *ServiceManager) serviceDisconnect(c *lbtnet.TcpConnection) {
@@ -112,9 +144,9 @@ func (sm *ServiceManager) serviceRegister(info serviceEntry) {
 		for _, v := range vs {
 			ad := v.(string)
 			if ad == addr { continue }
-			if ent, ok := sm.serviceMap[ad]; ok {
+			if ent, ok := sm.serviceMap[ad]; ok && ent.connected {
 				if err := lbtproto.SendMessage(
-					ent.c,
+					ent.cli,
 					lbtproto.Service.Method_service_shutdown,
 					&lbtproto.Void{},
 				); err != nil {
@@ -131,7 +163,7 @@ func (sm *ServiceManager) serviceRegister(info serviceEntry) {
 		Entityid: "",
 	}
 	if err := lbtproto.SendMessage(
-		entry.c,
+		entry.cli,
 		lbtproto.Service.Method_register_reply,
 		msg,
 	); err != nil {
@@ -140,13 +172,9 @@ func (sm *ServiceManager) serviceRegister(info serviceEntry) {
 }
 
 func (sm *ServiceManager) clientDisconnect(info lbtproto.BindClientInfo) {
-	entry, ok := sm.serviceMap[info.Saddr]
-	if !ok { return }
-	lbtproto.SendMessage(
-		entry.c,
-		lbtproto.Service.Method_client_disconnect,
-		&info,
-	)
+	if entry, ok := sm.serviceMap[info.Saddr]; ok && entry.connected {
+		lbtproto.SendMessage(entry.cli, lbtproto.Service.Method_client_disconnect, &info)
+	}
 }
 
 func (sm *ServiceManager) serviceRequest(buf []byte) {
@@ -167,8 +195,8 @@ func (sm *ServiceManager) serviceRequest(buf []byte) {
 		return
 	}
 	addr := v.(string)
-	if entry, ok := sm.serviceMap[addr]; ok {
-		if err := entry.c.SendData(buf); err != nil {
+	if entry, ok := sm.serviceMap[addr]; ok && entry.connected {
+		if err := entry.cli.SendData(buf); err != nil {
 			logger.Warn("service request fail 3 at %s %s", entry.addr, err.Error())
 		} else {
 			logger.Debug("service request sent to %s", entry.addr)
@@ -186,8 +214,8 @@ func (sm *ServiceManager) entityMsg(buf []byte) {
 		return
 	}
 	addr := msg.Addr
-	if entry, ok := sm.serviceMap[addr]; ok {
-		if err := entry.c.SendData(buf); err != nil {
+	if entry, ok := sm.serviceMap[addr]; ok && entry.connected {
+		if err := entry.cli.SendData(buf); err != nil {
 			logger.Warn("entityMsg fail 2 at [%s] [%s]", addr, err.Error())
 		} else {
 			logger.Debug("entity msg sent to %s", addr)

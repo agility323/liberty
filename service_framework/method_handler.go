@@ -2,12 +2,14 @@ package service_framework
 
 import (
 	"github.com/vmihailenco/msgpack"
+
+	"github.com/agility323/liberty/lbtnet"
 )
 
 type MethodHandler interface {
 	GetRequest() interface{}
 	GetReply() interface{}
-	Process(string, string) error
+	Process(*lbtnet.TcpConnection, string) error
 }
 
 type methodHandlerCreator func() MethodHandler
@@ -18,7 +20,7 @@ type defaultMethodHandler struct {
 }
 func (h *defaultMethodHandler) GetRequest() interface{} {return &(h.request)}
 func (h *defaultMethodHandler) GetReply() interface{} {return &(h.reply)}
-func (h *defaultMethodHandler) Process(conAddr, srcAddr string) error {
+func (h *defaultMethodHandler) Process(c *lbtnet.TcpConnection, srcAddr string) error {
 	h.reply = h.request
 	return nil
 }
@@ -41,14 +43,14 @@ func getMethodHandlerCreator(method string) methodHandlerCreator {
 	return defaultMethodHandlerCreator
 }
 
-func processMethod(conAddr, srcAddr string, method string, params []byte) ([]byte, error) {
+func processMethod(c *lbtnet.TcpConnection, srcAddr string, method string, params []byte) ([]byte, error) {
 	mhc := getMethodHandlerCreator(method)
 	handler := mhc()
 	if err := msgpack.Unmarshal(params, handler.GetRequest()); err != nil {
 		return nil, err
 	}
 	logger.Debug("process method %s request %s", method, handler.GetRequest())
-	if err := handler.Process(conAddr, srcAddr); err != nil {
+	if err := handler.Process(c, srcAddr); err != nil {
 		return nil, err
 	}
 	reply := handler.GetReply()

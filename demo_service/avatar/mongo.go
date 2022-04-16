@@ -12,10 +12,6 @@ const (
 	DbNameGame = "gamedb"
 )
 
-const (
-	ColNameEntity = "entities"
-)
-
 var mongoClient *mongo.Client = nil
 
 func InitMongoClient(uri string) {

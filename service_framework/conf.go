@@ -1,21 +1,20 @@
 package service_framework
 
-type serviceConfType struct {
-	serviceType string
-	gateAddr string
+type ServiceConfType struct {
+	LogLevel string	`json:"log_level"`
+	ServiceType string	`json:"service_type"`
+	GateServerAddr string	`json:"gate_server_addr"`
+	Etcd []string	`json:"etcd"`
 }
 
-var serviceConf serviceConfType
+var serviceConf ServiceConfType
 
-func InitServiceConf(serviceType string, gateAddr string) {
-	serviceConf = serviceConfType{
-		serviceType: serviceType,
-		gateAddr: gateAddr,
-	}
+func GetServiceConf() *ServiceConfType {
+	return &serviceConf
 }
 
 func checkServiceConf() bool {
-	if serviceConf.serviceType == "" { return false }
-	if serviceConf.gateAddr == "" { return false }
+	if serviceConf.ServiceType == "" { return false }
+	if serviceConf.GateServerAddr == "" { return false }
 	return true
 }

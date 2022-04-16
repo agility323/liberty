@@ -9,6 +9,7 @@ import (
 
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtutil"
+	"github.com/agility323/liberty/lbtreg"
 )
 
 func init() {
@@ -24,16 +25,19 @@ func main() {
 	// log
 	lbtutil.SetLogLevel(Conf.LogLevel)
 
-	// service server
-	serviceServer := lbtnet.NewTcpServer(Conf.ServiceServerAddr, ServiceConnectionCreator)
-	logger.Info("create service server at %s", serviceServer.GetAddr())
-	serviceServer.Start()
-	serviceManager.start()
 	// client server
 	clientServer := lbtnet.NewTcpServer(Conf.ClientServerAddr, ClientConnectionCreator)
 	logger.Info("create client server at %s", clientServer.GetAddr())
 	clientServer.Start()
 	clientManager.start()
+
+	// service server (playing proxy role)
+	serviceManager.start()
+
+	// register
+	lbtreg.InitWithEtcd(Conf.Etcd)
+	go lbtreg.StartRegisterGate(31, make(chan bool), 101, Conf.ClientServerAddr)
+	go lbtreg.StartDiscoverService(31, make(chan bool), OnDiscoverService, 101)
 
 	// wait for stop
 	stopCh := make(chan os.Signal, 1)

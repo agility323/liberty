@@ -2,6 +2,8 @@ package main
 
 import (
 	sf "github.com/agility323/liberty/service_framework"
+
+	"github.com/agility323/liberty/lbtnet"
 )
 
 type ConnectServerRequest struct {
@@ -18,13 +20,11 @@ type connectServerHandler struct {
 func (h *connectServerHandler) GetRequest() interface{} {return &(h.request)}
 func (h *connectServerHandler) GetReply() interface{} {return nil}
 
-func (h *connectServerHandler) Process(conAddr, srcAddr string) error {
+func (h *connectServerHandler) Process(c *lbtnet.TcpConnection, srcAddr string) error {
 	logger.Debug("connect server %s", srcAddr)
-	// bind avatar
-	sf.SendBindClient(conAddr, srcAddr)
 	// create avatar
 	boost := sf.CreateEntity("BoostEntity").(*BoostEntity)
-	boost.Init(conAddr, srcAddr)
+	boost.Init(c, srcAddr)
 	boost.Start()
 	return nil
 }

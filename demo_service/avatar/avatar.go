@@ -6,6 +6,7 @@ import (
 	"time"
 
 	sf "github.com/agility323/liberty/service_framework"
+	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/demo_service/avatar/avatardata"
 
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -13,20 +14,22 @@ import (
 
 const AvatarType = "Avatar"
 
+const (
+	ColNameEntity = "entities"
+)
+
 func init() {
 	sf.RegisterEntityType(AvatarType, reflect.TypeOf((*Avatar)(nil)), AvatarRpcList)
 }
 
 type Avatar struct {
 	EC sf.EntityCore
-	conAddr string	// connection addr
-	srcAddr string	// client addr
+	stub *sf.RemoteEntityStub
 	data *avatardata.AvatarData
 }
 
-func (a *Avatar) Init(conAddr, srcAddr string, data *avatardata.AvatarData, isNew bool) {
-	a.conAddr = conAddr
-	a.srcAddr = srcAddr
+func (a *Avatar) Init(c *lbtnet.TcpConnection, srcAddr string, data *avatardata.AvatarData, isNew bool) {
+	a.stub = sf.NewRemoteEntityStub(&a.EC, c, srcAddr)
 	sf.RegisterClientCallback(srcAddr, a)
 
 	if data.Buildings == nil { data.Buildings = make(map[string]*avatardata.BuildingProp) }
@@ -46,10 +49,10 @@ func (a *Avatar) Start() {
 	logger.Debug("avatar start %s", a.EC.GetId().Hex())
 	data := map[string]interface{} {
 		"EC": a.EC.Dump(),
-		"addr": a.conAddr,
+		"addr": a.stub.GetC().LocalAddr(),
 		"data": a.data,
 	}
-	sf.SendCreateEntity(a.srcAddr, string(a.EC.GetId()), AvatarType, data)
+	a.stub.CreateEntity(data)
 	a.afterLogin()
 }
 
@@ -76,9 +79,9 @@ func (a *Avatar) afterLogin() {
 }
 
 func (a *Avatar) updateProp(k string, v interface{}) {
-	sf.SendEntityMsg(a.srcAddr, string(a.EC.GetId()), "CMD_update_prop", []interface{}{k, v, })
+	a.stub.EntityMsg("CMD_update_prop", []interface{}{k, v, })
 }
 
 func (a *Avatar) showReward(rewards [][]int) {
-	sf.SendEntityMsg(a.srcAddr, string(a.EC.GetId()), "CMD_show_reward", []interface{}{rewards, })
+	a.stub.EntityMsg("CMD_show_reward", []interface{}{rewards, })
 }

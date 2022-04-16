@@ -1,6 +1,14 @@
 {
-	"service_type": "avatar_service",
-	"gate_addr": "127.0.0.1:5009",
+	"service": {
+		"log_level": 1,
+		"service_type": "avatar_service",
+		"gate_server_addr": "10.1.71.45:5009",
+		"etcd": [
+			"http://10.1.71.45:2379",
+			"http://10.1.71.45:2479",
+			"http://10.1.71.45:2579"
+		]
+	},
 	"redis": {
 		"addrs": [
 			"10.1.71.45:6391",
