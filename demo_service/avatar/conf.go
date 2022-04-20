@@ -16,7 +16,6 @@ type mongoConfType struct {
 
 type confType struct {
 	Service *sf.ServiceConfType `json:"service"`
-	LogLevel int `json:"log_level"`
 	Redis redisConfType `json:"redis"`
 	Mongo mongoConfType `json:"mongo"`
 }

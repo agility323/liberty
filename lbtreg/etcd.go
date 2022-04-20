@@ -37,3 +37,7 @@ func CloseEtcdClient() error {
 func GenEtcdKey(dirs ...string) string {
 	return strings.Join(dirs, etcdDelimeter)
 }
+
+func SplitEtcdKey(key string, n int) []string {
+	return strings.SplitN(key, etcdDelimeter, n)
+}

@@ -6,6 +6,7 @@ import (
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtproto"
 	"github.com/agility323/liberty/lbtutil"
+	"github.com/agility323/liberty/lbtreg"
 )
 
 var serviceManager ServiceManager
@@ -83,13 +84,16 @@ func (sm *ServiceManager) workLoop() {
 }
 
 func (sm *ServiceManager) serviceDiscover(services map[string][]byte) {
-	for addr, _ := range services {
+	for service, _ := range services {
+		pair := lbtreg.SplitEtcdKey(service, 2)
+		typ := pair[0]
+		addr := pair[1]
 		entry, ok := sm.serviceMap[addr]
 		if !ok {
 			sm.serviceMap[addr] = &serviceEntry{
 				connected: false,
 				addr: addr,
-				typ: "",
+				typ: typ,
 				cli: lbtnet.NewTcpClient(addr, &ServiceConnectionHandler{}),
 			}
 			sm.serviceMap[addr].cli.StartConnect()
@@ -106,6 +110,10 @@ func (sm *ServiceManager) serviceConnect(c *lbtnet.TcpConnection) {
 	addr := c.RemoteAddr()
 	if entry, ok := sm.serviceMap[addr]; ok {
 		entry.connected = true
+		if _, ok = sm.serviceTypeToAddrSet[entry.typ]; !ok {
+			sm.serviceTypeToAddrSet[entry.typ] = lbtutil.NewOrderedSet()
+		}
+		sm.serviceTypeToAddrSet[entry.typ].Add(addr)
 	} else {
 		logger.Warn("service connected with no client %s", addr)
 		c.Close()
@@ -129,6 +137,7 @@ func (sm *ServiceManager) serviceRegister(info serviceEntry) {
 		logger.Warn("serviceRegister fail 1 - service not connected %v %v", entry, info)
 		return
 	}
+	/*
 	if entry.typ != "" {
 		logger.Warn("serviceRegister fail 2 - service existed %v %v", entry, info)
 		return
@@ -155,6 +164,7 @@ func (sm *ServiceManager) serviceRegister(info serviceEntry) {
 			}
 		}
 	}
+	*/
 	logger.Info("register service %s %s", typ, addr)
 	// reply
 	msg := &lbtproto.ServiceInfo{
@@ -178,7 +188,6 @@ func (sm *ServiceManager) clientDisconnect(info lbtproto.BindClientInfo) {
 }
 
 func (sm *ServiceManager) serviceRequest(buf []byte) {
-	// TODO: divide with type; route strategy; gate header + sendfile
 	msg := &lbtproto.ServiceRequest{}
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		logger.Warn("service request fail 1")
