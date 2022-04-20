@@ -32,7 +32,7 @@ func Start(cb func()) {
 		make(chan bool),
 		serviceConf.Host,
 		serviceConf.ServiceType,
-		serviceConf.GateServerAddr
+		serviceConf.GateServerAddr,
 	)
 
 	// wait for stop
