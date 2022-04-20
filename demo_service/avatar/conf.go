@@ -25,6 +25,7 @@ var Conf confType
 var defaultConf map[string]interface{} = map[string]interface{} {
 	"service": map[string]interface{} {
 		"log_level": lbtutil.Ldebug,
+		"host": 101,
 		"service_type": "avatar_service",
 		"gate_server_addr": "127.0.0.1:5001",
 		"etcd": []string {

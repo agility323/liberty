@@ -1,10 +1,11 @@
 package service_framework
 
 type ServiceConfType struct {
-	LogLevel string	`json:"log_level"`
-	ServiceType string	`json:"service_type"`
-	GateServerAddr string	`json:"gate_server_addr"`
-	Etcd []string	`json:"etcd"`
+	LogLevel int `json:"log_level"`
+	Host int `json:"host"`
+	ServiceType string `json:"service_type"`
+	GateServerAddr string `json:"gate_server_addr"`
+	Etcd []string `json:"etcd"`
 }
 
 var serviceConf ServiceConfType

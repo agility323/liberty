@@ -27,7 +27,13 @@ func Start(cb func()) {
 
 	// register
 	lbtreg.InitWithEtcd(serviceConf.Etcd)
-	go lbtreg.StartRegisterService(31, make(chan bool), 101, serviceConf.ServiceType, serviceConf.GateServerAddr)
+	go lbtreg.StartRegisterService(
+		31,
+		make(chan bool),
+		serviceConf.Host,
+		serviceConf.ServiceType,
+		serviceConf.GateServerAddr
+	)
 
 	// wait for stop
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
