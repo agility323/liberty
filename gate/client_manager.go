@@ -59,6 +59,8 @@ func (cm *ClientManager) workLoop() {
 			cm.clientDisconnect(job.jd.(*lbtnet.TcpConnection))
 		} else if job.op == "bind_client" {
 			cm.bindClient(job.jd.(lbtproto.BindClientInfo))
+		} else if job.op == "unbind_client" {
+			cm.unbindClient(job.jd.(lbtproto.BindClientInfo))
 		} else if job.op == "service_reply" {
 			cm.serviceReply(job.jd.([]byte))
 		} else if job.op == "create_entity" {
@@ -90,6 +92,13 @@ func (cm *ClientManager) bindClient(info lbtproto.BindClientInfo) {
 	entry, ok := cm.clientMap[info.Caddr]
 	if !ok { return }
 	entry.serviceAddr = info.Saddr
+}
+
+func (cm *ClientManager) unbindClient(info lbtproto.BindClientInfo) {
+	entry, ok := cm.clientMap[info.Caddr]
+	if !ok { return }
+	delete(cm.clientMap, info.Caddr)
+	entry.c.CloseWithoutCallback()
 }
 
 func (cm *ClientManager) serviceReply(buf []byte) {

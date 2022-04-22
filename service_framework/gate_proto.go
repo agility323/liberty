@@ -131,6 +131,14 @@ func SendBindClient(c *lbtnet.TcpConnection, saddr, caddr string) {
 	lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_bind_client, msg)
 }
 
+func SendUnbindClient(c *lbtnet.TcpConnection, saddr, caddr string) {
+	msg := &lbtproto.BindClientInfo{
+		Caddr: caddr,
+		Saddr: saddr,
+	}
+	lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_unbind_client, msg)
+}
+
 func SendCreateEntity(c *lbtnet.TcpConnection, addr, id, typ string, data interface{}) {
 	b, err := msgpack.Marshal(&data)
 	if err != nil {

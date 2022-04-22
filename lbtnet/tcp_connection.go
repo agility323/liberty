@@ -119,6 +119,12 @@ func (c *TcpConnection) writeLoop() {
 }
 
 func (c *TcpConnection) Close() {
+	if c.CloseWithoutCallback() {
+		c.handler.OnConnectionClose(c)
+	}
+}
+
+func (c *TcpConnection) CloseWithoutCallback() bool {
 	if atomic.CompareAndSwapInt32(&c.closed, 0, 1) {
 		logger.Info("tcp conn close %s", c.raddr)
 		_ = c.conn.Close()
@@ -128,12 +134,9 @@ func (c *TcpConnection) Close() {
 				logger.Error("tcp conn panic in close %v %v", c.conn, r)
 			}
 		}()
-		c.onClose()
+		return true
 	}
-}
-
-func (c *TcpConnection) onClose() {
-	c.handler.OnConnectionClose(c)
+	return false
 }
 
 func (c *TcpConnection) SendData(data []byte) error {

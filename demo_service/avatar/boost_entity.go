@@ -34,10 +34,10 @@ func (b *BoostEntity) Init(c *lbtnet.TcpConnection, srcAddr string) {
 
 func (b *BoostEntity) Start() {
 	logger.Debug("boost entity start %s", b.EC.GetId().Hex())
-	b.stub.BindProxy()	// bind client proxy
+	b.stub.Bind()	// bind client proxy
 	data := map[string]interface{} {
 		"EC": b.EC.Dump(),
-		"addr": b.stub.GetC().LocalAddr(),
+		"addr": b.stub.GetLocalAddr(),
 	}
 	b.stub.CreateEntity(data)
 }
@@ -53,7 +53,7 @@ func (b *BoostEntity) CMD_login_startlogin_cs(token string, sdkInfo map[string]i
 	b.stub.EntityMsg("CMD_show_msg_sc", args)
 	// login
 	key := RedisKey([]string{RedisKeyLogin, token})
-	val := b.stub.GetC().LocalAddr()
+	val := b.stub.GetLocalAddr()
 	res, err := redisClient.SetNX(key, val, 0).Result()
 	if err != nil || !res {
 	}
@@ -73,6 +73,6 @@ func (b *BoostEntity) CMD_login_startlogin_cs(token string, sdkInfo map[string]i
 
 	// create avatar
 	avatar := sf.CreateEntity("Avatar").(*Avatar)
-	avatar.Init(b.stub.GetC(), b.stub.GetRemoteAddr(), data, isNew)
+	avatar.Init(b.stub.Yield(&avatar.EC), data, isNew)
 	avatar.Start()
 }

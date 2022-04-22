@@ -31,7 +31,7 @@ func (h *createAvatarHandler) Process(c *lbtnet.TcpConnection, srcAddr string) e
 	logger.Debug("verify token %s %s", acc, token)
 	// create avatar
 	avatar := sf.CreateEntity("Avatar").(*Avatar)
-	avatar.Init(c, srcAddr, &avatardata.AvatarData{}, true)
+	avatar.Init(sf.NewRemoteEntityStub(&avatar.EC, c, srcAddr), &avatardata.AvatarData{}, true)
 	avatar.Start()
 	return nil
 }

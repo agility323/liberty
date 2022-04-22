@@ -38,6 +38,7 @@ type ServiceType struct {
 type ServiceGateType struct {
 	Method_register_service,
 	Method_bind_client,
+	Method_unbind_client,
 	Method_service_reply,
 	Method_create_entity,
 	Method_entity_msg uint16

@@ -16,6 +16,7 @@ message BindClientInfo {
 service IServiceGate {
 	rpc register_service(ServiceInfo) returns (Void);
 	rpc bind_client(BindClientInfo) returns (Void);
+	rpc unbind_client(BindClientInfo) returns (Void);
 	rpc service_reply(ServiceReply) returns (Void);
 	rpc create_entity(EntityData) returns (Void);
 	rpc entity_msg(EntityMsg) returns (Void);

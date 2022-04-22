@@ -16,6 +16,7 @@ func init() {
 func initServiceGateMethodHandler() {
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_register_service] = ServiceGate_register_service
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_bind_client] = ServiceGate_bind_client
+	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_unbind_client] = ServiceGate_unbind_client
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_service_reply] = ServiceGate_service_reply
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_create_entity] = ServiceGate_create_entity
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_entity_msg] = ServiceGate_entity_msg
@@ -56,6 +57,16 @@ func ServiceGate_bind_client(c *lbtnet.TcpConnection, buf []byte) error {
 		return err
 	}
 	postClientManagerJob("bind_client", *msg)
+	return nil
+}
+
+func ServiceGate_unbind_client(c *lbtnet.TcpConnection, buf []byte) error {
+	//logger.Debug("proto recv ServiceGate_unbind_client %v", buf)
+	msg := &lbtproto.BindClientInfo{}
+	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
+		return err
+	}
+	postClientManagerJob("unbind_client", *msg)
 	return nil
 }
 
