@@ -29,12 +29,11 @@ type BoostEntity struct {
 
 func (b *BoostEntity) Init(c *lbtnet.TcpConnection, srcAddr string) {
 	b.stub = sf.NewRemoteEntityStub(&b.EC, c, srcAddr)
-	sf.RegisterClientCallback(srcAddr, b)
 }
 
 func (b *BoostEntity) Start() {
 	logger.Debug("boost entity start %s", b.EC.GetId().Hex())
-	b.stub.Bind()	// bind client proxy
+	b.stub.Bind(b)	// bind client proxy
 	data := map[string]interface{} {
 		"EC": b.EC.Dump(),
 		"addr": b.stub.GetLocalAddr(),

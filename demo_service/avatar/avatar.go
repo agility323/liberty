@@ -29,7 +29,6 @@ type Avatar struct {
 
 func (a *Avatar) Init(stub *sf.RemoteEntityStub, data *avatardata.AvatarData, isNew bool) {
 	a.stub = stub
-	sf.RegisterClientCallback(a.stub.GetRemoteAddr(), a)
 
 	if data.Buildings == nil { data.Buildings = make(map[string]*avatardata.BuildingProp) }
 	if data.Interacts == nil { data.Interacts = avatardata.MakeInitInteractData() }
@@ -46,6 +45,7 @@ func (a *Avatar) Init(stub *sf.RemoteEntityStub, data *avatardata.AvatarData, is
 
 func (a *Avatar) Start() {
 	logger.Debug("avatar start %s", a.EC.GetId().Hex())
+	a.stub.Bind(a)
 	data := map[string]interface{} {
 		"EC": a.EC.Dump(),
 		"addr": a.stub.GetLocalAddr(),

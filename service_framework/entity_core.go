@@ -48,19 +48,21 @@ func (stub *RemoteEntityStub) GetRemoteAddr() string {
 	return stub.remoteAddr
 }
 
-func (stub *RemoteEntityStub) Bind() {
+func (stub *RemoteEntityStub) Bind(cb ClientCallback) {
 	SendBindClient(stub.c, stub.c.LocalAddr(), stub.remoteAddr)
+	registerClientCallback(stub.remoteAddr, cb)
 }
 
 func (stub *RemoteEntityStub) Switch(c *lbtnet.TcpConnection, remoteAddr string) {
 	SendUnbindClient(stub.c, stub.c.LocalAddr(), stub.remoteAddr)
+	unregisterClientCallback(stub.remoteAddr)
 	stub.c = c
 	stub.remoteAddr = remoteAddr
-	SendBindClient(c, c.LocalAddr(), remoteAddr)
 }
 
 func (stub *RemoteEntityStub) Yield(core *EntityCore) *RemoteEntityStub {
 	return &RemoteEntityStub{core: core, c: stub.c, remoteAddr: stub.remoteAddr}
+	
 }
 
 func (stub *RemoteEntityStub) CreateEntity(data interface{}) {

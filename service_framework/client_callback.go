@@ -6,6 +6,10 @@ type ClientCallback interface {
 
 var clientCallbackMap = make(map[string]ClientCallback)	// TODO: thread safe
 
-func RegisterClientCallback(caddr string, cb ClientCallback) {
-	clientCallbackMap[caddr] = cb	// TODO: handle overwrite
+func registerClientCallback(caddr string, cb ClientCallback) {
+	clientCallbackMap[caddr] = cb
+}
+
+func unregisterClientCallback(caddr string) {
+	delete(clientCallbackMap, caddr)
 }
