@@ -125,6 +125,7 @@ func (sm *ServiceManager) serviceDisconnect(c *lbtnet.TcpConnection) {
 	if entry, ok := sm.serviceMap[addr]; ok {
 		sm.serviceTypeToAddrSet[entry.typ].Remove(addr)
 		delete(sm.serviceMap, addr)
+		postClientManagerJob("service_disconnect", addr)
 	}
 }
 

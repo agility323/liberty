@@ -62,7 +62,6 @@ func (stub *RemoteEntityStub) Switch(c *lbtnet.TcpConnection, remoteAddr string)
 
 func (stub *RemoteEntityStub) Yield(core *EntityCore) *RemoteEntityStub {
 	return &RemoteEntityStub{core: core, c: stub.c, remoteAddr: stub.remoteAddr}
-	
 }
 
 func (stub *RemoteEntityStub) CreateEntity(data interface{}) {

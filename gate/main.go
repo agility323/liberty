@@ -36,8 +36,8 @@ func main() {
 
 	// register
 	lbtreg.InitWithEtcd(Conf.Etcd)
-	go lbtreg.StartRegisterGate(31, make(chan bool), Conf.Host, Conf.ClientServerAddr)
-	go lbtreg.StartDiscoverService(31, make(chan bool), OnDiscoverService, Conf.Host)
+	go lbtreg.StartRegisterGate(11, make(chan bool), Conf.Host, Conf.ClientServerAddr)
+	go lbtreg.StartDiscoverService(11, make(chan bool), OnDiscoverService, Conf.Host)
 
 	// wait for stop
 	stopCh := make(chan os.Signal, 1)

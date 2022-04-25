@@ -14,6 +14,7 @@ func init() {
 		started: 0,
 		jobCh: make(chan clientManagerJob, 20),
 		clientMap: make(map[string]*clientEntry),
+		boundClients: make(map[string]map[string]int),
 	}
 }
 
@@ -42,6 +43,7 @@ type ClientManager struct {
 	started int32
 	jobCh chan clientManagerJob
 	clientMap map[string]*clientEntry
+	boundClients map[string]map[string]int
 }
 
 func (cm *ClientManager) start() {
@@ -67,6 +69,8 @@ func (cm *ClientManager) workLoop() {
 			cm.createEntity(job.jd.([]byte))
 		} else if job.op == "entity_msg" {
 			cm.entityMsg(job.jd.([]byte))
+		} else if job.op == "service_disconnect" {
+			cm.serviceDisconnect(job.jd.(string))
 		} else {
 			logger.Warn("ClientManager unrecogonized op %s", job.op)
 		}
@@ -92,13 +96,25 @@ func (cm *ClientManager) bindClient(info lbtproto.BindClientInfo) {
 	entry, ok := cm.clientMap[info.Caddr]
 	if !ok { return }
 	entry.serviceAddr = info.Saddr
+	if _, ok := cm.boundClients[info.Saddr]; !ok {
+		cm.boundClients[info.Saddr] = make(map[string]int)
+	}
+	cm.boundClients[info.Saddr][info.Caddr] = 1
 }
 
 func (cm *ClientManager) unbindClient(info lbtproto.BindClientInfo) {
-	entry, ok := cm.clientMap[info.Caddr]
-	if !ok { return }
-	delete(cm.clientMap, info.Caddr)
-	entry.c.CloseWithoutCallback()
+	saddr := info.Saddr
+	if entry, ok := cm.clientMap[info.Caddr]; ok {
+		delete(cm.clientMap, info.Caddr)
+		entry.c.CloseWithoutCallback()
+		saddr = entry.serviceAddr
+	}
+	if m, ok := cm.boundClients[saddr]; ok {
+		delete(m, info.Caddr)
+		if len(m) == 0 {
+			delete(cm.boundClients, saddr)
+		}
+	}
 }
 
 func (cm *ClientManager) serviceReply(buf []byte) {
@@ -182,5 +198,17 @@ func (cm *ClientManager) entityMsg(buf []byte) {
 	if err := entry.c.SendData(newbuf); err != nil {
 		logger.Warn("entityMsg fail 4 [%s] [%s]", addr, err.Error())
 		return
+	}
+}
+
+func (cm *ClientManager) serviceDisconnect(saddr string) {
+	m, ok := cm.boundClients[saddr]
+	if !ok { return }
+	delete(cm.boundClients, saddr)
+	for caddr, _ := range m {
+		if entry, ok := cm.clientMap[caddr]; ok {
+			delete(cm.clientMap, caddr)
+			entry.c.CloseWithoutCallback()
+		}
 	}
 }

@@ -28,7 +28,7 @@ func Start(cb func()) {
 	// register
 	lbtreg.InitWithEtcd(serviceConf.Etcd)
 	go lbtreg.StartRegisterService(
-		31,
+		11,
 		make(chan bool),
 		serviceConf.Host,
 		serviceConf.ServiceType,
