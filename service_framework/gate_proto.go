@@ -75,11 +75,7 @@ func Service_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		return err
 	}
-	var params []interface{}	// only support array
-	if err := msgpack.Unmarshal(msg.Params, &params); err != nil {
-		return err
-	}
-	if err := CallEntityMethod(lbtutil.ObjectId(msg.Id), msg.Method, params); err != nil {
+	if err := CallEntityMethod(lbtutil.ObjectId(msg.Id), msg.Method, msg.Params); err != nil {
 		return err
 	}
 	return nil

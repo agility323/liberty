@@ -7,6 +7,8 @@ import (
 	"fmt"
 
 	"github.com/agility323/liberty/lbtutil"
+
+	"github.com/vmihailenco/msgpack"
 )
 
 var entities sync.Map
@@ -26,7 +28,7 @@ func GetEntity(id lbtutil.ObjectId) interface{} {
 	return nil
 }
 
-func CallEntityMethod(id lbtutil.ObjectId, method string, params []interface{}) error {
+func CallEntityMethod(id lbtutil.ObjectId, method string, paramBytes []byte) error {
 	// entity
 	entity := GetEntity(id)
 	if entity == nil {
@@ -40,27 +42,20 @@ func CallEntityMethod(id lbtutil.ObjectId, method string, params []interface{}) 
 	if !ok {
 		return errors.New(fmt.Sprintf("CallEntityMethod failed method not found %s %s %s", typ, id.Hex(), method))
 	}
-	// check params
-	if len(params) != len(rpc.pts) {
-		return errors.New(fmt.Sprintf("CallEntityMethod failed params mismatch 1 %s %s %s %d!=%d",
-			typ, id.Hex(), method, len(params), len(rpc.pts)))
+	// parameters
+	params := make([]interface{}, 0, len(rpc.pts))
+	for _, pt := range rpc.pts {
+		params = append(params, reflect.New(pt).Interface())
 	}
-	args := make([]reflect.Value, 1, len(params) + 1)
-	args[0] = v
-	for i, param := range params {
-		vp := reflect.ValueOf(param)
-		if vp.Type() != rpc.pts[i] {
-			// avoid int8-int problem
-			if vp.CanConvert(rpc.pts[i]) {
-				vp = vp.Convert(rpc.pts[i])
-			} else {
-				return errors.New(fmt.Sprintf("CallEntityMethod failed params mismatch 2 %s %s %s %v!=%v",
-					typ, id.Hex(), method, vp.Type(), rpc.pts[i]))
-			}
-		}
-		args = append(args, vp)
+	if err := msgpack.Unmarshal(paramBytes, &params); err != nil {
+		return err
 	}
 	// call
+	args := make([]reflect.Value, 1, len(params) + 1)
+	args[0] = v
+	for _, param := range params {
+		args = append(args, reflect.ValueOf(param).Elem())
+	}
 	_ = rpc.m.Func.Call(args)
 	return nil
 }
