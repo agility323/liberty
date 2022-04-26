@@ -67,6 +67,8 @@ func (sm *ServiceManager) workLoop() {
 			sm.serviceDiscover(job.jd.(map[string][]byte))
 		} else if job.op == "connect" {
 			sm.serviceConnect(job.jd.(*lbtnet.TcpConnection))
+		} else if job.op == "connect_fail" {
+			sm.serviceConnectFail(job.jd.(*lbtnet.TcpClient))
 		} else if job.op == "disconnect" {
 			sm.serviceDisconnect(job.jd.(*lbtnet.TcpConnection))
 		} else if job.op == "register" {
@@ -86,6 +88,7 @@ func (sm *ServiceManager) workLoop() {
 func (sm *ServiceManager) serviceDiscover(services map[string][]byte) {
 	for service, _ := range services {
 		pair := lbtreg.SplitEtcdKey(service, 2)
+		if len(pair) != 2 { continue }
 		typ := pair[0]
 		addr := pair[1]
 		entry, ok := sm.serviceMap[addr]
@@ -96,7 +99,8 @@ func (sm *ServiceManager) serviceDiscover(services map[string][]byte) {
 				typ: typ,
 				cli: lbtnet.NewTcpClient(addr, &ServiceConnectionHandler{}),
 			}
-			sm.serviceMap[addr].cli.StartConnect()
+			sm.serviceMap[addr].cli.SetReconnectTime(10)
+			sm.serviceMap[addr].cli.StartConnect(3)
 			continue
 		}
 		if !entry.connected {
@@ -117,6 +121,14 @@ func (sm *ServiceManager) serviceConnect(c *lbtnet.TcpConnection) {
 	} else {
 		logger.Warn("service connected with no client %s", addr)
 		c.Close()
+	}
+}
+
+func (sm *ServiceManager) serviceConnectFail(cli *lbtnet.TcpClient) {
+	addr := cli.RemoteAddr()
+	if entry, ok := sm.serviceMap[addr]; ok {
+		if entry.connected{ return }
+		delete(sm.serviceMap, addr)
 	}
 }
 

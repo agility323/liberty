@@ -28,3 +28,6 @@ func (handler *GateConnectionHandler) OnConnectionReady(c *lbtnet.TcpConnection)
 func (handler *GateConnectionHandler) OnConnectionClose(c *lbtnet.TcpConnection) {
 	postGateManagerJob("disconnect", c)
 }
+
+func (handler *GateConnectionHandler) OnConnectionFail(cli *lbtnet.TcpClient) {
+}

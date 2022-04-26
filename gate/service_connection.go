@@ -18,3 +18,7 @@ func (handler *ServiceConnectionHandler) OnConnectionReady(c *lbtnet.TcpConnecti
 func (handler *ServiceConnectionHandler) OnConnectionClose(c *lbtnet.TcpConnection) {
 	postServiceManagerJob("disconnect", c)
 }
+
+func (handler *ServiceConnectionHandler) OnConnectionFail(cli *lbtnet.TcpClient) {
+	postServiceManagerJob("connect_fail", cli)
+}

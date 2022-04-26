@@ -13,17 +13,13 @@ var logger lbtutil.Logger = lbtutil.NewLogger(strconv.Itoa(os.Getpid()), "lbtnet
 
 var byteOrder binary.ByteOrder = binary.LittleEndian
 
-type Connection interface {
-	Addr() string
-	Start()
-	Close()
-	SendData([]byte) error
-}
-
 type ConnectionHandler interface {
+	// connection only
 	HandleProto(*TcpConnection, []byte) error
-	OnConnectionReady(*TcpConnection)
 	OnConnectionClose(*TcpConnection)
+	// client only
+	OnConnectionReady(*TcpConnection)
+	OnConnectionFail(*TcpClient)
 }
 
 type ProtoHandlerType func(*TcpConnection, []byte) error

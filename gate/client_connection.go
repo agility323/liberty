@@ -32,6 +32,9 @@ func (handler *ClientConnectionHandler) OnConnectionClose(c *lbtnet.TcpConnectio
 	postClientManagerJob("disconnect", c)
 }
 
+func (handler *ClientConnectionHandler) OnConnectionFail(cli *lbtnet.TcpClient) {
+}
+
 func (handler *ClientConnectionHandler) generateSeed() int64 {
 	seed := rand.Int63()
 	handler.seed = seed

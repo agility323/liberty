@@ -29,7 +29,9 @@ func startRegisterJob(tickTime int, stopCh chan bool, etcdKey string) {
 	}()
 	// create lease
 	ctx, cancel := context.WithTimeout(etcdContext, 3 * time.Second)
-	resp, err := etcdClient.Grant(ctx, int64(tickTime + 5))
+	margin := tickTime / 5
+	if margin < 1 { margin = 1 }
+	resp, err := etcdClient.Grant(ctx, int64(tickTime + margin))
 	cancel()
 	if err != nil {
 		logger.Warn("register job failed: etcd grant %s", etcdKey)
