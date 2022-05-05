@@ -124,4 +124,23 @@ func lp_sendConnectServerResp(c *lbtnet.TcpConnection, typ lbtproto.ConnectServe
 		logger.Error("lp_sendConnectServerResp failed: SendMessage - %s", err.Error())
 	}
 }
+
+func lp_sendEntityMessage(c *lbtnet.TcpConnection, entityid []byte, method []byte, parameters []byte) {
+	msg := &lbtproto.EntityMessage{
+		EntityId: entityid,
+		MethodName: method,
+		Index: 0,
+		Parameters: parameters,
+		SessionId: []byte {},
+		Context: []byte {},
+	}
+	err := lbtproto.SendMessage(
+		c,
+		lbtproto.Client.Method_entityMessage,
+		msg,
+	)
+	if err != nil {
+		logger.Error("lp_sendEntityMessage failed: SendMessage - %s", err.Error())
+	}
+}
 /********** ProtoSender End **********/

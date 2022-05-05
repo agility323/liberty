@@ -129,10 +129,7 @@ func (cm *ClientManager) serviceReply(buf []byte) {
 		logger.Warn("service reply fail 2 %s", addr)
 		return
 	}
-	if err := entry.c.SendData(buf); err != nil {
-		logger.Warn("service reply fail 3 [%s] [%s]", addr, err.Error())
-		return
-	}
+	sendServiceReply(entry.c, msg.Reqid, msg.Reply)
 }
 
 func (cm *ClientManager) createEntity(buf []byte) {
@@ -179,26 +176,7 @@ func (cm *ClientManager) entityMsg(buf []byte) {
 		logger.Warn("entityMsg fail 2 %s", addr)
 		return
 	}
-	newmsg := &lbtproto.EntityMessage{
-		EntityId: []byte(msg.Id),
-		MethodName: []byte(msg.Method),
-		Index: 0,
-		Parameters: msg.Params,
-		SessionId: []byte{},
-		Context: []byte{},
-	}
-	newbuf, err := lbtproto.EncodeMessage(
-			lbtproto.Client.Method_entityMessage,
-			newmsg,
-		)
-	if err != nil {
-		logger.Warn("entityMsg fail 3 [%s] [%s]", addr, err.Error())
-		return
-	}
-	if err := entry.c.SendData(newbuf); err != nil {
-		logger.Warn("entityMsg fail 4 [%s] [%s]", addr, err.Error())
-		return
-	}
+	sendEntityMsg(entry.c, msg.Id, msg.Method, msg.Params)
 }
 
 func (cm *ClientManager) serviceDisconnect(saddr string) {
