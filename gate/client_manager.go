@@ -46,6 +46,13 @@ type ClientManager struct {
 	boundClients map[string]map[string]int
 }
 
+func (cm *ClientManager) getServiceAddr(caddr string) string {
+	if entry, ok := cm.clientMap[caddr]; ok {
+		return entry.serviceAddr
+	}
+	return ""
+}
+
 func (cm *ClientManager) start() {
 	if atomic.CompareAndSwapInt32(&cm.started, 0, 1) {
 		logger.Info("client manager start ...")

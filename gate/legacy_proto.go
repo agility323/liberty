@@ -82,7 +82,7 @@ func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 		if err != nil {
 			return err
 		}
-		postServiceManagerJob("entity_msg", newbuf)
+		postServiceManagerJob("entity_msg", []interface{} {c.RemoteAddr(), newbuf})
 	} else if msgType == "service" {
 		newmsg := &lbtproto.ServiceRequest{
 			Addr: c.RemoteAddr(),

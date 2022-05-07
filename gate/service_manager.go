@@ -78,7 +78,8 @@ func (sm *ServiceManager) workLoop() {
 		} else if job.op == "service_request" {
 			sm.serviceRequest(job.jd.([]byte))
 		} else if job.op == "entity_msg" {
-			sm.entityMsg(job.jd.([]byte))
+			args := job.jd.([]interface{})
+			sm.entityMsg(args[0].(string), args[1].([]byte))
 		} else {
 			logger.Warn("ServiceManager unrecogonized op %s", job.op)
 		}
@@ -229,21 +230,25 @@ func (sm *ServiceManager) serviceRequest(buf []byte) {
 	}
 }
 
-func (sm *ServiceManager) entityMsg(buf []byte) {
+func (sm *ServiceManager) entityMsg(caddr string, buf []byte) {
 	msg := &lbtproto.EntityMsg{}
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
-		logger.Warn("entityMsg fail 1")
+		logger.Warn("entityMsg fail 1 %s", caddr)
 		return
 	}
-	addr := msg.Addr
-	if entry, ok := sm.serviceMap[addr]; ok && entry.connected {
+	saddr := clientManager.getServiceAddr(caddr)
+	if saddr == "" {
+		logger.Warn("entityMsg fail 2 %s", caddr)
+		return
+	}
+	if entry, ok := sm.serviceMap[saddr]; ok && entry.connected {
 		if err := entry.cli.SendData(buf); err != nil {
-			logger.Warn("entityMsg fail 2 at [%s] [%s]", addr, err.Error())
+			logger.Warn("entityMsg fail 3 %s-%s [%s]", caddr, saddr, err.Error())
 		} else {
-			logger.Debug("entity msg sent to %s", addr)
+			logger.Debug("entity msg sent %s-%s", caddr, saddr)
 			return
 		}
 	} else {
-		logger.Warn("entityMsg fail 3 at [%s]", addr)
+		logger.Warn("entityMsg fail 4 %s-%s", caddr, saddr)
 	}
 }

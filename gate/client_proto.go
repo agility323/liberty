@@ -41,7 +41,7 @@ func ClientGate_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 
 func ClientGate_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 	//logger.Debug("proto recv ClientGate_entity_msg %v", buf)
-	postServiceManagerJob("entity_msg", buf)
+	postServiceManagerJob("entity_msg", []interface{} {c.RemoteAddr(), buf})
 	return nil
 }
 /********** ProtoHandler End **********/
