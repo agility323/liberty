@@ -20,12 +20,14 @@ message ServiceRequest {
 	string type = 3;
 	string method = 4;
 	bytes params = 5;
+	bytes context = 6;
 }
 
 message ServiceReply {
 	string addr = 1;
 	string reqid = 2;
 	bytes reply = 3;
+	bytes context = 4;
 }
 
 

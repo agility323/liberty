@@ -7,15 +7,20 @@ import (
 	sf "github.com/agility323/liberty/service_framework"
 )
 
-var defaultConfData map[string]interface{} = map[string]interface{} {
-	"service_type": "login_service",
-}
+var logger = sf.Logger
 
 func main() {
+	// conf
+	Conf.Service = sf.GetServiceConf()
 	lbtutil.LoadConfFromCmdLine(defaultConf, os.Args[1:], &Conf)
-	sf.ServiceType = Conf.ServiceType
 
+	// method
+	sf.RegisterMethodHandlerCreator("connect_server", func() sf.MethodHandler {return new(connectServerHandler)})
 	sf.RegisterMethodHandlerCreator("login", func() sf.MethodHandler {return new(loginHandler)})
 
-	sf.Start()
+	// start
+	sf.Start(OnShutdown)
+}
+
+func OnShutdown() {
 }

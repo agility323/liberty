@@ -136,7 +136,7 @@ func (cm *ClientManager) serviceReply(buf []byte) {
 		logger.Warn("service reply fail 2 %s", addr)
 		return
 	}
-	sendServiceReply(entry.c, msg.Reqid, msg.Reply)
+	sendServiceReply(entry.c, msg.Reqid, msg.Reply, msg.Context)
 }
 
 func (cm *ClientManager) createEntity(buf []byte) {

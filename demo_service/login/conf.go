@@ -1,17 +1,13 @@
 package main
 
 import (
-	"github.com/agility323/liberty/lbtutil"
+	sf "github.com/agility323/liberty/service_framework"
 )
 
 type confType struct {
-	ServiceType string `json:"service_type"`
-	LogLevel int `json:"log_level"`
+	Service *sf.ServiceConfType `json:"service"`
 }
 
 var Conf confType
 
-var defaultConf map[string]interface{} = map[string]interface{} {
-	"service_type": "login_service",
-	"log_level": lbtutil.Ldebug,
-}
+var defaultConf = map[string]interface{} {}

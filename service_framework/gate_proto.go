@@ -60,12 +60,12 @@ func Service_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, request); err != nil {
 		return err
 	}
-	replyData, err := processMethod(c, request.Addr, request.Method, request.Params)
+	replyData, err := processMethod(c, request.Addr, request.Reqid, request.Method, request.Params)
 	if err != nil {
 		return err
 	}
 	if replyData == nil { return nil }
-	sendServiceReply(c, request.Addr, request.Reqid, replyData)
+	sendServiceReply(c, request.Addr, request.Reqid, replyData, request.Context)
 	return nil
 }
 
@@ -102,18 +102,15 @@ func sendRegisterService(c *lbtnet.TcpConnection) {
 	)
 }
 
-func sendServiceReply(c *lbtnet.TcpConnection,addr, reqid string, data []byte) {
+func sendServiceReply(c *lbtnet.TcpConnection, addr, reqid string, data, context []byte) {
 	logger.Debug("sendServiceReply %s %s %v", addr, lbtutil.ObjectId(reqid).Hex(), data)
 	reply := &lbtproto.ServiceReply{
 		Addr: addr,
 		Reqid: reqid,
 		Reply: data,
+		Context: context,
 	}
-	err := lbtproto.SendMessage(
-		c,
-		lbtproto.ServiceGate.Method_service_reply,
-		reply,
-	)
+	err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_service_reply, reply)
 	if err != nil {
 		logger.Error("sendServiceReply failed: SendMessage - %s", err.Error())
 	}

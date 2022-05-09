@@ -22,7 +22,7 @@ type confType struct {
 
 var Conf confType
 
-var defaultConf map[string]interface{} = map[string]interface{} {
+var defaultConf = map[string]interface{} {
 	"service": map[string]interface{} {
 		"log_level": lbtutil.Ldebug,
 		"host": 101,

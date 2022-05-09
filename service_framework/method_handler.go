@@ -43,7 +43,7 @@ func getMethodHandlerCreator(method string) methodHandlerCreator {
 	return defaultMethodHandlerCreator
 }
 
-func processMethod(c *lbtnet.TcpConnection, srcAddr string, method string, params []byte) ([]byte, error) {
+func processMethod(c *lbtnet.TcpConnection, srcAddr, reqid, method string, params []byte) ([]byte, error) {
 	mhc := getMethodHandlerCreator(method)
 	handler := mhc()
 	if err := msgpack.Unmarshal(params, handler.GetRequest()); err != nil {
@@ -58,7 +58,7 @@ func processMethod(c *lbtnet.TcpConnection, srcAddr string, method string, param
 	if reply == nil {
 		return nil, nil
 	}
-	replyData, err := msgpack.Marshal(reply)
+	replyData, err := msgpack.Marshal([]interface{} {reqid, reply})
 	if err != nil {
 		return nil, err
 	}

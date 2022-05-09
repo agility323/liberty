@@ -71,7 +71,7 @@ func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 	if msgType == "entity" {
 		newmsg := &lbtproto.EntityMsg{
 			Addr: addrOrType,
-			Id: id,
+			Id: string(msg.EntityId),
 			Method: string(msg.MethodName),
 			Params: msg.Parameters,
 		}
@@ -86,10 +86,11 @@ func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 	} else if msgType == "service" {
 		newmsg := &lbtproto.ServiceRequest{
 			Addr: c.RemoteAddr(),
-			Reqid: string(lbtutil.NewObjectId()),
+			Reqid: id,
 			Type: addrOrType,
 			Method: string(msg.MethodName),
 			Params: msg.Parameters,
+			Context: msg.EntityId,
 		}
 		data, err := lbtproto.EncodeMessage(
 				lbtproto.Service.Method_service_request,
