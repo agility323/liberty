@@ -71,7 +71,7 @@ func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 	if msgType == "entity" {
 		newmsg := &lbtproto.EntityMsg{
 			Addr: addrOrType,
-			Id: string(msg.EntityId),
+			Id: id,	// msg.EntityId from client is empty string (client use SessionId)
 			Method: string(msg.MethodName),
 			Params: msg.Parameters,
 		}

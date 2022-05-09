@@ -100,8 +100,6 @@ func (c *TcpConnection) readLoop() {
 		err = c.handler.HandleProto(c, data)
 		if err != nil {
 			logger.Warn("tcp conn %s proto fail %s", c.raddr, err.Error())
-			c.Close()
-			return
 		}
 	}
 }
