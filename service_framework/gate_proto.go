@@ -65,7 +65,7 @@ func Service_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 		return err
 	}
 	if replyData == nil { return nil }
-	sendServiceReply(c, request.Addr, request.Reqid, replyData, request.Context)
+	sendServiceReply(c, request.Addr, request.Reqid, replyData)
 	return nil
 }
 
@@ -102,13 +102,12 @@ func sendRegisterService(c *lbtnet.TcpConnection) {
 	)
 }
 
-func sendServiceReply(c *lbtnet.TcpConnection, addr, reqid string, data, context []byte) {
+func sendServiceReply(c *lbtnet.TcpConnection, addr, reqid string, data []byte) {
 	logger.Debug("sendServiceReply %s %s %v", addr, lbtutil.ObjectId(reqid).Hex(), data)
 	reply := &lbtproto.ServiceReply{
 		Addr: addr,
 		Reqid: reqid,
 		Reply: data,
-		Context: context,
 	}
 	err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_service_reply, reply)
 	if err != nil {

@@ -90,7 +90,6 @@ func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 			Type: addrOrType,
 			Method: string(msg.MethodName),
 			Params: msg.Parameters,
-			Context: msg.EntityId,
 		}
 		data, err := lbtproto.EncodeMessage(
 				lbtproto.Service.Method_service_request,
@@ -127,6 +126,7 @@ func lp_sendConnectServerResp(c *lbtnet.TcpConnection, typ lbtproto.ConnectServe
 }
 
 func lp_sendEntityMessage(c *lbtnet.TcpConnection, entityid []byte, method []byte, parameters []byte) {
+	logger.Debug("lp_sendEntityMessage start: entityid=%v", string(entityid))
 	msg := &lbtproto.EntityMessage{
 		EntityId: entityid,
 		MethodName: method,
