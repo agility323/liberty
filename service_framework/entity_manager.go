@@ -11,6 +11,7 @@ import (
 	"github.com/agility323/liberty/lbtutil"
 
 	"github.com/vmihailenco/msgpack"
+	"github.com/vmihailenco/msgpack/codes"
 )
 
 var entities sync.Map
@@ -47,22 +48,26 @@ func CallEntityMethod(id lbtutil.ObjectId, method string, paramBytes []byte) err
 	// parameters
 	params := make([]reflect.Value, 1, len(rpc.pts) + 1)
 	params[0] = v
-	ptrs := make([]interface{}, 0, len(rpc.pts))
 	for _, pt := range rpc.pts {
 		ptrVal := reflect.New(pt)
 		params = append(params, ptrVal.Elem())
-		ptrs = append(ptrs, ptrVal.Interface())
 	}
 	rawArray := lbtutil.MsgpackRawArray(paramBytes)
 	decoder := msgpack.NewDecoder(bytes.NewBuffer(rawArray.Body()))
-	for i, ptr := range ptrs {
-		err := decoder.Decode(ptr)
+	for i := 1; i < len(params); i++ {
+		param := params[i]
+		c, pcerr := decoder.PeekCode()
+		err := decoder.DecodeValue(param)
 		if err == io.EOF {
 			logger.Warn(fmt.Sprintf("CallEntityMethod insufficient params: %s %s %s %d %d",
-				typ, id.Hex(), method, len(ptrs), i))
+				typ, id.Hex(), method, len(params) - 1, i - 1))
 			break
 		}
 		if err != nil {
+			if param.Kind() == reflect.Map && pcerr == nil && c == codes.FixedArrayLow {
+				// lua empty table is encoded as array
+				continue
+			}
 			return errors.New(fmt.Sprintf("CallEntityMethod fail: msgpack decode fail [%v] %s %v %v",
 				err, method, paramBytes, rawArray.Body()))
 		}
