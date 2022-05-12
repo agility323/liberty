@@ -5,6 +5,8 @@ import (
 	"errors"
 	"reflect"
 	"fmt"
+	"bytes"
+	"io"
 
 	"github.com/agility323/liberty/lbtutil"
 
@@ -32,7 +34,7 @@ func CallEntityMethod(id lbtutil.ObjectId, method string, paramBytes []byte) err
 	// entity
 	entity := GetEntity(id)
 	if entity == nil {
-		return errors.New(fmt.Sprintf("CallEntityMethod failed entity not found %s", id.Hex()))
+		return errors.New(fmt.Sprintf("CallEntityMethod fail: entity not found %s", id.Hex()))
 	}
 	// rpc method
 	v := reflect.ValueOf(entity)
@@ -40,22 +42,32 @@ func CallEntityMethod(id lbtutil.ObjectId, method string, paramBytes []byte) err
 	typ := pec.GetType()
 	rpc, ok := entityRpcMap[typ][method]
 	if !ok {
-		return errors.New(fmt.Sprintf("CallEntityMethod failed method not found %s %s %s", typ, id.Hex(), method))
+		return errors.New(fmt.Sprintf("CallEntityMethod fail: method not found %s %s %s", typ, id.Hex(), method))
 	}
 	// parameters
-	params := make([]interface{}, 0, len(rpc.pts))
+	params := make([]reflect.Value, 1, len(rpc.pts) + 1)
+	params[0] = v
+	ptrs := make([]interface{}, 0, len(rpc.pts))
 	for _, pt := range rpc.pts {
-		params = append(params, reflect.New(pt).Interface())
+		ptrVal := reflect.New(pt)
+		params = append(params, ptrVal.Elem())
+		ptrs = append(ptrs, ptrVal.Interface())
 	}
-	if err := msgpack.Unmarshal(paramBytes, &params); err != nil {
-		return err
+	rawArray := lbtutil.MsgpackRawArray(paramBytes)
+	decoder := msgpack.NewDecoder(bytes.NewBuffer(rawArray.Body()))
+	for i, ptr := range ptrs {
+		err := decoder.Decode(ptr)
+		if err == io.EOF {
+			logger.Warn(fmt.Sprintf("CallEntityMethod insufficient params: %s %s %s %d %d",
+				typ, id.Hex(), method, len(ptrs), i))
+			break
+		}
+		if err != nil {
+			return errors.New(fmt.Sprintf("CallEntityMethod fail: msgpack decode fail [%v] %s %v %v",
+				err, method, paramBytes, rawArray.Body()))
+		}
 	}
 	// call
-	args := make([]reflect.Value, 1, len(params) + 1)
-	args[0] = v
-	for _, param := range params {
-		args = append(args, reflect.ValueOf(param).Elem())
-	}
-	_ = rpc.m.Func.Call(args)
+	_ = rpc.m.Func.Call(params)
 	return nil
 }

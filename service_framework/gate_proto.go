@@ -156,7 +156,7 @@ func SendEntityMsg(c *lbtnet.TcpConnection, addr, id, method string, params inte
 		logger.Error("SendEntityMsg failed 1 %s", err.Error())
 		return
 	}
-	logger.Debug("SendEntityMsg %s %s %v %v", addr, lbtutil.ObjectId(id).Hex(), params, b)
+	logger.Debug("SendEntityMsg %s %s %s %v", addr, lbtutil.ObjectId(id).Hex(), method, params)
 	msg := &lbtproto.EntityMsg{
 		Addr: addr,
 		Id: id,
