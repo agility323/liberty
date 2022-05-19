@@ -26,6 +26,7 @@ fi
 cat << EOF > config.json
 {
 	"log_level": $LOG_LEVEL,
+	"host": $HOST,
 	"client_server_addr": "$CLIENT_SERVER_ADDR",
 	"connect_server_handler": $CONNECT_SERVER_HANDLER,
 	"etcd": $ETCD
