@@ -14,11 +14,18 @@ if [ "$CLIENT_SERVER_ADDR" = "" ]; then
 	echo "env CLIENT_SERVER_ADDR is null, set to $CLIENT_SERVER_ADDR"
 fi
 if [ "$CONNECT_SERVER_HANDLER" = "" ]; then
-	CONNECT_SERVER_HANDLER="{\"service\": \"login_service\", \"method\": \"connect_server\"}"
+	CONNECT_SERVER_HANDLER="{
+		\"service\": \"login_service\",
+		\"method\": \"connect_server\"
+	}"
 	echo "env CONNECT_SERVER_HANDLER is null, set to $CONNECT_SERVER_HANDLER"
 fi
 if [ "$ETCD" = "" ]; then
-	ETCD="[\"http://127.0.0.1:2379\", \"http://127.0.0.1:2479\", \"http://127.0.0.1:2579\"]"
+	ETCD="[
+		\"http://127.0.0.1:2379\",
+		\"http://127.0.0.1:2479\",
+		\"http://127.0.0.1:2579\"
+	]"
 	echo "env ETCD is null, set to $ETCD"
 fi
 

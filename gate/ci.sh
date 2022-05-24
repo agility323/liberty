@@ -18,7 +18,7 @@ IMAGE=${DOCKER_REGISTRY}/$DOCKER_REPO:$TAG
 
 docker login -u "xxx" -p "123" $DOCKER_REGISTRY
 
-echo "docker rmi $IMAGE"
+echo "$ docker rmi $IMAGE"
 docker rmi $IMAGE
 echo "$ docker build -t $APP:$TAG -f ./Dockerfile -t $IMAGE ."
 docker build -t $APP:$TAG -f ./Dockerfile -t $IMAGE .
