@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"fmt"
 
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtutil"
@@ -26,8 +27,14 @@ func main() {
 	lbtutil.SetLogLevel(Conf.LogLevel)
 
 	// client server
-	clientServer := lbtnet.NewTcpServer(Conf.ClientServerAddr, ClientConnectionCreator)
-	logger.Info("create client server at %s", clientServer.GetAddr())
+	listenAddr := Conf.ClientServerAddr
+	if listenAddr[0] == ':' {
+		if localip, err := lbtutil.GetLocalIP(); err != nil {
+			panic(fmt.Sprintf("get local ip fail: %v", err))
+		} else { listenAddr = localip + listenAddr }
+	}
+	clientServer := lbtnet.NewTcpServer(listenAddr, ClientConnectionCreator)
+	logger.Info("create client server at %s entrance is %s", clientServer.GetAddr(), Conf.EntranceAddr)
 	clientServer.Start()
 	clientManager.start()
 
@@ -36,7 +43,10 @@ func main() {
 
 	// register
 	lbtreg.InitWithEtcd(Conf.Etcd)
-	go lbtreg.StartRegisterGate(11, make(chan bool), Conf.Host, Conf.ClientServerAddr)
+	// usually, gate exposes its addr directly to clients, so the entrance addr should be unique
+	// otherwise, such as there are proxies between gates and clients, the entrance varies
+	// so here we use listen addr as unique addr
+	go lbtreg.StartRegisterGate(11, make(chan bool), Conf.Host, listenAddr)
 	go lbtreg.StartDiscoverService(11, make(chan bool), OnDiscoverService, Conf.Host)
 
 	// wait for stop
