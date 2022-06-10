@@ -82,7 +82,10 @@ func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 		if err != nil {
 			return err
 		}
-		postServiceManagerJob("entity_msg", []interface{} {c.RemoteAddr(), newbuf})
+		caddr := c.RemoteAddr()
+		saddr := clientManager.getServiceAddr(caddr)   // TODO: concurrent issue
+		if saddr == "" { return errors.New("no saddr for " + caddr) }
+		postServiceManagerJob("entity_msg", []interface{} {saddr, newbuf})
 	} else if msgType == "service" {
 		newmsg := &lbtproto.ServiceRequest{
 			Addr: c.RemoteAddr(),

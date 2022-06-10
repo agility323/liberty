@@ -230,25 +230,15 @@ func (sm *ServiceManager) serviceRequest(buf []byte) {
 	}
 }
 
-func (sm *ServiceManager) entityMsg(caddr string, buf []byte) {
-	msg := &lbtproto.EntityMsg{}
-	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
-		logger.Warn("entity msg fail 1 %s", caddr)
+func (sm *ServiceManager) entityMsg(saddr string, buf []byte) {
+	entry, ok := sm.serviceMap[saddr]
+	if !(ok && entry.connected) {
+		logger.Warn("entity msg fail 1 %s", saddr)
 		return
 	}
-	saddr := clientManager.getServiceAddr(caddr)
-	if saddr == "" {
-		logger.Warn("entity msg fail 2 %s", caddr)
-		return
-	}
-	if entry, ok := sm.serviceMap[saddr]; ok && entry.connected {
-		if err := entry.cli.SendData(buf); err != nil {
-			logger.Warn("entity msg fail 3 %s-%s [%s]", caddr, saddr, err.Error())
-		} else {
-			logger.Debug("entity msg sent %s-%s", caddr, saddr)
-			return
-		}
+	if err := entry.cli.SendData(buf); err != nil {
+		logger.Warn("entity msg fail 2 %s [%s]", saddr, err.Error())
 	} else {
-		logger.Warn("entity msg fail 4 %s-%s", caddr, saddr)
+		logger.Debug("entity msg sent %s", saddr)
 	}
 }

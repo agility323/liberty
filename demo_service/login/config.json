@@ -3,7 +3,7 @@
 		"log_level": 1,
 		"host": 109,
 		"service_type": "login_service",
-		"gate_server_addr": "10.1.71.45:5019",
+		"gate_server_addr": ":5019",
 		"etcd": [
 			"http://10.1.71.45:2379",
 			"http://10.1.71.45:2479",

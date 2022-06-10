@@ -68,6 +68,6 @@ func (stub *RemoteEntityStub) CreateEntity(data interface{}) {
 	SendCreateEntity(stub.c, stub.remoteAddr, string(stub.core.GetId()), stub.core.GetType(), data)
 }
 
-func (stub *RemoteEntityStub) EntityMsg(method string, params interface{}) {
-	SendEntityMsg(stub.c, stub.remoteAddr, string(stub.core.GetId()), method, params)
+func (stub *RemoteEntityStub) CallClientMethod(method string, params interface{}) {
+	SendClientEntityMsg(stub.c, stub.remoteAddr, string(stub.core.GetId()), method, params)
 }

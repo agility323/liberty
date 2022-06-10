@@ -20,6 +20,7 @@ func initServiceGateMethodHandler() {
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_service_reply] = ServiceGate_service_reply
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_create_entity] = ServiceGate_create_entity
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_entity_msg] = ServiceGate_entity_msg
+	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_client_entity_msg] = ServiceGate_client_entity_msg
 }
 
 func processServiceProto(c *lbtnet.TcpConnection, buf []byte) error {
@@ -84,6 +85,16 @@ func ServiceGate_create_entity(c *lbtnet.TcpConnection, buf []byte) error {
 
 func ServiceGate_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 	//logger.Debug("proto recv ServiceGate_entity_msg %v", buf)
-	postClientManagerJob("entity_msg", buf)
+	msg := &lbtproto.EntityMsg{}
+	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
+		logger.Warn("ServiceGate_entity_msg fail 1 %s", c.RemoteAddr())
+		return nil
+	}
+	postServiceManagerJob("entity_msg", []interface{} {msg.Addr, buf})
+	return nil
+}
+
+func ServiceGate_client_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
+	postClientManagerJob("client_entity_msg", buf)
 	return nil
 }

@@ -2,8 +2,10 @@ package service_framework
 
 import (
 	"sync/atomic"
+	"math/rand"
 
 	"github.com/agility323/liberty/lbtnet"
+	"github.com/agility323/liberty/lbtproto"
 )
 
 var gateManager GateManager
@@ -45,12 +47,18 @@ func (gm *GateManager) start() {
 	}
 }
 
+func (gm *GateManager) stop() {
+	//TODO.Stop()
+}
+
 func (gm *GateManager) workLoop() {
 	for job := range gm.jobCh {
 		if job.op == "connect" {
 			gm.gateConnect(job.jd.(*lbtnet.TcpConnection))
 		} else if job.op == "disconnect" {
 			gm.gateDisconnect(job.jd.(*lbtnet.TcpConnection))
+		} else if job.op == "entity_msg" {
+			gm.entityMsg(job.jd.(*lbtproto.EntityMsg))
 		} else {
 			logger.Warn("GateManager unrecogonized op %s", job.op)
 		}
@@ -68,6 +76,14 @@ func (gm *GateManager) gateDisconnect(c *lbtnet.TcpConnection) {
 	delete(gm.gateMap, addr)
 }
 
-func (gm *GateManager) stop() {
-	//TODO.Stop()
+func (gm *GateManager) entityMsg(msg *lbtproto.EntityMsg) {
+	n := rand.Intn(len(gm.gateMap))
+	for _, c := range gm.gateMap {
+		if n--; n >= 0 { continue }
+		if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_entity_msg, msg); err != nil {
+			logger.Error("entityMsg failed 1 %s", err.Error())
+		}
+		return
+	}
+	logger.Error("entityMsg failed 2 no gate connection")
 }

@@ -20,6 +20,7 @@ service IServiceGate {
 	rpc service_reply(ServiceReply) returns (Void);
 	rpc create_entity(EntityData) returns (Void);
 	rpc entity_msg(EntityMsg) returns (Void);
+	rpc client_entity_msg(EntityMsg) returns (Void);
 }
 
 // gate-service rpc

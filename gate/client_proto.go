@@ -41,7 +41,10 @@ func ClientGate_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 
 func ClientGate_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 	//logger.Debug("proto recv ClientGate_entity_msg %v", buf)
-	postServiceManagerJob("entity_msg", []interface{} {c.RemoteAddr(), buf})
+	caddr := c.RemoteAddr()
+	saddr := clientManager.getServiceAddr(caddr)	// TODO: concurrent issue
+	if saddr == "" { return errors.New("no saddr for " + caddr) }
+	postServiceManagerJob("entity_msg", []interface{} {saddr, buf})
 	return nil
 }
 /********** ProtoHandler End **********/

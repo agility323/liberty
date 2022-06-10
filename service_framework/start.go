@@ -4,8 +4,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"fmt"
 
 	"github.com/agility323/liberty/lbtnet"
+	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtreg"
 )
 
@@ -20,7 +22,13 @@ func Start(cb func()) {
 	}
 
 	// gate server
-	gateServer := lbtnet.NewTcpServer(serviceConf.GateServerAddr, GateConnectionCreator)
+	listenAddr := serviceConf.GateServerAddr
+	if listenAddr[0] == ':' {
+		if localip, err := lbtutil.GetLocalIP(); err != nil {
+			panic(fmt.Sprintf("get local ip fail: %v", err))
+		} else { listenAddr = localip + listenAddr }
+	}
+	gateServer := lbtnet.NewTcpServer(listenAddr, GateConnectionCreator)
 	logger.Info("create service server at %s", gateServer.GetAddr())
 	gateServer.Start()
 	gateManager.start()
@@ -32,7 +40,7 @@ func Start(cb func()) {
 		make(chan bool),
 		serviceConf.Host,
 		serviceConf.ServiceType,
-		serviceConf.GateServerAddr,
+		listenAddr,
 	)
 
 	// wait for stop

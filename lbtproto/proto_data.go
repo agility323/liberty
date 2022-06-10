@@ -41,7 +41,8 @@ type ServiceGateType struct {
 	Method_unbind_client,
 	Method_service_reply,
 	Method_create_entity,
-	Method_entity_msg uint16
+	Method_entity_msg,
+	Method_client_entity_msg uint16
 }
 
 // gate - client

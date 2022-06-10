@@ -45,9 +45,9 @@ func (b *BoostEntity) CMD_login_startlogin_cs(token string, sdkInfo map[string]i
 	logger.Debug("BoostEntity CMD_login_startlogin_cs %v %v", token, sdkInfo)
 	// test
 	args := []interface{}{"CMD_login_startlogin_cs received", }
-	b.stub.EntityMsg("CMD_show_msg_sc", args)
+	b.stub.CallClientMethod("CMD_show_msg_sc", args)
 	// login
-	b.stub.EntityMsg("CMD_login_reply", []interface{}{0, })
+	b.stub.CallClientMethod("CMD_login_reply", []interface{}{0, })
 
 	// load from db
 

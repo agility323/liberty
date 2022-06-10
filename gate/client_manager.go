@@ -46,6 +46,7 @@ type ClientManager struct {
 	boundClients map[string]map[string]int
 }
 
+// TODO: concurrent issue
 func (cm *ClientManager) getServiceAddr(caddr string) string {
 	if entry, ok := cm.clientMap[caddr]; ok {
 		return entry.serviceAddr
@@ -74,8 +75,8 @@ func (cm *ClientManager) workLoop() {
 			cm.serviceReply(job.jd.([]byte))
 		} else if job.op == "create_entity" {
 			cm.createEntity(job.jd.([]byte))
-		} else if job.op == "entity_msg" {
-			cm.entityMsg(job.jd.([]byte))
+		} else if job.op == "client_entity_msg" {
+			cm.clientEntityMsg(job.jd.([]byte))
 		} else if job.op == "service_disconnect" {
 			cm.serviceDisconnect(job.jd.(string))
 		} else {
@@ -171,16 +172,16 @@ func (cm *ClientManager) createEntity(buf []byte) {
 	}
 }
 
-func (cm *ClientManager) entityMsg(buf []byte) {
+func (cm *ClientManager) clientEntityMsg(buf []byte) {
 	msg := &lbtproto.EntityMsg{}
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
-		logger.Warn("entityMsg fail 1")
+		logger.Warn("clientEntityMsg fail 1")
 		return
 	}
 	addr := msg.Addr
 	entry, ok := cm.clientMap[addr]
 	if !ok {
-		logger.Warn("entityMsg fail 2 %s", addr)
+		logger.Warn("clientEntityMsg fail 2 %s", addr)
 		return
 	}
 	sendEntityMsg(entry.c, msg.Id, msg.Method, msg.Params)

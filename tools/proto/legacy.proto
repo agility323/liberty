@@ -43,7 +43,7 @@ message ChannelEntityInfo {
 }
 
 message EntityMessage {
-	bytes entityId = 1;
+	bytes entityId = 1;	// target entity id
 	bytes methodName = 2;
 	int32 index = 3;
 	bytes parameters = 4;

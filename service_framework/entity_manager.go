@@ -9,6 +9,7 @@ import (
 	"io"
 
 	"github.com/agility323/liberty/lbtutil"
+	"github.com/agility323/liberty/lbtproto"
 
 	"github.com/vmihailenco/msgpack/v5"
 )
@@ -30,11 +31,11 @@ func GetEntity(id lbtutil.ObjectId) interface{} {
 	return nil
 }
 
-func CallEntityMethod(id lbtutil.ObjectId, method string, paramBytes []byte) error {
+func CallEntityMethodLocal(id lbtutil.ObjectId, method string, paramBytes []byte) error {
 	// entity
 	entity := GetEntity(id)
 	if entity == nil {
-		return errors.New(fmt.Sprintf("CallEntityMethod fail: entity not found %s", id.Hex()))
+		return errors.New(fmt.Sprintf("CallEntityMethodLocal fail: entity not found %s", id.Hex()))
 	}
 	// rpc method
 	v := reflect.ValueOf(entity)
@@ -42,7 +43,7 @@ func CallEntityMethod(id lbtutil.ObjectId, method string, paramBytes []byte) err
 	typ := pec.GetType()
 	rpc, ok := entityRpcMap[typ][method]
 	if !ok {
-		return errors.New(fmt.Sprintf("CallEntityMethod fail: method not found %s %s %s", typ, id.Hex(), method))
+		return errors.New(fmt.Sprintf("CallEntityMethodLocal fail: method not found %s %s %s", typ, id.Hex(), method))
 	}
 	// parameters
 	params := make([]reflect.Value, 1, len(rpc.pts) + 1)
@@ -57,16 +58,32 @@ func CallEntityMethod(id lbtutil.ObjectId, method string, paramBytes []byte) err
 		param := params[i]
 		err := decoder.DecodeValue(param)
 		if err == io.EOF {
-			logger.Warn(fmt.Sprintf("CallEntityMethod insufficient params: %s %s %s %d %d",
+			logger.Warn(fmt.Sprintf("CallEntityMethodLocal insufficient params: %s %s %s %d %d",
 				typ, id.Hex(), method, len(params) - 1, i - 1))
 			break
 		}
 		if err != nil {
-			return errors.New(fmt.Sprintf("CallEntityMethod fail: msgpack decode fail [%v] %s %v %v",
+			return errors.New(fmt.Sprintf("CallEntityMethodLocal fail: msgpack decode fail [%v] %s %v %v",
 				err, method, paramBytes, rawArray.Body()))
 		}
 	}
 	// call
 	_ = rpc.m.Func.Call(params)
 	return nil
+}
+
+func CallEntityMethod(addr string, id lbtutil.ObjectId, method string, params interface{}) {
+	b, err := msgpack.Marshal(&params)
+	if err != nil {
+		logger.Error("CallEntityMethod failed 1 %s", err.Error())
+		return
+	}
+	//logger.Debug("CallEntityMethod %s %s %s %v", addr, lbtutil.ObjectId(id).Hex(), method, params)
+	msg := &lbtproto.EntityMsg{
+		Addr: addr,
+		Id: string(id),
+		Method: method,
+		Params: b,
+	}
+	postGateManagerJob("entity_msg", msg)
 }

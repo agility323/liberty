@@ -28,6 +28,12 @@ message ServiceReply {
 	bytes reply = 3;
 }
 
+/*
+message MailBox {
+	string addr = 1;
+	string id = 2;
+}
+*/
 
 message EntityData {
 	string addr = 1;
@@ -37,9 +43,18 @@ message EntityData {
 }
 
 message EntityMsg {
-	string addr = 1;
-	string id = 2;
+	string addr = 1;	// target entity addr
+	string id = 2;	// target entity id
 	string method = 3;
 	bytes params = 4;
 }
+
+/*
+message ClientEntityMsg {	// service-gate-client entity msg
+	string addr = 1;	// target entity addr
+	string id = 2;	// target entity id
+	string method = 3;
+	bytes params = 4;
+}
+*/
 
