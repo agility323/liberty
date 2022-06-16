@@ -71,8 +71,8 @@ func (cm *ClientManager) workLoop() {
 			cm.bindClient(job.jd.(lbtproto.BindClientInfo))
 		} else if job.op == "unbind_client" {
 			cm.unbindClient(job.jd.(lbtproto.BindClientInfo))
-		} else if job.op == "service_reply" {
-			cm.serviceReply(job.jd.([]byte))
+		} else if job.op == "client_service_reply" {
+			cm.clientServiceReply(job.jd.([]byte))
 		} else if job.op == "create_entity" {
 			cm.createEntity(job.jd.([]byte))
 		} else if job.op == "client_entity_msg" {
@@ -125,19 +125,19 @@ func (cm *ClientManager) unbindClient(info lbtproto.BindClientInfo) {
 	}
 }
 
-func (cm *ClientManager) serviceReply(buf []byte) {
+func (cm *ClientManager) clientServiceReply(buf []byte) {
 	msg := &lbtproto.ServiceReply{}
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
-		logger.Warn("service reply fail 1")
+		logger.Warn("clientServiceReply fail 1")
 		return
 	}
 	addr := msg.Addr
 	entry, ok := cm.clientMap[addr]
 	if !ok {
-		logger.Warn("service reply fail 2 %s", addr)
+		logger.Warn("clientServiceReply fail 2 %s", addr)
 		return
 	}
-	sendServiceReply(entry.c, msg.Reqid, msg.Reply)
+	sendClientServiceReply(entry.c, msg.Reqid, msg.Reply)
 }
 
 func (cm *ClientManager) createEntity(buf []byte) {

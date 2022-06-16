@@ -59,6 +59,8 @@ func (gm *GateManager) workLoop() {
 			gm.gateDisconnect(job.jd.(*lbtnet.TcpConnection))
 		} else if job.op == "entity_msg" {
 			gm.entityMsg(job.jd.(*lbtproto.EntityMsg))
+		} else if job.op == "service_request" {
+			gm.serviceRequest(job.jd.(*lbtproto.ServiceRequest))
 		} else {
 			logger.Warn("GateManager unrecogonized op %s", job.op)
 		}
@@ -86,4 +88,16 @@ func (gm *GateManager) entityMsg(msg *lbtproto.EntityMsg) {
 		return
 	}
 	logger.Error("entityMsg failed 2 no gate connection")
+}
+
+func (gm *GateManager) serviceRequest(msg *lbtproto.ServiceRequest) {
+	n := rand.Intn(len(gm.gateMap))
+	for _, c := range gm.gateMap {
+		if n--; n >= 0 { continue }
+		if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_service_request, msg); err != nil {
+			logger.Error("serviceRequest failed 1 %s", err.Error())
+		}
+		return
+	}
+	logger.Error("serviceRequest failed 2 no gate connection")
 }

@@ -16,7 +16,7 @@ service IClientGate {
 	rpc entityMessage(EntityMessage) returns (Void);
 	rpc channelMessage(ChannelMessage) returns (Void);
 
-	rpc service_request(ServiceRequest) returns (Void);
+	rpc client_service_request(ServiceRequest) returns (Void);
 	rpc entity_msg(EntityMsg) returns (Void);
 }
 
@@ -28,7 +28,7 @@ service IClient {
 	rpc entityMessage(EntityMessage) returns (Void);
 	rpc channelMessage(ChannelMessage) returns (Void);
 
-	rpc service_reply(ServiceReply) returns (Void);
+	rpc client_service_reply(ServiceReply) returns (Void);
 	rpc create_entity(EntityData) returns (Void);
 	rpc entity_msg(EntityMsg) returns (Void);
 }

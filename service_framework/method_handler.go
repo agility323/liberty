@@ -15,20 +15,21 @@ type MethodHandler interface {
 type methodHandlerCreator func() MethodHandler
 
 type defaultMethodHandler struct {
-	request []byte
-	reply []byte
+	request interface{}
+	reply interface{}
 }
 func (h *defaultMethodHandler) GetRequest() interface{} {return &(h.request)}
 func (h *defaultMethodHandler) GetReply() interface{} {return &(h.reply)}
 func (h *defaultMethodHandler) Process(c *lbtnet.TcpConnection, srcAddr string) error {
 	h.reply = h.request
+	logger.Warn("default method process: %v", h.request)
 	return nil
 }
 func defaultMethodHandlerCreator() MethodHandler {
 	return new(defaultMethodHandler)
 }
 
-var methodHandlerCreatorMap map[string]methodHandlerCreator = make(map[string]methodHandlerCreator)
+var methodHandlerCreatorMap = make(map[string]methodHandlerCreator)
 
 func RegisterMethodHandlerCreator(method string, mhc methodHandlerCreator) {
 	if _, ok := methodHandlerCreatorMap[method]; ok {
@@ -43,13 +44,13 @@ func getMethodHandlerCreator(method string) methodHandlerCreator {
 	return defaultMethodHandlerCreator
 }
 
-func processMethod(c *lbtnet.TcpConnection, srcAddr, reqid, method string, params []byte) ([]byte, error) {
+func processServiceMethod(c *lbtnet.TcpConnection, srcAddr, reqid, method string, params []byte) ([]byte, error) {
 	mhc := getMethodHandlerCreator(method)
 	handler := mhc()
 	if err := msgpack.Unmarshal(params, handler.GetRequest()); err != nil {
 		return nil, err
 	}
-	logger.Debug("process method %s request %s", method, handler.GetRequest())
+	logger.Debug("process method %s request %v", method, handler.GetRequest())
 	if err := handler.Process(c, srcAddr); err != nil {
 		return nil, err
 	}

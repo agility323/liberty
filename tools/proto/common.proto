@@ -15,16 +15,16 @@ message ServiceInfo {
 }
 
 message ServiceRequest {
-	string addr = 1;
-	string reqid = 2;
+	string addr = 1;	// src addr
+	string reqid = 2;	// for requester callback
 	string type = 3;
 	string method = 4;
 	bytes params = 5;
 }
 
 message ServiceReply {
-	string addr = 1;
-	string reqid = 2;
+	string addr = 1;	// src addr
+	string reqid = 2;	// for requester callback
 	bytes reply = 3;
 }
 

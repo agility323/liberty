@@ -21,7 +21,7 @@ type ClientGateType struct {
 	Method_entityMessage,
 	Method_channelMessage,
 
-	Method_service_request,
+	Method_client_service_request,
 	Method_entity_msg uint16
 }
 
@@ -30,6 +30,8 @@ type ServiceType struct {
 	Method_register_reply,
 	Method_client_disconnect,
 	Method_service_request,
+	Method_service_reply,
+	Method_client_service_request,
 	Method_entity_msg,
 	Method_service_shutdown uint16
 }
@@ -39,7 +41,9 @@ type ServiceGateType struct {
 	Method_register_service,
 	Method_bind_client,
 	Method_unbind_client,
+	Method_service_request,
 	Method_service_reply,
+	Method_client_service_reply,
 	Method_create_entity,
 	Method_entity_msg,
 	Method_client_entity_msg uint16
@@ -52,7 +56,7 @@ type ClientType struct {
 	Method_entityMessage,
 	Method_channelMessage,
 
-	Method_service_reply,
+	Method_client_service_reply,
 	Method_create_entity,
 	Method_entity_msg uint16
 }

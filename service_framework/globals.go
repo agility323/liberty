@@ -12,6 +12,8 @@ import (
 var logger = lbtutil.NewLogger(strconv.Itoa(os.Getpid()), "sf")
 var Logger = logger
 
+var serviceAddr string = ""
+
 func init() {
 	msgpack.SetEnableLuaMapDecode(true)
 }

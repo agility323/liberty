@@ -21,6 +21,8 @@ func initServiceMethodHandler() {
 	ServiceMethodHandler[lbtproto.Service.Method_register_reply] = Service_register_reply
 	ServiceMethodHandler[lbtproto.Service.Method_client_disconnect] = Service_client_disconnect
 	ServiceMethodHandler[lbtproto.Service.Method_service_request] = Service_service_request
+	ServiceMethodHandler[lbtproto.Service.Method_service_reply] = Service_service_reply
+	ServiceMethodHandler[lbtproto.Service.Method_client_service_request] = Service_client_service_request
 	ServiceMethodHandler[lbtproto.Service.Method_entity_msg] = Service_entity_msg
 	ServiceMethodHandler[lbtproto.Service.Method_service_shutdown] = Service_service_shutdown
 }
@@ -40,12 +42,10 @@ func processGateProto(c *lbtnet.TcpConnection, buf []byte) error {
 }
 
 func Service_register_reply(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv Service_register_reply %v", buf)
 	return nil
 }
 
 func Service_client_disconnect(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv Service_client_disconnect %v", buf)
 	info := &lbtproto.BindClientInfo{}
 	if err := lbtproto.DecodeMessage(buf, info); err != nil {
 		return err
@@ -55,12 +55,11 @@ func Service_client_disconnect(c *lbtnet.TcpConnection, buf []byte) error {
 }
 
 func Service_service_request(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv Service_service_request %v", buf)
 	request := &lbtproto.ServiceRequest{}
 	if err := lbtproto.DecodeMessage(buf, request); err != nil {
 		return err
 	}
-	replyData, err := processMethod(c, request.Addr, request.Reqid, request.Method, request.Params)
+	replyData, err := processServiceMethod(c, request.Addr, request.Reqid, request.Method, request.Params)
 	if err != nil {
 		return err
 	}
@@ -69,8 +68,30 @@ func Service_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 	return nil
 }
 
+func Service_service_reply(c *lbtnet.TcpConnection, buf []byte) error {
+	reply := &lbtproto.ServiceReply{}
+	if err := lbtproto.DecodeMessage(buf, reply); err != nil {
+		return err
+	}
+	processServiceReply(reply.Reqid, reply.Reply)
+	return nil
+}
+
+func Service_client_service_request(c *lbtnet.TcpConnection, buf []byte) error {
+	request := &lbtproto.ServiceRequest{}
+	if err := lbtproto.DecodeMessage(buf, request); err != nil {
+		return err
+	}
+	replyData, err := processServiceMethod(c, request.Addr, request.Reqid, request.Method, request.Params)
+	if err != nil {
+		return err
+	}
+	if replyData == nil { return nil }
+	sendClientServiceReply(c, request.Addr, request.Reqid, replyData)
+	return nil
+}
+
 func Service_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv Service_entity_msg %v", buf)
 	msg := &lbtproto.EntityMsg{}
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		return err
@@ -82,7 +103,6 @@ func Service_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 }
 
 func Service_service_shutdown(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv Service_service_shutdown %v", buf)
 	Stop()
 	return nil
 }
@@ -103,15 +123,24 @@ func sendRegisterService(c *lbtnet.TcpConnection) {
 }
 
 func sendServiceReply(c *lbtnet.TcpConnection, addr, reqid string, data []byte) {
-	logger.Debug("sendServiceReply %s %s %v", addr, lbtutil.ObjectId(reqid).Hex(), data)
 	reply := &lbtproto.ServiceReply{
 		Addr: addr,
 		Reqid: reqid,
 		Reply: data,
 	}
-	err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_service_reply, reply)
-	if err != nil {
-		logger.Error("sendServiceReply failed: SendMessage - %s", err.Error())
+	if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_service_reply, reply); err != nil {
+		logger.Error("sendServiceReply failed %v", err)
+	}
+}
+
+func sendClientServiceReply(c *lbtnet.TcpConnection, addr, reqid string, data []byte) {
+	reply := &lbtproto.ServiceReply{
+		Addr: addr,
+		Reqid: reqid,
+		Reply: data,
+	}
+	if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_client_service_reply, reply); err != nil {
+		logger.Error("sendClientServiceReply failed %v", err)
 	}
 }
 

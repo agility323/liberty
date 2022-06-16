@@ -14,7 +14,7 @@ func init() {
 }
 
 func initClientGateMethodHandler() {
-	ClientGateMethodHandler[lbtproto.ClientGate.Method_service_request] = ClientGate_service_request
+	ClientGateMethodHandler[lbtproto.ClientGate.Method_client_service_request] = ClientGate_client_service_request
 	ClientGateMethodHandler[lbtproto.ClientGate.Method_entity_msg] = ClientGate_entity_msg
 }
 
@@ -33,14 +33,12 @@ func processClientProto(c *lbtnet.TcpConnection, buf []byte) error {
 }
 
 /********** ProtoHandler **********/
-func ClientGate_service_request(c *lbtnet.TcpConnection, buf []byte) error {
-	//logger.Debug("proto recv ClientGate_service_request %v", buf)
+func ClientGate_client_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 	postServiceManagerJob("service_request", buf)
 	return nil
 }
 
 func ClientGate_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
-	//logger.Debug("proto recv ClientGate_entity_msg %v", buf)
 	caddr := c.RemoteAddr()
 	saddr := clientManager.getServiceAddr(caddr)	// TODO: concurrent issue
 	if saddr == "" { return errors.New("no saddr for " + caddr) }
@@ -50,7 +48,8 @@ func ClientGate_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 /********** ProtoHandler End **********/
 
 /********** ProtoSender **********/
-func sendServiceReply(c *lbtnet.TcpConnection, reqid string, reply []byte) {
+func sendClientServiceReply(c *lbtnet.TcpConnection, reqid string, reply []byte) {
+	// reqid is reserved for future use
 	lp_sendEntityMessage(c, []byte {}, []byte("CMD_service_reply"), reply)
 }
 

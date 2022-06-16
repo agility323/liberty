@@ -37,7 +37,7 @@ func lp_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
 		Params: pdata,
 	}
 	data, err := lbtproto.EncodeMessage(
-			lbtproto.Service.Method_service_request,
+			lbtproto.Service.Method_client_service_request,
 			newmsg,
 		)
 	if err != nil {
@@ -95,7 +95,7 @@ func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 			Params: msg.Parameters,
 		}
 		data, err := lbtproto.EncodeMessage(
-				lbtproto.Service.Method_service_request,
+				lbtproto.Service.Method_client_service_request,
 				newmsg,
 			)
 		if err != nil {

@@ -22,13 +22,13 @@ func Start(cb func()) {
 	}
 
 	// gate server
-	listenAddr := serviceConf.GateServerAddr
-	if listenAddr[0] == ':' {
+	serviceAddr = serviceConf.GateServerAddr
+	if serviceAddr[0] == ':' {
 		if localip, err := lbtutil.GetLocalIP(); err != nil {
 			panic(fmt.Sprintf("get local ip fail: %v", err))
-		} else { listenAddr = localip + listenAddr }
+		} else { serviceAddr = localip + serviceAddr }
 	}
-	gateServer := lbtnet.NewTcpServer(listenAddr, GateConnectionCreator)
+	gateServer := lbtnet.NewTcpServer(serviceAddr, GateConnectionCreator)
 	logger.Info("create service server at %s", gateServer.GetAddr())
 	gateServer.Start()
 	gateManager.start()
@@ -40,7 +40,7 @@ func Start(cb func()) {
 		make(chan bool),
 		serviceConf.Host,
 		serviceConf.ServiceType,
-		listenAddr,
+		serviceAddr,
 	)
 
 	// wait for stop
@@ -58,5 +58,6 @@ func onStop() {
 
 func Stop() {
 	gateManager.stop()
+	serviceCheckStopCh <- true
 	stopCh <- syscall.SIGTERM
 }

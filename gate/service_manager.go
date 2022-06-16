@@ -77,6 +77,8 @@ func (sm *ServiceManager) workLoop() {
 			sm.clientDisconnect(job.jd.(lbtproto.BindClientInfo))
 		} else if job.op == "service_request" {
 			sm.serviceRequest(job.jd.([]byte))
+		} else if job.op == "service_reply" {
+			sm.serviceReply(job.jd.([]byte))
 		} else if job.op == "entity_msg" {
 			args := job.jd.([]interface{})
 			sm.entityMsg(args[0].(string), args[1].([]byte))
@@ -227,6 +229,24 @@ func (sm *ServiceManager) serviceRequest(buf []byte) {
 		}
 	} else {
 		logger.Warn("service request fail 4")
+	}
+}
+
+func (sm *ServiceManager) serviceReply(buf []byte) {
+	msg := &lbtproto.ServiceReply{}
+	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
+		logger.Warn("service reply fail 1")
+		return
+	}
+	entry, ok := sm.serviceMap[msg.Addr]
+	if !(ok && entry.connected) {
+		logger.Warn("service reply fail 2 %s", msg.Addr)
+		return
+	}
+	if err := entry.cli.SendData(buf); err != nil {
+		logger.Warn("service reply fail 3 %s [%s]", msg.Addr, err.Error())
+	} else {
+		logger.Debug("service reply sent %s", msg.Addr)
 	}
 }
 
