@@ -1,4 +1,4 @@
-FROM localhost:5000/base/debian:buster
+FROM debian:buster
 MAINTAINER Thomas Wade <wutian323@126.com>
 
 ENV LOG_LEVEL 1
