@@ -2,11 +2,17 @@ package lbtmw
 
 import (
 	"strings"
+	"io/ioutil"
+	"os"
 
 	"github.com/go-redis/redis"
 )
 
 const RedisKeyDelimiter = ":"
+
+var RedisScriptPath = "./redis_script/"
+
+var redisScriptCache = make(map[string]*redis.Script)
 
 var RedisClient redis.UniversalClient
 
@@ -26,4 +32,39 @@ func InitRedisClient(addrs []string, masterName string) {
 
 func RedisKey(fields []string) string {
 	return strings.Join(fields, RedisKeyDelimiter)
+}
+
+func LoadAllRedisScript(spath string) {
+	// 加载路径下所有.lua脚本
+	dir, err := ioutil.ReadDir(spath)
+	if err != nil {
+		panic(err)
+	}
+	for _, file := range dir {
+		if !file.IsDir() {
+			s := strings.Split(file.Name(), ".")
+			LoadRedisScript(spath, s[0])
+		}
+	}
+}
+
+func LoadRedisScript(spath string, sname string) {
+	// 加载路径下单个.lua脚本
+	file, err := os.Open(spath + sname + ".lua")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	content, _ := ioutil.ReadAll(file)
+	c := redis.NewScript(string(content))
+	redisScriptCache[sname] = c
+}
+
+func RunRedisScript(sname string, key string, args ...interface{}) (interface{}, bool) {
+	r, err := redisScriptCache[sname].Eval(RedisClient, []string{key}, args...).Result()
+	if err != nil {
+		logger.Error("RunRedisScript error %v %v %v %v", sname, key, args, err)
+		return nil, false
+	}
+	return r, err == nil
 }

@@ -12,7 +12,7 @@ const (
 	DbNameGame = "gamedb"
 )
 
-var mongoClient *mongo.Client = nil
+var MongoClient *mongo.Client = nil
 
 func InitMongoClient(uri string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
@@ -21,11 +21,11 @@ func InitMongoClient(uri string) {
 	if err != nil {
 		panic(err)
 	}
-	mongoClient = client
+	MongoClient = client
 }
 
 func CloseMongoClient() {
-	if err := mongoClient.Disconnect(context.Background()); err != nil {
+	if err := MongoClient.Disconnect(context.Background()); err != nil {
 		panic(err)
 	}
 }
