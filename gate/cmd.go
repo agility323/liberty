@@ -5,11 +5,12 @@ import (
 
 	"github.com/agility323/liberty/lbtreg"
 	"github.com/agility323/liberty/hotfix"
+	hitf "github.com/agility323/liberty/hotfix/itf"
 )
 
-var cmdMap = map[string]func(map[string]interface{}) {
-	"hotfix": CMD_hotfix,
-	"broadcast": CMD_broadcast,
+func init() {
+	lbtreg.RegisterCmdDataCreator("hotfix", func() lbtreg.CmdData { return &HotfixCmd{} })
+	lbtreg.RegisterCmdDataCreator("broadcast", func() lbtreg.CmdData { return &BroadcastCmd{} })
 }
 
 func OnWatchGateCmd(typ int, key string, val []byte) {
@@ -21,17 +22,16 @@ func OnWatchGateCmd(typ int, key string, val []byte) {
 		return
 	}
 	//if "gate" != cmd.Node { return }
-	f, ok := cmdMap[cmd.Cmd]
-	if !ok {
-		logger.Warn("invalid cmd type %v", cmd)
-		return
-	}
 	logger.Info("cmd begin %v", cmd)
-	f(cmd.Param)
+	cmd.Data.Process()
 	logger.Info("cmd end %v", cmd)
 }
 
-func CMD_hotfix(param map[string]interface{}) {
+type HotfixCmd struct {
+	lbtreg.HotfixCmdData
+}
+
+func (c *HotfixCmd) Process() {
 	p, err := plugin.Open("hotfix/hotfix.so")
 	if err != nil {
 		logger.Error("hotfix fail 1 %v", err)
@@ -42,28 +42,17 @@ func CMD_hotfix(param map[string]interface{}) {
 		logger.Error("hotfix fail 2 %v", err)
 		return
 	}
-	f.(func(hotfix.HotfixInterface) error)(hotfix.Hotfix)
+	f.(func(hitf.HotfixInterface) error)(hotfix.Hotfix)
 }
 
-func CMD_broadcast(param map[string]interface{}) {
-	itf, ok := param["method"]
-	if !ok {
-		logger.Error("broadcast fail 1 %v", param)
-		return
-	}
-	method, ok := itf.(string)
-	if !ok {
-		logger.Error("broadcast fail 2 %v", param)
-		return
-	}
-	methodParam, ok := param["param"].([]interface{})
-	if !ok {
-		logger.Error("broadcast fail 3 %v", param)
-		return
-	}
-	data, err := makeBroadcastMsgData(method, methodParam)
+type BroadcastCmd struct {
+	lbtreg.BroadcastCmdData
+}
+
+func (c *BroadcastCmd) Process() {
+	data, err := makeBroadcastMsgData(c.Method, c.Param)
 	if err != nil {
-		logger.Error("broadcast fail 4 %v", err)
+		logger.Error("broadcast fail 1 %v", err)
 		return
 	}
 	clientManager.broadcastMsg(data)
