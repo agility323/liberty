@@ -23,12 +23,12 @@ type TcpConnection struct {
 	raddr string
 	buf	[]byte
 	conn net.Conn
-	reader io.Reader
-	writer io.Writer
+	r io.Reader
+	w io.Writer
 	handler ConnectionHandler
 	writeCh chan []byte
 	vars map[string]interface{}	// customed variables
-	readCompressWaitActive bool
+	readLoopFunc func() bool
 }
 
 func NewTcpConnection(conn net.Conn, handler ConnectionHandler) *TcpConnection {
@@ -42,13 +42,13 @@ func NewTcpConnection(conn net.Conn, handler ConnectionHandler) *TcpConnection {
 		raddr: raddrStr,
 		buf: make([]byte, SizeLen + MaxMsgLen),
 		conn: conn,
-		reader: conn,
-		writer: conn,
+		r: conn,
+		w: conn,
 		handler: handler,
 		writeCh: make(chan []byte, WriteChLen),
 		vars: make(map[string]interface{}),
-		readCompressWaitActive: false,
 	}
+	c.readLoopFunc = c.readLoopOnce
 	return c
 }
 
@@ -76,58 +76,49 @@ func (c *TcpConnection) readLoop() {
 		}
 	}()
 		*/
+	for {
+		if c.readLoopFunc() { return }
+	}
+}
+
+func (c *TcpConnection) readLoopOnce() bool {
 	var bodyLen uint32
 	bufHead := c.buf[:SizeLen]
-	for {
-		// enable read compress
-		if c.readCompressWaitActive {
-			c.readCompressWaitActive = false
-			cr, err := NewCompressReader(c.reader)
-			if err != nil {
-				logger.Error("EnableEncryptAndCompress fail 3 %v", err)
-				c.Close()
-				return
-			}
-			c.reader = cr
-		}
-
-		// read head
-		_, err := io.ReadFull(c.reader, bufHead)
-		if err != nil {
-			logger.Debug("tcp conn %s read head fail %s", c.raddr, err.Error())
-			c.Close()
-			return
-		}
-		err = binary.Read(bytes.NewReader(bufHead), byteOrder, &bodyLen)
-		if err != nil || bodyLen == 0 || bodyLen > MaxMsgLen {
-			errmsg := ""
-			if err != nil { errmsg = err.Error() }
-			logger.Warn("tcp conn %s invalid body len %d %s", c.raddr, bodyLen, errmsg)
-			c.Close()
-			return
-		}
-		// read body
-		_, err = io.ReadFull(c.reader, c.buf[SizeLen:SizeLen + bodyLen])
-		if err != nil {
-			logger.Debug("tcp conn %s read body fail %d %s", c.raddr, bodyLen, err.Error())
-			c.Close()
-			return
-		}
-		// process proto
-		data := make([]byte, SizeLen + bodyLen, SizeLen + bodyLen)
-		copy(data, c.buf)
-		//logger.Debug("tcp conn read %s %v", c.raddr, data)
-		err = c.handler.HandleProto(c, data)
-		if err != nil {
-			logger.Warn("tcp conn %s proto fail %s", c.raddr, err.Error())
-		}
+	// read head
+	_, err := io.ReadFull(c.r, bufHead)
+	if err != nil {
+		logger.Warn("tcp conn %s read head fail %v", c.raddr, err)
+		c.Close()
+		return true
 	}
+	err = binary.Read(bytes.NewReader(bufHead), byteOrder, &bodyLen)
+	if err != nil || bodyLen == 0 || bodyLen > MaxMsgLen {
+		logger.Warn("tcp conn %s invalid body len %d %v", c.raddr, bodyLen, err)
+		c.Close()
+		return true
+	}
+	// read body
+	_, err = io.ReadFull(c.r, c.buf[SizeLen:SizeLen + bodyLen])
+	if err != nil {
+		logger.Warn("tcp conn %s read body fail %d %v", c.raddr, bodyLen, err)
+		c.Close()
+		return true
+	}
+	// process proto
+	data := make([]byte, SizeLen + bodyLen, SizeLen + bodyLen)
+	copy(data, c.buf)
+	//logger.Debug("tcp conn read %s %v", c.raddr, data)
+	err = c.handler.HandleProto(c, data)
+	if err != nil {
+		logger.Warn("tcp conn %s proto fail %v", c.raddr, err)
+	}
+	return false
 }
 
 func (c *TcpConnection) writeLoop() {
 	for data := range c.writeCh {
 		//logger.Debug("tcp conn write %s %v", c.raddr, data)
-		n, err := c.writer.Write(data)
+		n, err := c.w.Write(data)
 		if err != nil {
 			logger.Warn("tcp conn %s write fail %d %d %s", c.raddr, len(data), n, err.Error())
 			c.Close()
@@ -184,32 +175,36 @@ func (c *TcpConnection) GetVar(k string) interface{} {
 
 // This function is called from readLoop.
 // After called, data read/write from connection is encrypted and compressed.
+// The encrypt/compress order of read/write corresponds with the other side.
 func (c *TcpConnection) EnableEncryptAndCompress(key []byte) error {
-	// enable encrypt read
-	er, err := NewEncryptReader(c.reader, key)
+	// reader
+	er, err := NewEncryptReader(c.r, key)
 	if err != nil {
-		logger.Error("EnableEncryptAndCompress fail 1 %v", err)
+		logger.Error("EnableEncryptAndCompress fail 1 %s %v", c.raddr, err)
 		c.Close()
 		return err
 	}
-	c.reader = er
-	// enable encrypt write
-	ew, err := NewEncryptWriter(c.writer, key)
+	c.r = er
+	// writer
+	ew, err := NewEncryptWriter(c.w, key)
 	if err != nil {
-		logger.Error("EnableEncryptAndCompress fail 2 %v", err)
+		logger.Error("EnableEncryptAndCompress fail 2 %s %v", c.raddr, err)
 		c.Close()
 		return err
 	}
-	c.writer = ew
-	// enable compress read
-	c.readCompressWaitActive = true
-	// enable compress write
-	cw, err := NewCompressWriter(c.writer)
-	if err != nil {
-		logger.Error("EnableEncryptAndCompress fail 4 %v", err)
-		c.Close()
-		return err
+	c.w = ew
+	c.w = NewCompressWriter(c.w)
+	// replace readLoopFunc to enable read compress
+	c.readLoopFunc = func() bool {
+		defer func() { c.readLoopFunc = c.readLoopOnce }()
+		cr, err := NewCompressReader(c.r)
+		if err != nil {
+			logger.Error("EnableEncryptAndCompress fail 4 %s %v", c.raddr, err)
+			c.Close()
+			return true
+		}
+		c.r = cr
+		return c.readLoopOnce()
 	}
-	c.writer = cw
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"encoding/binary"
 	"net"
+	"time"
 
 	"github.com/agility323/liberty/lbtutil"
 )
@@ -25,3 +26,5 @@ type ConnectionHandler interface {
 type ProtoHandlerType func(*TcpConnection, []byte) error
 
 type connectionCreatorFunc func(net.Conn)
+
+const WriteWaitTime = 200 * time.Millisecond
