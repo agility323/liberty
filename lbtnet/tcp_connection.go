@@ -28,6 +28,7 @@ type TcpConnection struct {
 	handler ConnectionHandler
 	writeCh chan []byte
 	vars map[string]interface{}	// customed variables
+	readCompressWaitActive bool
 }
 
 func NewTcpConnection(conn net.Conn, handler ConnectionHandler) *TcpConnection {
@@ -45,6 +46,8 @@ func NewTcpConnection(conn net.Conn, handler ConnectionHandler) *TcpConnection {
 		writer: conn,
 		handler: handler,
 		writeCh: make(chan []byte, WriteChLen),
+		vars: make(map[string]interface{}),
+		readCompressWaitActive: false,
 	}
 	return c
 }
@@ -76,6 +79,18 @@ func (c *TcpConnection) readLoop() {
 	var bodyLen uint32
 	bufHead := c.buf[:SizeLen]
 	for {
+		// enable read compress
+		if c.readCompressWaitActive {
+			c.readCompressWaitActive = false
+			cr, err := NewCompressReader(c.reader)
+			if err != nil {
+				logger.Error("EnableEncryptAndCompress fail 3 %v", err)
+				c.Close()
+				return
+			}
+			c.reader = cr
+		}
+
 		// read head
 		_, err := io.ReadFull(c.reader, bufHead)
 		if err != nil {
@@ -167,7 +182,8 @@ func (c *TcpConnection) GetVar(k string) interface{} {
 	return c.vars[k]
 }
 
-// 注意该方法默认在本Connection的ReadLoop里面调用,该方法调用后读到的数据都应该是压缩和加密过的，之后发送的数据也都是压缩和加密过的
+// This function is called from readLoop.
+// After called, data read/write from connection is encrypted and compressed.
 func (c *TcpConnection) EnableEncryptAndCompress(key []byte) error {
 	// enable encrypt read
 	er, err := NewEncryptReader(c.reader, key)
@@ -186,13 +202,7 @@ func (c *TcpConnection) EnableEncryptAndCompress(key []byte) error {
 	}
 	c.writer = ew
 	// enable compress read
-	cr, err := NewCompressReader(c.reader)
-	if err != nil {
-		logger.Error("EnableEncryptAndCompress fail 3 %v", err)
-		c.Close()
-		return err
-	}
-	c.reader = cr
+	c.readCompressWaitActive = true
 	// enable compress write
 	cw, err := NewCompressWriter(c.writer)
 	if err != nil {
