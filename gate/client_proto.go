@@ -65,9 +65,9 @@ func sendEntityMsg(c *lbtnet.TcpConnection, entityid []byte, method string, para
 	legacy.LP_SendEntityMessage(c, entityid, []byte(method), params)
 }
 
-func makeBroadcastMsgData(msg string) ([]byte, error) {
-	parameters, err := msgpack.Marshal([]interface{} {msg, })
+func makeBroadcastMsgData(method string, param interface{}) ([]byte, error) {
+	parameters, err := msgpack.Marshal(param)
 	if err != nil { return nil, err }
-	return legacy.LP_MakeEntityMessageData([]byte {}, []byte("CMD_broadcast_msg"), parameters)
+	return legacy.LP_MakeEntityMessageData([]byte {}, []byte(method), parameters)
 }
 /********** ProtoSender End **********/
