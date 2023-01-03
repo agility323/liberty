@@ -51,12 +51,11 @@ func ClientGate_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 /********** ProtoHandler End **********/
 
 /********** ProtoSender **********/
-func sendClientServiceReply(c *lbtnet.TcpConnection, reqid string, reply []byte) {
-	// reqid is reserved for future use
+func sendClientServiceReply(c *lbtnet.TcpConnection, reply []byte) {
 	legacy.LP_sendEntityMessage(c, []byte {}, []byte("CMD_service_reply"), reply)
 }
 
-func sendEntityMsg(c *lbtnet.TcpConnection, entityid, method string, params []byte) {
-	legacy.LP_sendEntityMessage(c, []byte(entityid), []byte(method), params)
+func sendEntityMsg(c *lbtnet.TcpConnection, entityid []byte, method string, params []byte) {
+	legacy.LP_sendEntityMessage(c, entityid, []byte(method), params)
 }
 /********** ProtoSender End **********/

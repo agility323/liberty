@@ -188,7 +188,7 @@ func (sm *ServiceManager) serviceRegister(info serviceEntry) {
 	msg := &lbtproto.ServiceInfo{
 		Addr: addr,
 		Type: typ,
-		Entityid: "",
+		Entityid: []byte {},
 	}
 	if err := lbtproto.SendMessage(
 		entry.cli,

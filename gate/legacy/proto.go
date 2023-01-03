@@ -72,9 +72,10 @@ func LP_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
 		return err
 	}
 	pdata, err := msgpack.Marshal(&map[string]interface{}{})
+	reqid := lbtutil.NewObjectID()
 	newmsg := &lbtproto.ServiceRequest{
 		Addr: c.RemoteAddr(),
-		Reqid: string(lbtutil.NewObjectId()),
+		Reqid: reqid[:],
 		Type: dep.ConnectServerService,
 		Method: dep.ConnectServerMethod,
 		Params: pdata,
@@ -117,7 +118,7 @@ func LP_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 		id := context[2]
 		newmsg := &lbtproto.EntityMsg{
 			Addr: addr,
-			Id: id,	// msg.EntityId from client is empty string (client use SessionId)
+			Id: []byte(id),	// msg.EntityId from client is empty string (client use SessionId)
 			Method: string(msg.MethodName),
 			Params: msg.Parameters,
 		}
@@ -142,7 +143,7 @@ func LP_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 		routeParam := context[4]
 		newmsg := &lbtproto.ServiceRequest{
 			Addr: c.RemoteAddr(),
-			Reqid: id,
+			Reqid: []byte(id),
 			Type: typ,
 			Method: string(msg.MethodName),
 			Params: msg.Parameters,
