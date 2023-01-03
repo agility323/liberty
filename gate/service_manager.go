@@ -7,6 +7,8 @@ import (
 	"github.com/agility323/liberty/lbtproto"
 	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtreg"
+
+	"github.com/howeyc/crc16"
 )
 
 var serviceManager ServiceManager
@@ -214,21 +216,44 @@ func (sm *ServiceManager) serviceRequest(buf []byte) {
 		logger.Warn("service request fail 1 - %v", msg)
 		return
 	}
-	v := addrSet.RandomGetOne()
-	if v == nil {
-		logger.Warn("service request fail 2 - service list empty %v", msg)
-		return
-	}
-	addr := v.(string)
-	if entry, ok := sm.serviceMap[addr]; ok && entry.connected {
-		if err := entry.cli.SendData(buf); err != nil {
-			logger.Warn("service request fail 3 at %s %s", entry.addr, err.Error())
-		} else {
-			logger.Debug("service request sent to %s", entry.addr)
+	// route
+	rt := getServiceRouteType(msg.Type, msg.Method, msg.Routet, msg.Routep)
+	if rt & RouteTypeRandomOne > 0 {
+		v := addrSet.RandomGetOne()
+		if v == nil {
+			logger.Warn("service request fail 2 - service list empty %v", msg)
 			return
 		}
+		sm.serviceRequestToAddr(v.(string), buf)
+	} else if rt & RouteTypeHash > 0 {
+		h := int(crc16.Checksum(msg.Routep, crc16.IBMTable))
+		vs := addrSet.GetAll()	// TODO service sort with id number
+		if len(vs) == 0 {
+			logger.Warn("service request fail 3 - service list empty %v", msg)
+			return
+		}
+		v := vs[h % len(vs)]
+		sm.serviceRequestToAddr(v.(string), buf)
+	} else if rt == RouteTypeSpecific {
+		sm.serviceRequestToAddr(string(msg.Routep), buf)
+	} else if rt == RouteTypeAll {
+		vs := addrSet.GetAll()
+		for _, v := range vs {
+			sm.serviceRequestToAddr(v.(string), buf)
+		}
+	}
+}
+
+func (sm *ServiceManager) serviceRequestToAddr(addr string, buf []byte) {
+	if entry, ok := sm.serviceMap[addr]; ok && entry.connected {
+		if err := entry.cli.SendData(buf); err == nil {
+			logger.Debug("service request sent to %s", entry.addr)
+			return
+		} else {
+			logger.Warn("service request fail 4 at %s %v", entry.addr, err)
+		}
 	} else {
-		logger.Warn("service request fail 4")
+		logger.Warn("service request fail 5")
 	}
 }
 

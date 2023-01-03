@@ -51,6 +51,13 @@ func lp_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
 	return nil
 }
 
+var legacyRouteTypeMap = map[string]int32 {
+	"random": RouteTypeRandomOne,
+	"hash": RouteTypeHash,
+	"specific": RouteTypeSpecific,
+	"all": RouteTypeAll,
+}
+
 func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 	//logger.Debug("proto recv ClientGate_entityMessage %v", buf)
 	msg := &lbtproto.EntityMessage{}
@@ -62,15 +69,18 @@ func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := msgpack.Unmarshal(msg.Context, &context); err != nil {
 		return err
 	}
-	if len(context) != 3 {
-		return errors.New("ClientGate_entityMessage fail: invalid msg.Context")
+	if len(context) == 0 {
+		return errors.New("ClientGate_entityMessage fail: empty msg.Context")
 	}
 	msgType := context[0]
-	addrOrType := context[1]
-	id := context[2]
 	if msgType == "entity" {
+		if len(context) != 3 {
+			return errors.New("ClientGate_entityMessage fail: invalid msg.Context")
+		}
+		addr := context[1]
+		id := context[2]
 		newmsg := &lbtproto.EntityMsg{
-			Addr: addrOrType,
+			Addr: addr,
 			Id: id,	// msg.EntityId from client is empty string (client use SessionId)
 			Method: string(msg.MethodName),
 			Params: msg.Parameters,
@@ -87,12 +97,23 @@ func lp_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 		if saddr == "" { return errors.New("no saddr for " + caddr) }
 		postServiceManagerJob("entity_msg", []interface{} {saddr, newbuf})
 	} else if msgType == "service" {
+		if len(context) != 5 {
+			return errors.New("ClientGate_entityMessage fail: invalid msg.Context")
+		}
+		typ := context[1]
+		id := context[2]
+		routeType, _ := legacyRouteTypeMap[context[3]]
+		routeParam := context[4]
 		newmsg := &lbtproto.ServiceRequest{
 			Addr: c.RemoteAddr(),
 			Reqid: id,
-			Type: addrOrType,
+			Type: typ,
 			Method: string(msg.MethodName),
 			Params: msg.Parameters,
+		}
+		if routeType != 0 || len(routeParam) > 0 {
+			newmsg.Routet = routeType
+			newmsg.Routep = []byte(routeParam)
 		}
 		data, err := lbtproto.EncodeMessage(
 				lbtproto.Service.Method_client_service_request,
