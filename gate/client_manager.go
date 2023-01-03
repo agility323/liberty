@@ -37,6 +37,7 @@ func postClientManagerJob(op string, jd interface{}) bool {
 type clientEntry struct {
 	c *lbtnet.TcpConnection
 	serviceAddr string
+	encryptToken int64
 }
 
 type ClientManager struct {
@@ -86,7 +87,7 @@ func (cm *ClientManager) workLoop() {
 }
 
 func (cm *ClientManager) clientConnect(c *lbtnet.TcpConnection) {
-	cm.clientMap[c.RemoteAddr()] = &clientEntry{c: c, serviceAddr: ""}
+	cm.clientMap[c.RemoteAddr()] = &clientEntry{c: c, serviceAddr: "", encryptToken: 0}
 }
 
 func (cm *ClientManager) clientDisconnect(c *lbtnet.TcpConnection) {

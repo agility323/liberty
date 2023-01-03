@@ -11,6 +11,8 @@ import (
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtreg"
+
+	"gate/legacy"
 )
 
 func init() {
@@ -25,6 +27,25 @@ func main() {
 
 	// log
 	lbtutil.SetLogLevel(Conf.LogLevel)
+
+	// init legacy dependency
+	dep := legacy.LegacyDependency{
+		ConnectServerService: Conf.ConnectServerHandler.Service,
+		ConnectServerMethod: Conf.ConnectServerHandler.Method,
+		PostClientManagerJob: postClientManagerJob,
+		PostServiceManagerJob: postServiceManagerJob,
+		LegacyRouteTypeMap: map[string]int32 {
+			"random": RouteTypeRandomOne,
+			"hash": RouteTypeHash,
+			"specific": RouteTypeSpecific,
+			"all": RouteTypeAll,
+		},
+		ServiceAddrGetter: clientManager.getServiceAddr,
+		PrivateRsaKey: Conf.PrivateRsaKey,
+	}
+	if err := legacy.InitLegacyDependency(dep); err != nil {
+		panic(fmt.Sprintf("InitLegacyDependency fail %v\n\t%v", dep, err))
+	}
 
 	// client server
 	listenAddr := Conf.ClientServerAddr

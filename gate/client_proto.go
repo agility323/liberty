@@ -5,6 +5,8 @@ import (
 
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtproto"
+
+	"gate/legacy"
 )
 
 var ClientGateMethodHandler map[uint16]lbtnet.ProtoHandlerType = make(map[uint16]lbtnet.ProtoHandlerType)
@@ -16,6 +18,7 @@ func init() {
 func initClientGateMethodHandler() {
 	ClientGateMethodHandler[lbtproto.ClientGate.Method_client_service_request] = ClientGate_client_service_request
 	ClientGateMethodHandler[lbtproto.ClientGate.Method_entity_msg] = ClientGate_entity_msg
+	legacy.InitLegacyMethodHandler(ClientGateMethodHandler)
 }
 
 func processClientProto(c *lbtnet.TcpConnection, buf []byte) error {
@@ -50,10 +53,10 @@ func ClientGate_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 /********** ProtoSender **********/
 func sendClientServiceReply(c *lbtnet.TcpConnection, reqid string, reply []byte) {
 	// reqid is reserved for future use
-	lp_sendEntityMessage(c, []byte {}, []byte("CMD_service_reply"), reply)
+	legacy.LP_sendEntityMessage(c, []byte {}, []byte("CMD_service_reply"), reply)
 }
 
 func sendEntityMsg(c *lbtnet.TcpConnection, entityid, method string, params []byte) {
-	lp_sendEntityMessage(c, []byte(entityid), []byte(method), params)
+	legacy.LP_sendEntityMessage(c, []byte(entityid), []byte(method), params)
 }
 /********** ProtoSender End **********/

@@ -41,7 +41,8 @@ cat << EOF > config.json
 	"client_server_addr": "$CLIENT_SERVER_ADDR",
 	"entrance_addr": "$ENTRANCE_ADDR",
 	"connect_server_handler": $CONNECT_SERVER_HANDLER,
-	"etcd": $ETCD
+	"etcd": $ETCD,
+	"private_rsa_key": "$PRIVATE_RSA_KEY"
 }
 EOF
 echo "create config.json done:"
