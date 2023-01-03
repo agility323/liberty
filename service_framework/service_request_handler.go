@@ -6,8 +6,8 @@ import (
 
 	"github.com/vmihailenco/msgpack"
 
-	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtproto"
+	"github.com/agility323/liberty/lbtutil"
 )
 
 type serviceCallbackFunc func(map[string]interface{})
@@ -46,12 +46,13 @@ func CallServiceMethod(service, method string, params map[string]interface{}, cb
 func processServiceReply(reqid string, reply []byte) {
 	cb, _ := serviceCallbackMap.LoadAndDelete(reqid)
 	if cb == nil { return }
-	var args map[string]interface{}
+	var args []interface{}
 	if err := msgpack.Unmarshal(reply, &args); err != nil {
 		logger.Error("processServiceReply fail 1 %v %v", reply, err)
 		return
 	}
-	cb.(serviceCallback).f(args)
+	params, _ := args[1].(map[string]interface{})
+	cb.(serviceCallback).f(params)
 }
 
 func checkServiceCallback() {
