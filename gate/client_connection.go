@@ -2,19 +2,15 @@ package main
 
 import (
 	"net"
-	"math/rand"
 
 	"github.com/agility323/liberty/lbtnet"
 )
 
 type ClientConnectionHandler struct {
-	seed int64
 }
 
 func ClientConnectionCreator(conn net.Conn) {
-	handler := &ClientConnectionHandler{
-		seed: 0,
-	}
+	handler := &ClientConnectionHandler{}
 	c := lbtnet.NewTcpConnection(conn, handler)
 	c.Start()
 	handler.OnConnectionReady(c)
@@ -33,10 +29,4 @@ func (handler *ClientConnectionHandler) OnConnectionClose(c *lbtnet.TcpConnectio
 }
 
 func (handler *ClientConnectionHandler) OnConnectionFail(cli *lbtnet.TcpClient) {
-}
-
-func (handler *ClientConnectionHandler) generateSeed() int64 {
-	seed := rand.Int63()
-	handler.seed = seed
-	return seed
 }

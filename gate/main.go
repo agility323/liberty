@@ -37,7 +37,6 @@ func main() {
 	dep := legacy.LegacyDependency{
 		ConnectServerService: Conf.ConnectServerHandler.Service,
 		ConnectServerMethod: Conf.ConnectServerHandler.Method,
-		PostClientManagerJob: postClientManagerJob,
 		PostServiceManagerJob: postServiceManagerJob,
 		LegacyRouteTypeMap: map[string]int32 {
 			"random": RouteTypeRandomOne,
