@@ -213,7 +213,7 @@ func (sm *ServiceManager) serviceRequest(buf []byte) {
 	}
 	addrSet, ok := sm.serviceTypeToAddrSet[msg.Type]
 	if !ok {
-		logger.Warn("service request fail 1 - %v", msg)
+		logger.Warn("service request fail 2 - %v", msg)
 		return
 	}
 	// route
@@ -221,7 +221,7 @@ func (sm *ServiceManager) serviceRequest(buf []byte) {
 	if rt & RouteTypeRandomOne > 0 {
 		v := addrSet.RandomGetOne()
 		if v == nil {
-			logger.Warn("service request fail 2 - service list empty %v", msg)
+			logger.Warn("service request fail 3 - service list empty %v", msg)
 			return
 		}
 		sm.serviceRequestToAddr(v.(string), buf)
@@ -229,7 +229,7 @@ func (sm *ServiceManager) serviceRequest(buf []byte) {
 		h := int(crc16.Checksum(msg.Routep, crc16.IBMTable))
 		vs := addrSet.GetAll()	// TODO service sort with id number
 		if len(vs) == 0 {
-			logger.Warn("service request fail 3 - service list empty %v", msg)
+			logger.Warn("service request fail 4 - service list empty %v", msg)
 			return
 		}
 		v := vs[h % len(vs)]
@@ -250,10 +250,10 @@ func (sm *ServiceManager) serviceRequestToAddr(addr string, buf []byte) {
 			logger.Debug("service request sent to %s", entry.addr)
 			return
 		} else {
-			logger.Warn("service request fail 4 at %s %v", entry.addr, err)
+			logger.Warn("service request fail 5 at %s %v", entry.addr, err)
 		}
 	} else {
-		logger.Warn("service request fail 5")
+		logger.Warn("service request fail 6")
 	}
 }
 
