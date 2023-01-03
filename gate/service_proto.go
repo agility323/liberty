@@ -45,11 +45,17 @@ func ServiceGate_register_service(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		return err
 	}
-	entry := serviceEntry{
-		addr: msg.Addr,
-		typ: msg.Type,
+	// register: nothing except log
+	entry := serviceManager.getServiceEntry(msg.Addr)
+	if entry == nil {
+		logger.Warn("ServiceGate_register_service fail 1 - service not connected %v %v", entry, msg)
+		return nil
 	}
-	postServiceManagerJob("register", entry)
+	logger.Info("register service %s %s", msg.Type, msg.Addr)
+	// reply
+	if err := lbtproto.SendMessage(entry.cli, lbtproto.Service.Method_register_reply, msg); err != nil {
+		logger.Warn("service register reply send fail - %v %v", err, msg)
+	}
 	return nil
 }
 
@@ -58,7 +64,7 @@ func ServiceGate_bind_client(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		return err
 	}
-	postClientManagerJob("bind_client", *msg)
+	clientManager.bindClient(*msg)
 	return nil
 }
 
@@ -67,27 +73,52 @@ func ServiceGate_unbind_client(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		return err
 	}
-	postClientManagerJob("unbind_client", *msg)
+	clientManager.unbindClient(*msg)
 	return nil
 }
 
 func ServiceGate_service_request(c *lbtnet.TcpConnection, buf []byte) error {
-	postServiceManagerJob("service_request", buf)
+	serviceManager.serviceRequest(buf)
 	return nil
 }
 
 func ServiceGate_service_reply(c *lbtnet.TcpConnection, buf []byte) error {
-	postServiceManagerJob("service_reply", buf)
+	msg := &lbtproto.ServiceReply{}
+	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
+		logger.Warn("service reply fail 1 %v", err)
+		return nil
+	}
+	serviceManager.sendToService(msg.Addr, buf)
 	return nil
 }
 
 func ServiceGate_client_service_reply(c *lbtnet.TcpConnection, buf []byte) error {
-	postClientManagerJob("client_service_reply", buf)
+	msg := &lbtproto.ServiceReply{}
+	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
+		logger.Warn("ServiceGate_client_service_reply fail 1 %v", err)
+		return nil
+	}
+	cc := clientManager.getClientConnection(msg.Addr)
+	if cc == nil {
+		logger.Warn("ServiceGate_client_service_reply fail 2")
+		return nil
+	}
+	sendClientServiceReply(cc, msg.Reply)
 	return nil
 }
 
 func ServiceGate_create_entity(c *lbtnet.TcpConnection, buf []byte) error {
-	postClientManagerJob("create_entity", buf)
+	msg := &lbtproto.EntityData{}
+	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
+		logger.Warn("ServiceGate_create_entity fail 1 %v", err)
+		return nil
+	}
+	cc := clientManager.getClientConnection(msg.Addr)
+	if cc == nil {
+		logger.Warn("ServiceGate_create_entity fail 2")
+		return nil
+	}
+	sendCreateEntity(cc, msg.Id, msg.Type, msg.Data)
 	return nil
 }
 
@@ -97,11 +128,21 @@ func ServiceGate_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 		logger.Warn("ServiceGate_entity_msg fail 1 %s", c.RemoteAddr())
 		return nil
 	}
-	postServiceManagerJob("entity_msg", []interface{} {msg.Addr, buf})
+	serviceManager.sendToService(msg.Addr, buf)
 	return nil
 }
 
 func ServiceGate_client_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
-	postClientManagerJob("client_entity_msg", buf)
+	msg := &lbtproto.EntityMsg{}
+	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
+		logger.Warn("ServiceGate_client_entity_msg fail 1 %v", err)
+		return nil
+	}
+	cc := clientManager.getClientConnection(msg.Addr)
+	if cc == nil {
+		logger.Warn("ServiceGate_client_entity_msg fail 2")
+		return nil
+	}
+	sendEntityMsg(cc, msg.Id, msg.Method, msg.Params)
 	return nil
 }

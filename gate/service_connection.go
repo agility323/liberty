@@ -12,13 +12,13 @@ func (handler *ServiceConnectionHandler) HandleProto(c *lbtnet.TcpConnection, da
 }
 
 func (handler *ServiceConnectionHandler) OnConnectionReady(c *lbtnet.TcpConnection) {
-	postServiceManagerJob("connect", c)
+	serviceManager.serviceConnect(c)
 }
 
 func (handler *ServiceConnectionHandler) OnConnectionClose(c *lbtnet.TcpConnection) {
-	postServiceManagerJob("disconnect", c)
+	serviceManager.serviceDisconnect(c)
 }
 
 func (handler *ServiceConnectionHandler) OnConnectionFail(cli *lbtnet.TcpClient) {
-	postServiceManagerJob("connect_fail", cli)
+	serviceManager.serviceConnectFail(cli)
 }

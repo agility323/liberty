@@ -87,7 +87,7 @@ func LP_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
 	if err != nil {
 		return err
 	}
-	if dep.PostServiceManagerJob("service_request", data) {
+	if dep.ServiceRequestHandler(data) {
 		LP_SendConnectServerResp(c, lbtproto.ConnectServerResp_Connected, []byte{})
 	} else {
 		LP_SendConnectServerResp(c, lbtproto.ConnectServerResp_Busy, []byte{})
@@ -130,9 +130,9 @@ func LP_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 			return err
 		}
 		caddr := c.RemoteAddr()
-		saddr := dep.ServiceAddrGetter(caddr)   // TODO: concurrent issue
+		saddr := dep.ServiceAddrGetter(caddr)
 		if saddr == "" { return errors.New("no saddr for " + caddr) }
-		dep.PostServiceManagerJob("entity_msg", []interface{} {saddr, newbuf})
+		dep.ServiceSender(saddr, newbuf)
 	} else if msgType == "service" {
 		if len(context) != 5 {
 			return fmt.Errorf("ClientGate_entityMessage fail: invalid msg.Context %d!=5", len(context))
@@ -159,7 +159,7 @@ func LP_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 		if err != nil {
 			return err
 		}
-		dep.PostServiceManagerJob("service_request", data)
+		dep.ServiceRequestHandler(data)
 	}
 	return nil
 }
@@ -200,8 +200,20 @@ func LP_SendConnectServerResp(c *lbtnet.TcpConnection, typ lbtproto.ConnectServe
 	}
 }
 
-func LP_sendEntityMessage(c *lbtnet.TcpConnection, entityid []byte, method []byte, parameters []byte) {
-	logger.Debug("LP_sendEntityMessage start: entityid=%v", string(entityid))
+func LP_SendCreateChannelEntity(c *lbtnet.TcpConnection, id, typ, info []byte) {
+	msg := &lbtproto.ChannelEntityInfo{
+		Type: typ,
+		Info: info,
+		EntityId: id,
+		SessionId: []byte{},
+	}
+	if err := lbtproto.SendMessage(c, lbtproto.Client.Method_createChannelEntity, msg); err != nil {
+		logger.Error("LP_SendCreateChannelEntity fail 1 %s %v", c.RemoteAddr(), err)
+	}
+}
+
+func LP_SendEntityMessage(c *lbtnet.TcpConnection, entityid []byte, method []byte, parameters []byte) {
+	logger.Debug("LP_SendEntityMessage start: entityid=%v", string(entityid))
 	msg := &lbtproto.EntityMessage{
 		EntityId: entityid,
 		MethodName: method,
@@ -216,7 +228,7 @@ func LP_sendEntityMessage(c *lbtnet.TcpConnection, entityid []byte, method []byt
 		msg,
 	)
 	if err != nil {
-		logger.Error("LP_sendEntityMessage failed: SendMessage - %s", err.Error())
+		logger.Error("LP_SendEntityMessage failed: SendMessage - %s", err.Error())
 	}
 }
 /********** ProtoSender End **********/

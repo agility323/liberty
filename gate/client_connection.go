@@ -14,7 +14,7 @@ func ClientConnectionCreator(conn net.Conn) {
 	c := lbtnet.NewTcpConnection(conn, handler)
 	c.Start()
 	handler.OnConnectionReady(c)
-	postClientManagerJob("connect", c)
+	clientManager.clientConnect(c)
 }
 
 func (handler *ClientConnectionHandler) HandleProto(c *lbtnet.TcpConnection, data []byte) error {
@@ -25,7 +25,7 @@ func (handler *ClientConnectionHandler) OnConnectionReady(c *lbtnet.TcpConnectio
 }
 
 func (handler *ClientConnectionHandler) OnConnectionClose(c *lbtnet.TcpConnection) {
-	postClientManagerJob("disconnect", c)
+	clientManager.clientDisconnect(c)
 }
 
 func (handler *ClientConnectionHandler) OnConnectionFail(cli *lbtnet.TcpClient) {

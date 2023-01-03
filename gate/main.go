@@ -37,14 +37,15 @@ func main() {
 	dep := legacy.LegacyDependency{
 		ConnectServerService: Conf.ConnectServerHandler.Service,
 		ConnectServerMethod: Conf.ConnectServerHandler.Method,
-		PostServiceManagerJob: postServiceManagerJob,
 		LegacyRouteTypeMap: map[string]int32 {
 			"random": RouteTypeRandomOne,
 			"hash": RouteTypeHash,
 			"specific": RouteTypeSpecific,
 			"all": RouteTypeAll,
 		},
-		ServiceAddrGetter: clientManager.getServiceAddr,
+		ServiceAddrGetter: clientManager.getClientServiceAddr,
+		ServiceSender: serviceManager.sendToService,
+		ServiceRequestHandler: serviceManager.serviceRequest,
 		PrivateRsaKey: Conf.PrivateRsaKey,
 	}
 	if err := legacy.InitLegacyDependency(dep); err != nil {
@@ -61,10 +62,6 @@ func main() {
 	clientServer := lbtnet.NewTcpServer(listenAddr, ClientConnectionCreator)
 	logger.Info("create client server at %s entrance is %s", clientServer.GetAddr(), Conf.EntranceAddr)
 	clientServer.Start()
-	clientManager.start()
-
-	// service server (playing proxy role)
-	serviceManager.start()
 
 	// register
 	lbtreg.InitWithEtcd(Conf.Etcd)
@@ -72,7 +69,7 @@ func main() {
 	// otherwise, such as there are proxies between gates and clients, the entrance varies
 	// so here we use listen addr as unique addr
 	go lbtreg.StartRegisterGate(11, make(chan bool), Conf.Host, listenAddr)
-	go lbtreg.StartDiscoverService(11, make(chan bool), OnDiscoverService, Conf.Host)
+	go lbtreg.StartDiscoverService(11, make(chan bool), serviceManager.OnDiscoverService, Conf.Host)
 
 	// wait for stop
 	stopCh := make(chan os.Signal, 1)

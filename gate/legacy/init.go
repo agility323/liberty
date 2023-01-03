@@ -11,9 +11,10 @@ import (
 type LegacyDependency struct {
 	ConnectServerService string
 	ConnectServerMethod string
-	PostServiceManagerJob func (op string, jd interface{}) bool
 	LegacyRouteTypeMap map[string]int32
 	ServiceAddrGetter func(string) string
+	ServiceSender func(string, []byte)
+	ServiceRequestHandler func([]byte) bool
 	PrivateRsaKey string
 }
 

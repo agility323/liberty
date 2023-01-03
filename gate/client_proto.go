@@ -37,25 +37,29 @@ func processClientProto(c *lbtnet.TcpConnection, buf []byte) error {
 
 /********** ProtoHandler **********/
 func ClientGate_client_service_request(c *lbtnet.TcpConnection, buf []byte) error {
-	postServiceManagerJob("service_request", buf)
+	serviceManager.serviceRequest(buf)
 	return nil
 }
 
 func ClientGate_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 	caddr := c.RemoteAddr()
-	saddr := clientManager.getServiceAddr(caddr)	// TODO: concurrent issue
+	saddr := clientManager.getClientServiceAddr(caddr)
 	if saddr == "" { return errors.New("no saddr for " + caddr) }
-	postServiceManagerJob("entity_msg", []interface{} {saddr, buf})
+	serviceManager.sendToService(saddr, buf)
 	return nil
 }
 /********** ProtoHandler End **********/
 
 /********** ProtoSender **********/
 func sendClientServiceReply(c *lbtnet.TcpConnection, reply []byte) {
-	legacy.LP_sendEntityMessage(c, []byte {}, []byte("CMD_service_reply"), reply)
+	legacy.LP_SendEntityMessage(c, []byte {}, []byte("CMD_service_reply"), reply)
+}
+
+func sendCreateEntity(c *lbtnet.TcpConnection, id []byte, typ string, data []byte) {
+	legacy.LP_SendCreateChannelEntity(c, id, []byte(typ), data)
 }
 
 func sendEntityMsg(c *lbtnet.TcpConnection, entityid []byte, method string, params []byte) {
-	legacy.LP_sendEntityMessage(c, entityid, []byte(method), params)
+	legacy.LP_SendEntityMessage(c, entityid, []byte(method), params)
 }
 /********** ProtoSender End **********/
