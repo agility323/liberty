@@ -34,24 +34,15 @@ func init() {
 }
 
 func (m *ServiceManager) OnDiscoverService(services map[string][]byte) {
-	m.lock.Lock()
-	defer m.lock.Unlock()
-
 	for service, _ := range services {
 		pair := lbtreg.SplitEtcdKey(service, 2)
 		if len(pair) != 2 { continue }
 		typ := pair[0]
 		addr := pair[1]
-		entry, ok := m.serviceMap[addr]
-		if !ok {
-			m.serviceMap[addr] = &serviceEntry{
-				connected: false,
-				addr: addr,
-				typ: typ,
-				cli: lbtnet.NewTcpClient(addr, &ServiceConnectionHandler{}),
-			}
-			m.serviceMap[addr].cli.SetReconnectTime(10)
-			m.serviceMap[addr].cli.StartConnect(3)
+		entry, isnew := m.assureServiceEntry(typ, addr)
+		if isnew {
+			entry.cli.SetReconnectTime(10)
+			entry.cli.StartConnect(3)
 			continue
 		}
 		if !entry.connected {
@@ -59,6 +50,23 @@ func (m *ServiceManager) OnDiscoverService(services map[string][]byte) {
 			continue
 		}
 	}
+}
+
+func (m *ServiceManager) assureServiceEntry(typ, addr string) (*serviceEntry, bool) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if entry, ok := m.serviceMap[addr]; ok {
+		return entry, false
+	}
+	entry := &serviceEntry{
+		connected: false,
+		addr: addr,
+		typ: typ,
+		cli: lbtnet.NewTcpClient(addr, &ServiceConnectionHandler{}),
+	}
+	m.serviceMap[addr] = entry
+	return entry, true
 }
 
 func (m *ServiceManager) serviceConnect(c *lbtnet.TcpConnection) {
