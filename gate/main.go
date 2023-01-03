@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"runtime"
 	"runtime/debug"
 	"os"
@@ -68,8 +69,10 @@ func main() {
 	// usually, gate exposes its addr directly to clients, so the entrance addr should be unique
 	// otherwise, such as there are proxies between gates and clients, the entrance varies
 	// so here we use listen addr as unique addr
-	go lbtreg.StartRegisterGate(11, make(chan bool), Conf.Host, listenAddr)
-	go lbtreg.StartDiscoverService(11, make(chan bool), serviceManager.OnDiscoverService, Conf.Host)
+	ctxRegister, cancelRegister := context.WithCancel(context.Background())
+	go lbtreg.StartRegisterGate(ctxRegister, 11, Conf.Host, listenAddr, regData)
+	ctxDiscover, cancelDiscover := context.WithCancel(context.Background())
+	go lbtreg.StartDiscoverService(ctxDiscover, 11, serviceManager.OnDiscoverService, Conf.Host)
 
 	// wait for stop
 	stopCh := make(chan os.Signal, 1)
@@ -77,6 +80,8 @@ func main() {
 	<-stopCh
 
 	// on stop
+	cancelRegister()
+	cancelDiscover()
 	onStop()
 }
 
