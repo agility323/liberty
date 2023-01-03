@@ -23,8 +23,11 @@ type TcpConnection struct {
 	raddr string
 	buf	[]byte
 	conn net.Conn
+	reader io.Reader
+	writer io.Writer
 	handler ConnectionHandler
 	writeCh chan []byte
+	vars map[string]interface{}	// customed variables
 }
 
 func NewTcpConnection(conn net.Conn, handler ConnectionHandler) *TcpConnection {
@@ -38,6 +41,8 @@ func NewTcpConnection(conn net.Conn, handler ConnectionHandler) *TcpConnection {
 		raddr: raddrStr,
 		buf: make([]byte, SizeLen + MaxMsgLen),
 		conn: conn,
+		reader: conn,
+		writer: conn,
 		handler: handler,
 		writeCh: make(chan []byte, WriteChLen),
 	}
@@ -72,7 +77,7 @@ func (c *TcpConnection) readLoop() {
 	bufHead := c.buf[:SizeLen]
 	for {
 		// read head
-		_, err := io.ReadFull(c.conn, bufHead)
+		_, err := io.ReadFull(c.reader, bufHead)
 		if err != nil {
 			logger.Debug("tcp conn %s read head fail %s", c.raddr, err.Error())
 			c.Close()
@@ -87,7 +92,7 @@ func (c *TcpConnection) readLoop() {
 			return
 		}
 		// read body
-		_, err = io.ReadFull(c.conn, c.buf[SizeLen:SizeLen + bodyLen])
+		_, err = io.ReadFull(c.reader, c.buf[SizeLen:SizeLen + bodyLen])
 		if err != nil {
 			logger.Debug("tcp conn %s read body fail %d %s", c.raddr, bodyLen, err.Error())
 			c.Close()
@@ -107,7 +112,7 @@ func (c *TcpConnection) readLoop() {
 func (c *TcpConnection) writeLoop() {
 	for data := range c.writeCh {
 		//logger.Debug("tcp conn write %s %v", c.raddr, data)
-		n, err := c.conn.Write(data)
+		n, err := c.writer.Write(data)
 		if err != nil {
 			logger.Warn("tcp conn %s write fail %d %d %s", c.raddr, len(data), n, err.Error())
 			c.Close()
@@ -151,5 +156,50 @@ func (c *TcpConnection) SendData(data []byte) error {
 		return errors.New("TcpConnection.SendData: fail 3")
 	}
 	c.writeCh <- data
+	return nil
+}
+
+func (c *TcpConnection) SetVar(k string, v interface{}) {
+	c.vars[k] = v
+}
+
+func (c *TcpConnection) GetVar(k string) interface{} {
+	return c.vars[k]
+}
+
+// 注意该方法默认在本Connection的ReadLoop里面调用,该方法调用后读到的数据都应该是压缩和加密过的，之后发送的数据也都是压缩和加密过的
+func (c *TcpConnection) EnableEncryptAndCompress(key []byte) error {
+	// enable encrypt read
+	er, err := NewEncryptReader(c.reader, key)
+	if err != nil {
+		logger.Error("EnableEncryptAndCompress fail 1 %v", err)
+		c.Close()
+		return err
+	}
+	c.reader = er
+	// enable encrypt write
+	ew, err := NewEncryptWriter(c.writer, key)
+	if err != nil {
+		logger.Error("EnableEncryptAndCompress fail 2 %v", err)
+		c.Close()
+		return err
+	}
+	c.writer = ew
+	// enable compress read
+	cr, err := NewCompressReader(c.reader)
+	if err != nil {
+		logger.Error("EnableEncryptAndCompress fail 3 %v", err)
+		c.Close()
+		return err
+	}
+	c.reader = cr
+	// enable compress write
+	cw, err := NewCompressWriter(c.writer)
+	if err != nil {
+		logger.Error("EnableEncryptAndCompress fail 4 %v", err)
+		c.Close()
+		return err
+	}
+	c.writer = cw
 	return nil
 }

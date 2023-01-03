@@ -1,8 +1,10 @@
 package lbtutil
 
 import (
+	//"github.com/vmihailenco/msgpack/v5"
 )
 
+// MsgpackRawArray - Start
 type MsgpackRawArray []byte
 
 func (raw MsgpackRawArray) HeaderSize() int {
@@ -24,3 +26,4 @@ func (raw MsgpackRawArray) Len() int {
 func (raw MsgpackRawArray) Body() []byte {
 	return []byte(raw[raw.HeaderSize():])
 }
+// MsgpackRawArray - End

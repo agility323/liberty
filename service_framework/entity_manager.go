@@ -55,8 +55,7 @@ func CallEntityMethodLocal(id lbtutil.ObjectId, method string, paramBytes []byte
 	rawArray := lbtutil.MsgpackRawArray(paramBytes)
 	decoder := msgpack.NewDecoder(bytes.NewBuffer(rawArray.Body()))
 	for i := 1; i < len(params); i++ {
-		param := params[i]
-		err := decoder.DecodeValue(param)
+		err := decoder.DecodeValue(params[i])
 		if err == io.EOF {
 			logger.Warn(fmt.Sprintf("CallEntityMethodLocal insufficient params: %s %s %s %d %d",
 				typ, id.Hex(), method, len(params) - 1, i - 1))
