@@ -53,7 +53,7 @@ func (x ConnectServerReq_ReqType) String() string {
 }
 
 func (ConnectServerReq_ReqType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_4b5c555c498591f0, []int{0, 0}
+	return fileDescriptor_4b5c555c498591f0, []int{3, 0}
 }
 
 type ConnectServerResp_RespType int32
@@ -93,7 +93,163 @@ func (x ConnectServerResp_RespType) String() string {
 }
 
 func (ConnectServerResp_RespType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_4b5c555c498591f0, []int{1, 0}
+	return fileDescriptor_4b5c555c498591f0, []int{4, 0}
+}
+
+type EncryptToken struct {
+	Token int64 `protobuf:"varint,1,opt,name=token,proto3" json:"token,omitempty"`
+}
+
+func (m *EncryptToken) Reset()         { *m = EncryptToken{} }
+func (m *EncryptToken) String() string { return proto.CompactTextString(m) }
+func (*EncryptToken) ProtoMessage()    {}
+func (*EncryptToken) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4b5c555c498591f0, []int{0}
+}
+func (m *EncryptToken) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EncryptToken) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EncryptToken.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EncryptToken) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EncryptToken.Merge(m, src)
+}
+func (m *EncryptToken) XXX_Size() int {
+	return m.Size()
+}
+func (m *EncryptToken) XXX_DiscardUnknown() {
+	xxx_messageInfo_EncryptToken.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EncryptToken proto.InternalMessageInfo
+
+func (m *EncryptToken) GetToken() int64 {
+	if m != nil {
+		return m.Token
+	}
+	return 0
+}
+
+type EncryptKey struct {
+	HeadPadding []byte `protobuf:"bytes,1,opt,name=headPadding,proto3" json:"headPadding,omitempty"`
+	Key         []byte `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	Token       int64  `protobuf:"varint,3,opt,name=token,proto3" json:"token,omitempty"`
+	TailPadding []byte `protobuf:"bytes,4,opt,name=tailPadding,proto3" json:"tailPadding,omitempty"`
+}
+
+func (m *EncryptKey) Reset()         { *m = EncryptKey{} }
+func (m *EncryptKey) String() string { return proto.CompactTextString(m) }
+func (*EncryptKey) ProtoMessage()    {}
+func (*EncryptKey) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4b5c555c498591f0, []int{1}
+}
+func (m *EncryptKey) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EncryptKey) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EncryptKey.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EncryptKey) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EncryptKey.Merge(m, src)
+}
+func (m *EncryptKey) XXX_Size() int {
+	return m.Size()
+}
+func (m *EncryptKey) XXX_DiscardUnknown() {
+	xxx_messageInfo_EncryptKey.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EncryptKey proto.InternalMessageInfo
+
+func (m *EncryptKey) GetHeadPadding() []byte {
+	if m != nil {
+		return m.HeadPadding
+	}
+	return nil
+}
+
+func (m *EncryptKey) GetKey() []byte {
+	if m != nil {
+		return m.Key
+	}
+	return nil
+}
+
+func (m *EncryptKey) GetToken() int64 {
+	if m != nil {
+		return m.Token
+	}
+	return 0
+}
+
+func (m *EncryptKey) GetTailPadding() []byte {
+	if m != nil {
+		return m.TailPadding
+	}
+	return nil
+}
+
+type EncryptKeyString struct {
+	KeyString []byte `protobuf:"bytes,1,opt,name=keyString,proto3" json:"keyString,omitempty"`
+}
+
+func (m *EncryptKeyString) Reset()         { *m = EncryptKeyString{} }
+func (m *EncryptKeyString) String() string { return proto.CompactTextString(m) }
+func (*EncryptKeyString) ProtoMessage()    {}
+func (*EncryptKeyString) Descriptor() ([]byte, []int) {
+	return fileDescriptor_4b5c555c498591f0, []int{2}
+}
+func (m *EncryptKeyString) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EncryptKeyString) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EncryptKeyString.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EncryptKeyString) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EncryptKeyString.Merge(m, src)
+}
+func (m *EncryptKeyString) XXX_Size() int {
+	return m.Size()
+}
+func (m *EncryptKeyString) XXX_DiscardUnknown() {
+	xxx_messageInfo_EncryptKeyString.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EncryptKeyString proto.InternalMessageInfo
+
+func (m *EncryptKeyString) GetKeyString() []byte {
+	if m != nil {
+		return m.KeyString
+	}
+	return nil
 }
 
 type ConnectServerReq struct {
@@ -108,7 +264,7 @@ func (m *ConnectServerReq) Reset()         { *m = ConnectServerReq{} }
 func (m *ConnectServerReq) String() string { return proto.CompactTextString(m) }
 func (*ConnectServerReq) ProtoMessage()    {}
 func (*ConnectServerReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4b5c555c498591f0, []int{0}
+	return fileDescriptor_4b5c555c498591f0, []int{3}
 }
 func (m *ConnectServerReq) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -181,7 +337,7 @@ func (m *ConnectServerResp) Reset()         { *m = ConnectServerResp{} }
 func (m *ConnectServerResp) String() string { return proto.CompactTextString(m) }
 func (*ConnectServerResp) ProtoMessage()    {}
 func (*ConnectServerResp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4b5c555c498591f0, []int{1}
+	return fileDescriptor_4b5c555c498591f0, []int{4}
 }
 func (m *ConnectServerResp) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -235,7 +391,7 @@ func (m *ChannelEntityInfo) Reset()         { *m = ChannelEntityInfo{} }
 func (m *ChannelEntityInfo) String() string { return proto.CompactTextString(m) }
 func (*ChannelEntityInfo) ProtoMessage()    {}
 func (*ChannelEntityInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4b5c555c498591f0, []int{2}
+	return fileDescriptor_4b5c555c498591f0, []int{5}
 }
 func (m *ChannelEntityInfo) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -305,7 +461,7 @@ func (m *EntityMessage) Reset()         { *m = EntityMessage{} }
 func (m *EntityMessage) String() string { return proto.CompactTextString(m) }
 func (*EntityMessage) ProtoMessage()    {}
 func (*EntityMessage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4b5c555c498591f0, []int{3}
+	return fileDescriptor_4b5c555c498591f0, []int{6}
 }
 func (m *EntityMessage) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -386,7 +542,7 @@ func (m *ChannelMessage) Reset()         { *m = ChannelMessage{} }
 func (m *ChannelMessage) String() string { return proto.CompactTextString(m) }
 func (*ChannelMessage) ProtoMessage()    {}
 func (*ChannelMessage) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4b5c555c498591f0, []int{4}
+	return fileDescriptor_4b5c555c498591f0, []int{7}
 }
 func (m *ChannelMessage) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -439,6 +595,9 @@ func (m *ChannelMessage) GetContext() []byte {
 func init() {
 	proto.RegisterEnum("lbtproto.ConnectServerReq_ReqType", ConnectServerReq_ReqType_name, ConnectServerReq_ReqType_value)
 	proto.RegisterEnum("lbtproto.ConnectServerResp_RespType", ConnectServerResp_RespType_name, ConnectServerResp_RespType_value)
+	proto.RegisterType((*EncryptToken)(nil), "lbtproto.EncryptToken")
+	proto.RegisterType((*EncryptKey)(nil), "lbtproto.EncryptKey")
+	proto.RegisterType((*EncryptKeyString)(nil), "lbtproto.EncryptKeyString")
 	proto.RegisterType((*ConnectServerReq)(nil), "lbtproto.ConnectServerReq")
 	proto.RegisterType((*ConnectServerResp)(nil), "lbtproto.ConnectServerResp")
 	proto.RegisterType((*ChannelEntityInfo)(nil), "lbtproto.ChannelEntityInfo")
@@ -449,40 +608,152 @@ func init() {
 func init() { proto.RegisterFile("legacy.proto", fileDescriptor_4b5c555c498591f0) }
 
 var fileDescriptor_4b5c555c498591f0 = []byte{
-	// 519 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x52, 0xb1, 0x8e, 0xda, 0x40,
-	0x10, 0x65, 0xc1, 0x70, 0xdc, 0x04, 0xc8, 0xb2, 0xba, 0xc2, 0x8a, 0x22, 0xeb, 0x64, 0xa5, 0xb8,
-	0x8a, 0x22, 0x91, 0xa2, 0xb4, 0xe1, 0x94, 0x48, 0x57, 0x70, 0x85, 0x2f, 0x6d, 0x8a, 0xc5, 0x9e,
-	0x03, 0x4b, 0xb0, 0xeb, 0xf3, 0xae, 0x09, 0x74, 0xc9, 0x1f, 0x5c, 0x9b, 0x4f, 0xc9, 0x1f, 0xa4,
-	0xbc, 0x32, 0x65, 0x04, 0x1f, 0x90, 0x5f, 0x88, 0x76, 0x59, 0x1b, 0x83, 0x94, 0x34, 0xd6, 0xbe,
-	0xb7, 0x33, 0xb3, 0xef, 0xbd, 0x31, 0xf4, 0x16, 0x38, 0xe3, 0xf1, 0x66, 0x94, 0xe5, 0x52, 0x4b,
-	0xd6, 0x5d, 0x4c, 0xb5, 0x3d, 0x85, 0xdf, 0x9b, 0x40, 0xaf, 0xa5, 0x10, 0x18, 0xeb, 0x3b, 0xcc,
-	0x57, 0x98, 0x47, 0xf8, 0xc0, 0xde, 0x82, 0xa7, 0x37, 0x19, 0xfa, 0xe4, 0x92, 0x5c, 0x0d, 0x5e,
-	0x87, 0xa3, 0xb2, 0x7a, 0x74, 0x5a, 0x39, 0x8a, 0xf0, 0xe1, 0xd3, 0x26, 0xc3, 0xc8, 0xd6, 0xb3,
-	0x17, 0xd0, 0x4d, 0x70, 0x95, 0xc6, 0x78, 0x93, 0xf8, 0xcd, 0x4b, 0x72, 0xd5, 0x8b, 0x2a, 0xcc,
-	0x02, 0x80, 0x78, 0x91, 0xa2, 0xd0, 0x37, 0xe2, 0x5e, 0xfa, 0x2d, 0x7b, 0x5b, 0x63, 0x18, 0x03,
-	0x8f, 0x17, 0x7a, 0xee, 0x7b, 0xf6, 0xc6, 0x9e, 0x4d, 0x0f, 0x0a, 0x9d, 0xea, 0x8d, 0xed, 0x69,
-	0xef, 0x7b, 0x0e, 0x4c, 0xf8, 0x19, 0xce, 0x9c, 0x00, 0x36, 0x84, 0xfe, 0x2d, 0x7e, 0x71, 0xfa,
-	0x52, 0x29, 0x68, 0x83, 0x51, 0xe8, 0x45, 0x58, 0x63, 0x08, 0xeb, 0x41, 0x77, 0x9c, 0x8a, 0xe4,
-	0x4e, 0x16, 0x0b, 0xda, 0x64, 0x03, 0x00, 0x83, 0xde, 0xaf, 0xb8, 0xe6, 0x39, 0x6d, 0xb1, 0xe7,
-	0xf0, 0xcc, 0xe2, 0x38, 0x96, 0x85, 0xd0, 0xd4, 0x0b, 0xff, 0x10, 0x18, 0x9e, 0x38, 0x56, 0x19,
-	0x7b, 0x77, 0x14, 0xce, 0xab, 0x7f, 0x86, 0xa3, 0xb2, 0x91, 0xf9, 0xd4, 0xe2, 0x79, 0x09, 0xe7,
-	0x0a, 0x95, 0x4a, 0xa5, 0xa8, 0xf2, 0x39, 0x10, 0xe1, 0x37, 0x02, 0xdd, 0xb2, 0x81, 0x75, 0xc1,
-	0x1b, 0x17, 0x6a, 0x43, 0x1b, 0xac, 0x0f, 0xe7, 0x6e, 0x30, 0x26, 0x94, 0x30, 0x06, 0x03, 0x07,
-	0x23, 0xbc, 0x2f, 0x14, 0x26, 0xb4, 0x69, 0x84, 0x47, 0x18, 0x57, 0x45, 0x2d, 0x76, 0x01, 0xb4,
-	0x22, 0xca, 0x32, 0xcf, 0x4c, 0xfa, 0x28, 0xf3, 0x69, 0x9a, 0x24, 0x28, 0x68, 0xdb, 0x4c, 0x9a,
-	0xf0, 0xf5, 0x21, 0x1f, 0x45, 0x3b, 0x61, 0x01, 0xc3, 0xeb, 0x39, 0x17, 0x02, 0x17, 0x1f, 0xaa,
-	0x94, 0xcd, 0x66, 0x2a, 0xc3, 0x3d, 0x67, 0x85, 0x81, 0x97, 0x9a, 0x9d, 0xec, 0x5d, 0xd8, 0xb3,
-	0xd9, 0xbe, 0xdb, 0x4d, 0xe2, 0xf6, 0x5b, 0xe1, 0x63, 0xeb, 0xde, 0xa9, 0xf5, 0x1f, 0x04, 0xfa,
-	0xfb, 0x07, 0x27, 0xa8, 0x14, 0x9f, 0xe1, 0xd1, 0x2c, 0x72, 0x32, 0x2b, 0x00, 0x58, 0xa2, 0x9e,
-	0xcb, 0xe4, 0x96, 0x2f, 0xd1, 0x29, 0xa8, 0x31, 0xec, 0x02, 0xda, 0xa9, 0x48, 0x70, 0x6d, 0x45,
-	0xb4, 0xa3, 0x3d, 0x30, 0x5d, 0x19, 0xcf, 0xf9, 0x12, 0x35, 0xe6, 0xca, 0x49, 0xa8, 0x31, 0xc7,
-	0x0a, 0xdb, 0x27, 0x0a, 0x99, 0x0f, 0x67, 0xb1, 0x14, 0x1a, 0xd7, 0xda, 0xef, 0xd8, 0xbb, 0x12,
-	0x86, 0x53, 0x18, 0xb8, 0xc8, 0x4a, 0xed, 0xa6, 0x76, 0xce, 0xc5, 0x44, 0xcd, 0x9c, 0xf4, 0x12,
-	0xfe, 0xff, 0x07, 0xa8, 0xbf, 0xd1, 0x3a, 0x7a, 0x63, 0x1c, 0xfc, 0xdc, 0x06, 0xe4, 0x69, 0x1b,
-	0x90, 0xdf, 0xdb, 0x80, 0x3c, 0xee, 0x82, 0xc6, 0xd3, 0x2e, 0x68, 0xfc, 0xda, 0x05, 0x8d, 0xaf,
-	0x84, 0x3c, 0x12, 0x32, 0xed, 0xd8, 0x1f, 0xf0, 0xcd, 0xdf, 0x00, 0x00, 0x00, 0xff, 0xff, 0xd5,
-	0x9a, 0xd9, 0xf2, 0xe5, 0x03, 0x00, 0x00,
+	// 604 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x53, 0xcf, 0x4e, 0xdb, 0x4e,
+	0x10, 0xce, 0x26, 0x0e, 0x84, 0xc1, 0xe4, 0xb7, 0xac, 0x38, 0x44, 0x3f, 0x21, 0x0b, 0x59, 0x1c,
+	0x7a, 0x8a, 0xaa, 0x56, 0xaa, 0x7a, 0x2d, 0x88, 0x4a, 0xa8, 0x02, 0x55, 0x86, 0x6b, 0x0f, 0x1b,
+	0xef, 0x40, 0x2c, 0xc2, 0xae, 0xf1, 0x6e, 0x68, 0x7c, 0x6b, 0xdf, 0x80, 0x6b, 0x1f, 0xa5, 0x6f,
+	0xd0, 0x23, 0xc7, 0x1e, 0x2b, 0x78, 0x80, 0xbe, 0x42, 0xb5, 0x9b, 0xf5, 0x9f, 0x44, 0x6a, 0x2f,
+	0xd6, 0x7c, 0x9f, 0x67, 0xbe, 0x99, 0x6f, 0xc6, 0x86, 0x70, 0x86, 0xd7, 0x3c, 0x2d, 0xc7, 0x79,
+	0xa1, 0x8c, 0x62, 0x83, 0xd9, 0xc4, 0xb8, 0x28, 0x3e, 0x84, 0xf0, 0x44, 0xa6, 0x45, 0x99, 0x9b,
+	0x4b, 0x75, 0x83, 0x92, 0xed, 0x41, 0xdf, 0xd8, 0x60, 0x44, 0x0e, 0xc8, 0x8b, 0x5e, 0xb2, 0x04,
+	0xf1, 0x02, 0xc0, 0x67, 0x7d, 0xc0, 0x92, 0x1d, 0xc0, 0xf6, 0x14, 0xb9, 0xf8, 0xc8, 0x85, 0xc8,
+	0xe4, 0xb5, 0xcb, 0x0c, 0x93, 0x36, 0xc5, 0x28, 0xf4, 0x6e, 0xb0, 0x1c, 0x75, 0xdd, 0x1b, 0x1b,
+	0x36, 0xba, 0xbd, 0x96, 0xae, 0x55, 0x32, 0x3c, 0x9b, 0x55, 0x4a, 0xc1, 0x52, 0xa9, 0x45, 0xc5,
+	0x2f, 0x81, 0x36, 0x9d, 0x2f, 0x4c, 0x61, 0xd5, 0xf7, 0x61, 0xeb, 0xa6, 0x02, 0xbe, 0x7b, 0x43,
+	0xc4, 0xdf, 0xba, 0x40, 0x8f, 0x95, 0x94, 0x98, 0x9a, 0x0b, 0x2c, 0xee, 0xb1, 0x48, 0xf0, 0x8e,
+	0xbd, 0x81, 0xc0, 0x94, 0x39, 0xba, 0xec, 0xe1, 0xab, 0x78, 0x5c, 0xf9, 0x1f, 0xaf, 0x67, 0x8e,
+	0x13, 0xbc, 0xbb, 0x2c, 0x73, 0x4c, 0x5c, 0x3e, 0xfb, 0x1f, 0x06, 0x02, 0xef, 0xb3, 0x14, 0x4f,
+	0x85, 0x77, 0x53, 0x63, 0x16, 0x01, 0xa4, 0xb3, 0x0c, 0xa5, 0x39, 0x95, 0x57, 0xca, 0xf9, 0x0a,
+	0x93, 0x16, 0xc3, 0x18, 0x04, 0x7c, 0x6e, 0xa6, 0xde, 0x95, 0x8b, 0x6d, 0x0d, 0x4a, 0x93, 0x99,
+	0xd2, 0xd5, 0xf4, 0x97, 0x35, 0x0d, 0x13, 0x7f, 0x82, 0x4d, 0x3f, 0x00, 0xdb, 0x85, 0x9d, 0x73,
+	0xfc, 0xec, 0xe7, 0xcb, 0x94, 0xa4, 0x1d, 0x46, 0x21, 0x4c, 0xb0, 0xc5, 0x10, 0x16, 0xc2, 0xe0,
+	0x28, 0x93, 0xe2, 0x42, 0xcd, 0x67, 0xb4, 0xcb, 0x86, 0x00, 0x16, 0xbd, 0xbb, 0xe7, 0x86, 0x17,
+	0xb4, 0xc7, 0xfe, 0x83, 0x6d, 0x87, 0xd3, 0x54, 0xcd, 0xa5, 0xa1, 0x41, 0xfc, 0x9b, 0xc0, 0xee,
+	0x9a, 0x63, 0x9d, 0xb3, 0xb7, 0x2b, 0xcb, 0x39, 0xfc, 0xeb, 0x72, 0x74, 0x3e, 0xb6, 0x8f, 0xd6,
+	0x7a, 0xf6, 0x61, 0x4b, 0xa3, 0xd6, 0x99, 0x92, 0xf5, 0x7e, 0x1a, 0x22, 0xfe, 0x4a, 0x60, 0x50,
+	0x15, 0xb0, 0x01, 0x04, 0x47, 0x73, 0x5d, 0xd2, 0x0e, 0xdb, 0x81, 0x2d, 0x2f, 0x8c, 0x82, 0x12,
+	0xc6, 0x60, 0xe8, 0x61, 0x82, 0x57, 0x73, 0x8d, 0x82, 0x76, 0xed, 0xe0, 0x09, 0xa6, 0x75, 0x52,
+	0x8f, 0xed, 0x01, 0xad, 0x89, 0x2a, 0x2d, 0xb0, 0x4a, 0xef, 0x55, 0x31, 0xc9, 0x84, 0x40, 0x49,
+	0xfb, 0x56, 0xe9, 0x8c, 0x2f, 0x9a, 0xfd, 0x68, 0xba, 0x11, 0xcf, 0x61, 0xf7, 0x78, 0xca, 0xa5,
+	0xc4, 0xd9, 0x49, 0xbd, 0x65, 0x7b, 0x99, 0xda, 0x70, 0xe8, 0xad, 0x30, 0x08, 0x32, 0x7b, 0x93,
+	0xa5, 0x0b, 0x17, 0xdb, 0xeb, 0xfb, 0xdb, 0x08, 0x7f, 0xdf, 0x1a, 0xaf, 0x5a, 0x0f, 0xd6, 0xad,
+	0x7f, 0x27, 0xb0, 0xb3, 0x6c, 0x78, 0x86, 0x5a, 0xf3, 0x6b, 0x5c, 0xd1, 0x22, 0x6b, 0x5a, 0x11,
+	0xc0, 0x2d, 0x9a, 0xa9, 0x12, 0xe7, 0xfc, 0x16, 0xfd, 0x04, 0x2d, 0xc6, 0xfe, 0x3c, 0x99, 0x14,
+	0xb8, 0x70, 0x43, 0xf4, 0x93, 0x25, 0xb0, 0x55, 0x39, 0x2f, 0xf8, 0x2d, 0x1a, 0x2c, 0xb4, 0x1f,
+	0xa1, 0xc5, 0xac, 0x4e, 0xd8, 0x5f, 0x9b, 0x90, 0x8d, 0x60, 0x33, 0x55, 0xd2, 0xe0, 0xc2, 0x8c,
+	0x36, 0xdc, 0xbb, 0x0a, 0xc6, 0x13, 0x18, 0xfa, 0x95, 0x55, 0xb3, 0xdb, 0xdc, 0x29, 0x97, 0x67,
+	0xba, 0xfa, 0xdd, 0x2a, 0xf8, 0xef, 0x0f, 0xa0, 0xdd, 0xa3, 0xb7, 0xd2, 0xe3, 0x28, 0xfa, 0xf1,
+	0x14, 0x91, 0xc7, 0xa7, 0x88, 0xfc, 0x7a, 0x8a, 0xc8, 0xc3, 0x73, 0xd4, 0x79, 0x7c, 0x8e, 0x3a,
+	0x3f, 0x9f, 0xa3, 0xce, 0x17, 0x42, 0x1e, 0x08, 0x99, 0x6c, 0xb8, 0x0f, 0xf0, 0xf5, 0x9f, 0x00,
+	0x00, 0x00, 0xff, 0xff, 0x86, 0x14, 0xa7, 0x30, 0xb7, 0x04, 0x00, 0x00,
+}
+
+func (m *EncryptToken) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EncryptToken) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EncryptToken) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Token != 0 {
+		i = encodeVarintLegacy(dAtA, i, uint64(m.Token))
+		i--
+		dAtA[i] = 0x8
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EncryptKey) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EncryptKey) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EncryptKey) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.TailPadding) > 0 {
+		i -= len(m.TailPadding)
+		copy(dAtA[i:], m.TailPadding)
+		i = encodeVarintLegacy(dAtA, i, uint64(len(m.TailPadding)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if m.Token != 0 {
+		i = encodeVarintLegacy(dAtA, i, uint64(m.Token))
+		i--
+		dAtA[i] = 0x18
+	}
+	if len(m.Key) > 0 {
+		i -= len(m.Key)
+		copy(dAtA[i:], m.Key)
+		i = encodeVarintLegacy(dAtA, i, uint64(len(m.Key)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.HeadPadding) > 0 {
+		i -= len(m.HeadPadding)
+		copy(dAtA[i:], m.HeadPadding)
+		i = encodeVarintLegacy(dAtA, i, uint64(len(m.HeadPadding)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EncryptKeyString) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EncryptKeyString) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EncryptKeyString) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.KeyString) > 0 {
+		i -= len(m.KeyString)
+		copy(dAtA[i:], m.KeyString)
+		i = encodeVarintLegacy(dAtA, i, uint64(len(m.KeyString)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *ConnectServerReq) Marshal() (dAtA []byte, err error) {
@@ -745,6 +1016,55 @@ func encodeVarintLegacy(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+func (m *EncryptToken) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Token != 0 {
+		n += 1 + sovLegacy(uint64(m.Token))
+	}
+	return n
+}
+
+func (m *EncryptKey) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.HeadPadding)
+	if l > 0 {
+		n += 1 + l + sovLegacy(uint64(l))
+	}
+	l = len(m.Key)
+	if l > 0 {
+		n += 1 + l + sovLegacy(uint64(l))
+	}
+	if m.Token != 0 {
+		n += 1 + sovLegacy(uint64(m.Token))
+	}
+	l = len(m.TailPadding)
+	if l > 0 {
+		n += 1 + l + sovLegacy(uint64(l))
+	}
+	return n
+}
+
+func (m *EncryptKeyString) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.KeyString)
+	if l > 0 {
+		n += 1 + l + sovLegacy(uint64(l))
+	}
+	return n
+}
+
 func (m *ConnectServerReq) Size() (n int) {
 	if m == nil {
 		return 0
@@ -872,6 +1192,330 @@ func sovLegacy(x uint64) (n int) {
 }
 func sozLegacy(x uint64) (n int) {
 	return sovLegacy(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *EncryptToken) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowLegacy
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EncryptToken: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EncryptToken: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Token", wireType)
+			}
+			m.Token = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowLegacy
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Token |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipLegacy(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthLegacy
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EncryptKey) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowLegacy
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EncryptKey: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EncryptKey: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field HeadPadding", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowLegacy
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthLegacy
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthLegacy
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.HeadPadding = append(m.HeadPadding[:0], dAtA[iNdEx:postIndex]...)
+			if m.HeadPadding == nil {
+				m.HeadPadding = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Key", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowLegacy
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthLegacy
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthLegacy
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Key = append(m.Key[:0], dAtA[iNdEx:postIndex]...)
+			if m.Key == nil {
+				m.Key = []byte{}
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Token", wireType)
+			}
+			m.Token = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowLegacy
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Token |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TailPadding", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowLegacy
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthLegacy
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthLegacy
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TailPadding = append(m.TailPadding[:0], dAtA[iNdEx:postIndex]...)
+			if m.TailPadding == nil {
+				m.TailPadding = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipLegacy(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthLegacy
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EncryptKeyString) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowLegacy
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EncryptKeyString: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EncryptKeyString: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field KeyString", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowLegacy
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthLegacy
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthLegacy
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.KeyString = append(m.KeyString[:0], dAtA[iNdEx:postIndex]...)
+			if m.KeyString == nil {
+				m.KeyString = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipLegacy(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthLegacy
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
 }
 func (m *ConnectServerReq) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)

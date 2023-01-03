@@ -17,6 +17,8 @@ var logger = lbtutil.NewLogger(strconv.Itoa(os.Getpid()), "lbtproto")
 
 // client - gate
 type ClientGateType struct {
+	Method_requestEncryptToken,
+	Method_confirmEncryptKey,
 	Method_connectServer,
 	Method_entityMessage,
 	Method_channelMessage,
@@ -51,6 +53,8 @@ type ServiceGateType struct {
 
 // gate - client
 type ClientType struct {
+	Method_responseEncryptToken,
+	Method_confirmEncryptKeyAck,
 	Method_connectResponse,
 	Method_createChannelEntity,
 	Method_entityMessage,

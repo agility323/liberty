@@ -27,28 +27,33 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 func init() { proto.RegisterFile("client_gate.proto", fileDescriptor_4d2708ccafc70b39) }
 
 var fileDescriptor_4d2708ccafc70b39 = []byte{
-	// 336 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x51, 0xc1, 0x4a, 0x2b, 0x31,
-	0x14, 0x6d, 0xde, 0x03, 0x95, 0xab, 0xad, 0x98, 0x96, 0x2a, 0x15, 0xf2, 0x09, 0x03, 0x56, 0x04,
-	0x51, 0xe8, 0xa2, 0x55, 0xa4, 0x0b, 0x37, 0x2d, 0xb8, 0x1d, 0xd2, 0x78, 0x1d, 0x07, 0xa6, 0xc9,
-	0x34, 0x89, 0x85, 0xd9, 0xf9, 0x09, 0xfd, 0x11, 0xd7, 0xfe, 0x82, 0xcb, 0x2e, 0x5d, 0x4a, 0xfb,
-	0x23, 0x42, 0x33, 0xa5, 0xd3, 0xa6, 0xee, 0x5c, 0xb8, 0xcb, 0xe5, 0xdc, 0x73, 0xee, 0x39, 0x27,
-	0x70, 0x24, 0x92, 0x18, 0xa5, 0x0d, 0x23, 0x6e, 0x31, 0x48, 0xb5, 0xb2, 0x8a, 0xee, 0x25, 0x03,
-	0xbb, 0x78, 0x35, 0x0e, 0x84, 0x1a, 0x0e, 0x95, 0x0c, 0xf2, 0x29, 0xc1, 0x88, 0x8b, 0xcc, 0x4d,
-	0xcd, 0xf7, 0x7f, 0xb0, 0xdf, 0xed, 0x2c, 0xc8, 0x77, 0xdc, 0x22, 0xbd, 0x86, 0xb2, 0x50, 0x52,
-	0xa2, 0xb0, 0x7d, 0xd4, 0x63, 0xd4, 0xb4, 0x11, 0x2c, 0x75, 0x82, 0x4e, 0x11, 0xe8, 0xe1, 0xa8,
-	0x51, 0x59, 0x61, 0x0f, 0x2a, 0x7e, 0xa4, 0x97, 0x50, 0x46, 0x69, 0x63, 0x9b, 0xdd, 0xa3, 0x31,
-	0x3c, 0x42, 0x7a, 0xbc, 0x5a, 0xb8, 0x2d, 0x02, 0x1e, 0xf3, 0x0a, 0x2a, 0xe2, 0x99, 0x4b, 0x89,
-	0xc9, 0x92, 0x7a, 0x52, 0xb8, 0xbb, 0x86, 0x78, 0xdc, 0x36, 0xd4, 0xf3, 0xf4, 0x06, 0xf5, 0x38,
-	0x16, 0x18, 0x6a, 0x1c, 0xbd, 0xa0, 0xb1, 0x45, 0x8d, 0xbe, 0x83, 0x7a, 0x0e, 0xf1, 0x34, 0xce,
-	0x00, 0x9c, 0xf3, 0x70, 0x68, 0x22, 0x5a, 0xf5, 0x6c, 0x9b, 0x68, 0x93, 0xd2, 0x7c, 0xfb, 0x0f,
-	0xbb, 0x79, 0x73, 0xb4, 0x05, 0x87, 0x79, 0x6b, 0x3d, 0x34, 0xa9, 0x92, 0x06, 0xe9, 0xe9, 0x8f,
-	0xbd, 0x99, 0x74, 0x4b, 0x84, 0xaa, 0xd0, 0xc8, 0x2d, 0xe6, 0x51, 0xdd, 0xd5, 0x35, 0x8d, 0x22,
-	0xd0, 0x95, 0x4f, 0xea, 0x8f, 0x94, 0xdf, 0x82, 0x9a, 0x57, 0x7e, 0x9a, 0x64, 0xb4, 0xbe, 0xa5,
-	0xfa, 0x34, 0xc9, 0x3c, 0xfe, 0x05, 0x94, 0x5d, 0xf2, 0xd0, 0x99, 0xa7, 0xb5, 0x4d, 0xd7, 0x37,
-	0xdc, 0xf2, 0x5f, 0xf8, 0xaf, 0x36, 0xfb, 0x98, 0x31, 0x32, 0x9d, 0x31, 0xf2, 0x35, 0x63, 0x64,
-	0x32, 0x67, 0xa5, 0xe9, 0x9c, 0x95, 0x3e, 0xe7, 0xac, 0xf4, 0x4a, 0xc8, 0x84, 0x90, 0xc1, 0xce,
-	0x62, 0xf7, 0xfc, 0x3b, 0x00, 0x00, 0xff, 0xff, 0xf3, 0xb6, 0x34, 0xb6, 0x4b, 0x03, 0x00, 0x00,
+	// 407 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x92, 0xc1, 0x6a, 0xdb, 0x40,
+	0x10, 0x86, 0x2d, 0x5a, 0xda, 0x32, 0xad, 0x5d, 0xbc, 0x16, 0x6e, 0x71, 0x41, 0x8f, 0x20, 0xa8,
+	0x8b, 0x4b, 0x69, 0xc1, 0xa5, 0x76, 0x4b, 0x31, 0xa5, 0x17, 0xbb, 0xf4, 0x2a, 0xd6, 0xdb, 0xb1,
+	0x2a, 0x2c, 0xed, 0xca, 0xbb, 0x1b, 0x83, 0x6e, 0x79, 0x04, 0xbf, 0x44, 0xce, 0x79, 0x8d, 0x1c,
+	0x7d, 0xcc, 0x31, 0xd8, 0x2f, 0x12, 0x90, 0xd6, 0xf1, 0xda, 0x9b, 0x90, 0x4b, 0x0e, 0xb9, 0x69,
+	0xf6, 0xdf, 0x7f, 0x66, 0xf6, 0xff, 0x04, 0x4d, 0x96, 0x26, 0xc8, 0x75, 0x14, 0x53, 0x8d, 0x61,
+	0x2e, 0x85, 0x16, 0xe4, 0x45, 0x3a, 0xd5, 0xe5, 0x57, 0xe7, 0x15, 0x13, 0x59, 0x26, 0x78, 0x68,
+	0xaa, 0x14, 0x63, 0xca, 0x8a, 0xaa, 0xea, 0x9e, 0x3f, 0x81, 0x97, 0xa3, 0x61, 0x69, 0xfe, 0x49,
+	0x35, 0x92, 0x1e, 0xb4, 0x24, 0x2e, 0x4e, 0x50, 0xe9, 0x1f, 0x9c, 0xc9, 0x22, 0xd7, 0x7f, 0xc4,
+	0x1c, 0x39, 0x69, 0x84, 0xbb, 0x6e, 0xe1, 0x5f, 0x91, 0xfc, 0xeb, 0x1c, 0xd5, 0xe4, 0x2b, 0x34,
+	0x99, 0xe0, 0xb3, 0x44, 0x66, 0xc6, 0xf6, 0x0b, 0x0b, 0xd2, 0xd9, 0x5f, 0xda, 0x9f, 0x4e, 0xb4,
+	0x4c, 0x78, 0xec, 0x34, 0xf8, 0x02, 0x75, 0x26, 0x38, 0x47, 0xa6, 0x27, 0x28, 0x97, 0x28, 0x6d,
+	0xf3, 0xd0, 0x16, 0xc6, 0xb8, 0x70, 0xcc, 0x9f, 0xa0, 0x8e, 0x5c, 0x27, 0xba, 0xf8, 0x8d, 0x4a,
+	0xd1, 0x18, 0xc9, 0x1b, 0x7b, 0xb2, 0x25, 0x38, 0xce, 0xcf, 0xd0, 0x60, 0xff, 0x29, 0xe7, 0x98,
+	0xee, 0xac, 0x6f, 0xad, 0xb9, 0x07, 0x8a, 0xe3, 0x1d, 0x40, 0xdb, 0xa4, 0xae, 0x50, 0x2e, 0x13,
+	0x86, 0x91, 0x49, 0xce, 0xee, 0x31, 0xa9, 0xa4, 0x71, 0xa5, 0x38, 0x3d, 0xde, 0x03, 0x54, 0x9b,
+	0x47, 0x99, 0x8a, 0x49, 0xcb, 0x59, 0x5b, 0x39, 0x49, 0x75, 0xcf, 0x9e, 0xc2, 0x73, 0x43, 0x8c,
+	0xf4, 0xc1, 0x97, 0xa8, 0x72, 0xc1, 0x15, 0x1e, 0xe0, 0x6a, 0x3b, 0xc9, 0x97, 0xe7, 0xce, 0xf8,
+	0x8f, 0xe0, 0x3b, 0xd8, 0xbe, 0xb1, 0xf9, 0xbd, 0xb8, 0xfb, 0xf0, 0xda, 0xd0, 0x1a, 0x9b, 0xf1,
+	0xe4, 0xdd, 0x9d, 0xbc, 0x54, 0x7e, 0x4b, 0x74, 0x2d, 0x26, 0x91, 0x6a, 0x34, 0x11, 0x57, 0xaf,
+	0x3d, 0xe8, 0x61, 0x0b, 0x23, 0x3e, 0x13, 0x8f, 0x04, 0x7a, 0x1f, 0x7c, 0x07, 0x7a, 0x9e, 0x16,
+	0x76, 0xe2, 0x37, 0xc8, 0xf3, 0xb4, 0x70, 0xfc, 0x3d, 0xa8, 0x57, 0x2f, 0x8f, 0xaa, 0xe5, 0x89,
+	0x7f, 0xbc, 0xf5, 0x77, 0xaa, 0xe9, 0x03, 0xfc, 0x27, 0x83, 0xe0, 0x62, 0x13, 0x78, 0xeb, 0x4d,
+	0xe0, 0x5d, 0x6d, 0x02, 0x6f, 0xb5, 0x0d, 0x6a, 0xeb, 0x6d, 0x50, 0xbb, 0xdc, 0x06, 0xb5, 0x53,
+	0xcf, 0x5b, 0x79, 0xde, 0xf4, 0x59, 0x79, 0xf7, 0xc3, 0x75, 0x00, 0x00, 0x00, 0xff, 0xff, 0x6a,
+	0x37, 0x95, 0xee, 0x3b, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -64,6 +69,8 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type IClientGateClient interface {
 	// legacy methods
+	RequestEncryptToken(ctx context.Context, in *Void, opts ...grpc.CallOption) (*Void, error)
+	ConfirmEncryptKey(ctx context.Context, in *EncryptKeyString, opts ...grpc.CallOption) (*Void, error)
 	ConnectServer(ctx context.Context, in *ConnectServerReq, opts ...grpc.CallOption) (*Void, error)
 	EntityMessage(ctx context.Context, in *EntityMessage, opts ...grpc.CallOption) (*Void, error)
 	ChannelMessage(ctx context.Context, in *ChannelMessage, opts ...grpc.CallOption) (*Void, error)
@@ -77,6 +84,24 @@ type iClientGateClient struct {
 
 func NewIClientGateClient(cc *grpc.ClientConn) IClientGateClient {
 	return &iClientGateClient{cc}
+}
+
+func (c *iClientGateClient) RequestEncryptToken(ctx context.Context, in *Void, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
+	err := c.cc.Invoke(ctx, "/lbtproto.IClientGate/requestEncryptToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *iClientGateClient) ConfirmEncryptKey(ctx context.Context, in *EncryptKeyString, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
+	err := c.cc.Invoke(ctx, "/lbtproto.IClientGate/confirmEncryptKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *iClientGateClient) ConnectServer(ctx context.Context, in *ConnectServerReq, opts ...grpc.CallOption) (*Void, error) {
@@ -127,6 +152,8 @@ func (c *iClientGateClient) EntityMsg(ctx context.Context, in *EntityMsg, opts .
 // IClientGateServer is the server API for IClientGate service.
 type IClientGateServer interface {
 	// legacy methods
+	RequestEncryptToken(context.Context, *Void) (*Void, error)
+	ConfirmEncryptKey(context.Context, *EncryptKeyString) (*Void, error)
 	ConnectServer(context.Context, *ConnectServerReq) (*Void, error)
 	EntityMessage(context.Context, *EntityMessage) (*Void, error)
 	ChannelMessage(context.Context, *ChannelMessage) (*Void, error)
@@ -138,6 +165,12 @@ type IClientGateServer interface {
 type UnimplementedIClientGateServer struct {
 }
 
+func (*UnimplementedIClientGateServer) RequestEncryptToken(ctx context.Context, req *Void) (*Void, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RequestEncryptToken not implemented")
+}
+func (*UnimplementedIClientGateServer) ConfirmEncryptKey(ctx context.Context, req *EncryptKeyString) (*Void, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConfirmEncryptKey not implemented")
+}
 func (*UnimplementedIClientGateServer) ConnectServer(ctx context.Context, req *ConnectServerReq) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConnectServer not implemented")
 }
@@ -156,6 +189,42 @@ func (*UnimplementedIClientGateServer) EntityMsg(ctx context.Context, req *Entit
 
 func RegisterIClientGateServer(s *grpc.Server, srv IClientGateServer) {
 	s.RegisterService(&_IClientGate_serviceDesc, srv)
+}
+
+func _IClientGate_RequestEncryptToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Void)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IClientGateServer).RequestEncryptToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/lbtproto.IClientGate/RequestEncryptToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IClientGateServer).RequestEncryptToken(ctx, req.(*Void))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IClientGate_ConfirmEncryptKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EncryptKeyString)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IClientGateServer).ConfirmEncryptKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/lbtproto.IClientGate/ConfirmEncryptKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IClientGateServer).ConfirmEncryptKey(ctx, req.(*EncryptKeyString))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _IClientGate_ConnectServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -253,6 +322,14 @@ var _IClientGate_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*IClientGateServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "requestEncryptToken",
+			Handler:    _IClientGate_RequestEncryptToken_Handler,
+		},
+		{
+			MethodName: "confirmEncryptKey",
+			Handler:    _IClientGate_ConfirmEncryptKey_Handler,
+		},
+		{
 			MethodName: "connectServer",
 			Handler:    _IClientGate_ConnectServer_Handler,
 		},
@@ -282,6 +359,8 @@ var _IClientGate_serviceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type IClientClient interface {
 	// legacy methods
+	ResponseEncryptToken(ctx context.Context, in *EncryptToken, opts ...grpc.CallOption) (*Void, error)
+	ConfirmEncryptKeyAck(ctx context.Context, in *Void, opts ...grpc.CallOption) (*Void, error)
 	ConnectResponse(ctx context.Context, in *ConnectServerResp, opts ...grpc.CallOption) (*Void, error)
 	CreateChannelEntity(ctx context.Context, in *ChannelEntityInfo, opts ...grpc.CallOption) (*Void, error)
 	EntityMessage(ctx context.Context, in *EntityMessage, opts ...grpc.CallOption) (*Void, error)
@@ -297,6 +376,24 @@ type iClientClient struct {
 
 func NewIClientClient(cc *grpc.ClientConn) IClientClient {
 	return &iClientClient{cc}
+}
+
+func (c *iClientClient) ResponseEncryptToken(ctx context.Context, in *EncryptToken, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
+	err := c.cc.Invoke(ctx, "/lbtproto.IClient/responseEncryptToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *iClientClient) ConfirmEncryptKeyAck(ctx context.Context, in *Void, opts ...grpc.CallOption) (*Void, error) {
+	out := new(Void)
+	err := c.cc.Invoke(ctx, "/lbtproto.IClient/confirmEncryptKeyAck", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *iClientClient) ConnectResponse(ctx context.Context, in *ConnectServerResp, opts ...grpc.CallOption) (*Void, error) {
@@ -365,6 +462,8 @@ func (c *iClientClient) EntityMsg(ctx context.Context, in *EntityMsg, opts ...gr
 // IClientServer is the server API for IClient service.
 type IClientServer interface {
 	// legacy methods
+	ResponseEncryptToken(context.Context, *EncryptToken) (*Void, error)
+	ConfirmEncryptKeyAck(context.Context, *Void) (*Void, error)
 	ConnectResponse(context.Context, *ConnectServerResp) (*Void, error)
 	CreateChannelEntity(context.Context, *ChannelEntityInfo) (*Void, error)
 	EntityMessage(context.Context, *EntityMessage) (*Void, error)
@@ -378,6 +477,12 @@ type IClientServer interface {
 type UnimplementedIClientServer struct {
 }
 
+func (*UnimplementedIClientServer) ResponseEncryptToken(ctx context.Context, req *EncryptToken) (*Void, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResponseEncryptToken not implemented")
+}
+func (*UnimplementedIClientServer) ConfirmEncryptKeyAck(ctx context.Context, req *Void) (*Void, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConfirmEncryptKeyAck not implemented")
+}
 func (*UnimplementedIClientServer) ConnectResponse(ctx context.Context, req *ConnectServerResp) (*Void, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConnectResponse not implemented")
 }
@@ -402,6 +507,42 @@ func (*UnimplementedIClientServer) EntityMsg(ctx context.Context, req *EntityMsg
 
 func RegisterIClientServer(s *grpc.Server, srv IClientServer) {
 	s.RegisterService(&_IClient_serviceDesc, srv)
+}
+
+func _IClient_ResponseEncryptToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EncryptToken)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IClientServer).ResponseEncryptToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/lbtproto.IClient/ResponseEncryptToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IClientServer).ResponseEncryptToken(ctx, req.(*EncryptToken))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IClient_ConfirmEncryptKeyAck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Void)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IClientServer).ConfirmEncryptKeyAck(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/lbtproto.IClient/ConfirmEncryptKeyAck",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IClientServer).ConfirmEncryptKeyAck(ctx, req.(*Void))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _IClient_ConnectResponse_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -534,6 +675,14 @@ var _IClient_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "lbtproto.IClient",
 	HandlerType: (*IClientServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "responseEncryptToken",
+			Handler:    _IClient_ResponseEncryptToken_Handler,
+		},
+		{
+			MethodName: "confirmEncryptKeyAck",
+			Handler:    _IClient_ConfirmEncryptKeyAck_Handler,
+		},
 		{
 			MethodName: "connectResponse",
 			Handler:    _IClient_ConnectResponse_Handler,
