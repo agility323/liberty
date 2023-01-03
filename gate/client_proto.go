@@ -6,7 +6,7 @@ import (
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtproto"
 
-	"gate/legacy"
+	"github.com/agility323/liberty/gate/legacy"
 )
 
 var ClientGateMethodHandler map[uint16]lbtnet.ProtoHandlerType = make(map[uint16]lbtnet.ProtoHandlerType)

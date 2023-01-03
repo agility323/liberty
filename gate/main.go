@@ -12,7 +12,7 @@ import (
 	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtreg"
 
-	"gate/legacy"
+	"github.com/agility323/liberty/gate/legacy"
 )
 
 func init() {
