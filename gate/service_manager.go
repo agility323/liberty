@@ -139,49 +139,75 @@ func (m *ServiceManager) serviceRequest(buf []byte) bool {
 		logger.Warn("service request fail 1")
 		return false
 	}
-	addrSet, ok := m.serviceTypeToAddrSet[msg.Type]
-	if !ok {
-		logger.Warn("service request fail 2 - %v", msg)
-		return false
-	}
 	// route
 	rt := getServiceRouteType(msg.Type, msg.Method, msg.Routet, msg.Routep)
-	if rt & RouteTypeRandomOne > 0 {
-		v := addrSet.RandomGetOne()
-		if v == nil {
-			logger.Warn("service request fail 3 - service list empty %v", msg)
-			return false
-		}
-		m.serviceRequestToAddr(v.(string), buf)
-	} else if rt & RouteTypeHash > 0 {
-		h := int(crc16.Checksum(msg.Routep, crc16.IBMTable))
-		vs := addrSet.GetAll()	// TODO service sort with id number
-		if len(vs) == 0 {
-			logger.Warn("service request fail 4 - service list empty %v", msg)
-			return false
-		}
-		v := vs[h % len(vs)]
-		m.serviceRequestToAddr(v.(string), buf)
-	} else if rt == RouteTypeSpecific {
-		m.serviceRequestToAddr(string(msg.Routep), buf)
-	} else if rt == RouteTypeAll {
-		vs := addrSet.GetAll()
-		for _, v := range vs {
-			m.serviceRequestToAddr(v.(string), buf)
+	entries := m.getServiceEntriesByRoute(msg.Type, rt, msg.Routep)
+	if entries == nil {
+		logger.Warn("service request fail 2 %v", msg)
+		return false
+	}
+	for _, entry := range entries {
+		if err := entry.cli.SendData(buf); err == nil {
+			logger.Debug("service request sent to %s", entry.addr)
+		} else {
+			logger.Warn("service request fail 3 at %s %v", entry.addr, err)
 		}
 	}
 	return true
 }
 
-func (m *ServiceManager) serviceRequestToAddr(addr string, buf []byte) {
-	if entry, ok := m.serviceMap[addr]; ok && entry.connected {
-		if err := entry.cli.SendData(buf); err == nil {
-			logger.Debug("service request sent to %s", entry.addr)
-			return
-		} else {
-			logger.Warn("service request fail 5 at %s %v", entry.addr, err)
+func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byte) []*serviceEntry {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	// specific
+	if rt == RouteTypeSpecific {
+		addr := string(rp)
+		if entry, ok := m.serviceMap[addr]; ok && entry.connected {
+			return []*serviceEntry{entry}
 		}
-	} else {
-		logger.Warn("service request fail 6")
+		return nil
 	}
+	// type based
+	addrSet, ok := m.serviceTypeToAddrSet[typ]
+	if !ok {
+		return nil
+	}
+	if rt & RouteTypeRandomOne > 0 {
+		v := addrSet.RandomGetOne()
+		if v == nil {
+			return nil
+		}
+		addr := v.(string)
+		if entry, ok := m.serviceMap[addr]; ok && entry.connected {
+			return []*serviceEntry{entry}
+		}
+		return nil
+	} else if rt & RouteTypeHash > 0 {
+		h := int(crc16.Checksum(rp, crc16.IBMTable))
+		vs := addrSet.GetAll()	// TODO service sort with id number
+		if len(vs) == 0 {
+			return nil
+		}
+		v := vs[h % len(vs)]
+		addr := v.(string)
+		if entry, ok := m.serviceMap[addr]; ok && entry.connected {	// maybe should try next entry
+			return []*serviceEntry{entry}
+		}
+		return nil
+	} else if rt == RouteTypeAll {
+		vs := addrSet.GetAll()
+		entries := make([]*serviceEntry, 0)
+		for _, v := range vs {
+			addr := v.(string)
+			if entry, ok := m.serviceMap[addr]; ok && entry.connected {
+				entries = append(entries, entry)
+			}
+		}
+		if len(entries) > 0 {
+			return entries
+		}
+		return nil
+	}
+	return nil
 }
