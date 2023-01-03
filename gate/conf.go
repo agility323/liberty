@@ -15,6 +15,7 @@ type confType struct {
 	} `json:"connect_server_handler"`
 	Etcd []string `json:"etcd"`
 	PrivateRsaKey string `json:"private_rsa_key"`
+	ProfilePort int `json:"profile_port"`
 }
 
 var Conf confType
@@ -23,6 +24,7 @@ var defaultConf map[string]interface{} = map[string]interface{} {
 	"log_level": lbtutil.Ldebug,
 	"client_server_addr": "127.0.0.1:4001",
 	"entrance_addr": "127.0.0.1:4001",
+	"profile_port": 4011,
 	"host": 101,
 	"connect_server_handler": map[string]string {
 		"service": "login_service",

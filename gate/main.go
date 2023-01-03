@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtutil"
@@ -27,6 +29,9 @@ func main() {
 
 	// log
 	lbtutil.SetLogLevel(Conf.LogLevel)
+
+	// profile
+	go http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", Conf.ProfilePort), nil)
 
 	// init legacy dependency
 	dep := legacy.LegacyDependency{

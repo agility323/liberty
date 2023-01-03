@@ -17,6 +17,10 @@ if [ "$ENTRANCE_ADDR" = "" ]; then
 	ENTRANCE_ADDR="$CLIENT_SERVER_ADDR"
 	echo "env ENTRANCE_ADDR is null, set to $ENTRANCE_ADDR"
 fi
+if [ "$PROFILE_PORT" = "" ]; then
+	PROFILE_PORT=4011
+	echo "env PROFILE_PORT is null, set to $PROFILE_PORT"
+fi
 if [ "$CONNECT_SERVER_HANDLER" = "" ]; then
 	CONNECT_SERVER_HANDLER="{
 		\"service\": \"login_service\",
