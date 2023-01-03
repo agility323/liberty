@@ -6,6 +6,8 @@ import (
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtproto"
 
+	"github.com/vmihailenco/msgpack"
+
 	"github.com/agility323/liberty/gate/legacy"
 )
 
@@ -61,5 +63,11 @@ func sendCreateEntity(c *lbtnet.TcpConnection, id []byte, typ string, data []byt
 
 func sendEntityMsg(c *lbtnet.TcpConnection, entityid []byte, method string, params []byte) {
 	legacy.LP_SendEntityMessage(c, entityid, []byte(method), params)
+}
+
+func makeBroadcastMsgData(msg string) ([]byte, error) {
+	parameters, err := msgpack.Marshal([]interface{} {msg, })
+	if err != nil { return nil, err }
+	return legacy.LP_MakeEntityMessageData([]byte {}, []byte("CMD_broadcast_msg"), parameters)
 }
 /********** ProtoSender End **********/

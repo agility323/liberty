@@ -64,15 +64,17 @@ func main() {
 	logger.Info("create client server at %s entrance is %s", clientServer.GetAddr(), Conf.EntranceAddr)
 	clientServer.Start()
 
-	// register
+	// register, discrover, watch
 	lbtreg.InitWithEtcd(Conf.Etcd)
+	ctxRegister, cancelRegister := context.WithCancel(context.Background())
 	// usually, gate exposes its addr directly to clients, so the entrance addr should be unique
 	// otherwise, such as there are proxies between gates and clients, the entrance varies
 	// so here we use listen addr as unique addr
-	ctxRegister, cancelRegister := context.WithCancel(context.Background())
 	go lbtreg.StartRegisterGate(ctxRegister, 11, Conf.Host, listenAddr, regData)
 	ctxDiscover, cancelDiscover := context.WithCancel(context.Background())
 	go lbtreg.StartDiscoverService(ctxDiscover, 11, serviceManager.OnDiscoverService, Conf.Host)
+	ctxWatchCmd, cancelWatchCmd := context.WithCancel(context.Background())
+	go lbtreg.StartWatchGateCmd(ctxWatchCmd, OnWatchGateCmd, Conf.Host)
 
 	// wait for stop
 	stopCh := make(chan os.Signal, 1)
@@ -82,6 +84,7 @@ func main() {
 	// on stop
 	cancelRegister()
 	cancelDiscover()
+	cancelWatchCmd()
 	onStop()
 }
 

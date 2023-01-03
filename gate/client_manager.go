@@ -156,3 +156,17 @@ func (m *ClientManager) removeClientsFromSlot(slot int, cm map[string]int) {
 		}
 	}
 }
+
+func (m *ClientManager) broadcastMsg(data []byte) {
+	for i := 0; i < ClientSlotNum; i++ {
+		m.broadcastMsgBySlot(i, data)
+	}
+}
+
+func (m *ClientManager) broadcastMsgBySlot(slot int, data []byte) {
+	m.locks[slot].RLock()
+	defer m.locks[slot].RUnlock()
+	for _, entry := range m.clientSlots[slot] {
+		entry.c.SendData(data)
+	}
+}

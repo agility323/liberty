@@ -212,6 +212,18 @@ func LP_SendCreateChannelEntity(c *lbtnet.TcpConnection, id, typ, info []byte) {
 	}
 }
 
+func LP_MakeEntityMessageData(entityid []byte, method []byte, parameters []byte) ([]byte, error) {
+	msg := &lbtproto.EntityMessage{
+		EntityId: entityid,
+		MethodName: method,
+		Index: 0,
+		Parameters: parameters,
+		SessionId: []byte {},
+		Context: []byte {},
+	}
+	return lbtproto.EncodeMessage(lbtproto.Client.Method_entityMessage, msg)
+}
+
 func LP_SendEntityMessage(c *lbtnet.TcpConnection, entityid []byte, method []byte, parameters []byte) {
 	logger.Debug("LP_SendEntityMessage start: entityid=%v", string(entityid))
 	msg := &lbtproto.EntityMessage{
