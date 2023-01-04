@@ -3,6 +3,7 @@ package service_framework
 import (
 	"errors"
 	"context"
+	"time"
 
 	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtnet"
@@ -66,7 +67,7 @@ func Service_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 }
 
 func runServiceRequestTask(c *lbtnet.TcpConnection, req *lbtproto.ServiceRequest, fromService bool) {
-	ctx, _ := context.WithTimeout(context.Background(), serviceRequestTimeout)
+	ctx, _ := context.WithTimeout(context.Background(), time.Duration(serviceConf.ServiceRequestTimeout) * time.Second)
 	task := func() struct{} {
 		reqid := string(req.Reqid)
 		replyData, err := processServiceMethod(c, req.Addr, reqid, req.Method, req.Params)
