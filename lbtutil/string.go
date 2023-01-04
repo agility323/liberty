@@ -5,6 +5,7 @@ package lbtutil
 
 import (
 	"unicode"
+	"hash/fnv"
 )
 
 var simpleSymbolMap map[rune]struct{} = map[rune]struct{} {
@@ -20,4 +21,10 @@ func IsSimpleString(s string) bool {
 		return false
 	}
 	return true
+}
+
+func StringHash(s string) int {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return int(h.Sum32())
 }
