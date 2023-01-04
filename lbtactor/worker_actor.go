@@ -1,9 +1,14 @@
 package lbtactor
 
 import (
+	"github.com/agility323/liberty/lbtutil"
+	"os"
+	"strconv"
 	"sync/atomic"
 	"time"
 )
+
+var logger = lbtutil.NewLogger(strconv.Itoa(os.Getpid()), "lbtactor")
 
 type taskWithNoReturn func()
 
@@ -50,6 +55,7 @@ func (w *WorkerActor) Stop() bool {
 
 func (w *WorkerActor) PushTask(task taskWithNoReturn) bool {
 	if w.closed{
+		logger.Error("work_actor taskq is closed")
 		return false
 	}
 	select {
@@ -57,6 +63,7 @@ func (w *WorkerActor) PushTask(task taskWithNoReturn) bool {
 		atomic.StoreInt32(&w.activet, int32(time.Now().Unix()))
 		return true
 	default:
+		logger.Error("work_actor taskq is full")
 		return false
 	}
 	return false
