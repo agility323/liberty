@@ -51,7 +51,12 @@ type QuitCmd struct {
 }
 
 func(c *QuitCmd) Process() {
-	Stop()
+	if c.Mode & lbtreg.QuitModeMaskSingleAll <= 0 && c.Addr != serviceConf.GateServerAddr { return }
+	if c.Mode & lbtreg.QuitModeMaskSoftHard > 0 {
+		Stop()
+	} else {
+		Stop()	// TODO
+	}
 }
 
 func GateBroadcast(ctx context.Context, method string, param interface{}) {

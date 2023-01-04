@@ -15,8 +15,14 @@ type HotfixCmdData struct {
 	BaseCmdData
 }
 
+const (
+	QuitModeMaskSoftHard = 1 << iota
+	QuitModeMaskSingleAll
+)
+
 type QuitCmdData struct {
 	BaseCmdData
+	Mode int `json:"mode"`
 	Addr string	`json:"addr"`
 }
 
