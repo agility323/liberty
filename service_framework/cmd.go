@@ -5,12 +5,12 @@ import (
 
 	"github.com/agility323/liberty/lbtreg"
 	"github.com/agility323/liberty/hotfix"
-	"github.com/agility323/liberty/hotfix/itf"
+	hitf "github.com/agility323/liberty/hotfix/itf"
 )
 
-var cmdMap = map[string]func(map[string]interface{}) {
-	"hotfix": CMD_hotfix,
-	"quit": CMD_quit,
+func init() {
+	lbtreg.RegisterCmdDataCreator("hotfix", func() lbtreg.CmdData { return &HotfixCmd{} })
+	lbtreg.RegisterCmdDataCreator("quit", func() lbtreg.CmdData { return &QuitCmd{} })
 }
 
 func OnWatchServiceCmd(typ int, key string, val []byte) {
@@ -22,17 +22,16 @@ func OnWatchServiceCmd(typ int, key string, val []byte) {
 		return
 	}
 	if serviceConf.ServiceType != cmd.Node { return }
-	f, ok := cmdMap[cmd.Cmd]
-	if !ok {
-		logger.Warn("invalid cmd type %v", cmd)
-		return
-	}
 	logger.Info("cmd begin %v", cmd)
-	f(cmd.Param)
+	cmd.Data.Process()
 	logger.Info("cmd end %v", cmd)
 }
 
-func CMD_hotfix(param map[string]interface{}) {
+type HotfixCmd struct {
+	lbtreg.HotfixCmdData
+}
+
+func (c *HotfixCmd) Process() {
 	p, err := plugin.Open("hotfix/hotfix.so")
 	if err != nil {
 		logger.Error("hotfix fail 1 %v", err)
@@ -43,9 +42,13 @@ func CMD_hotfix(param map[string]interface{}) {
 		logger.Error("hotfix fail 2 %v", err)
 		return
 	}
-	f.(func(itf.HotfixInterface) error)(hotfix.Hotfix)
+	f.(func(hitf.HotfixInterface) error)(hotfix.Hotfix)
 }
 
-func CMD_quit(param map[string]interface{}) {
+type QuitCmd struct {
+	lbtreg.QuitCmdData
+}
+
+func(c *QuitCmd) Process() {
 	Stop()
 }
