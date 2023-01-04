@@ -5,6 +5,8 @@ import (
 	"os/signal"
 	"syscall"
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtutil"
@@ -20,6 +22,9 @@ func Start(cb func()) {
 	} else {
 		logger.Info("service start with conf: %v", serviceConf)
 	}
+
+	// profile
+	go http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", serviceConf.ProfilePort), nil)
 
 	// gate server
 	serviceAddr = serviceConf.GateServerAddr
