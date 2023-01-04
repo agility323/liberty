@@ -3,19 +3,23 @@ package lbtactor
 import (
 	"sync/atomic"
 	"time"
+
+	"github.com/agility323/liberty/lbtutil"
 )
 
 type taskWithNoReturn func()
 
 type WorkerActor struct {
+	name string
 	state int32
 	activet int32
 	taskq chan taskWithNoReturn
 	stopq chan struct{}
 }
 
-func NewWorkerActor() *WorkerActor {
+func NewWorkerActor(name string) *WorkerActor {
 	return &WorkerActor{
+		name: name,
 		state: 0,
 		taskq: nil,
 		stopq: nil,
@@ -24,19 +28,23 @@ func NewWorkerActor() *WorkerActor {
 
 func (w *WorkerActor) Start(qlen int) bool {
 	if !atomic.CompareAndSwapInt32(&w.state, 0, 1) { return false }
+	go w.workLoop(qlen)
+	return true
+}
+
+func (w *WorkerActor) workLoop(qlen int) {
+	defer lbtutil.Recover("WorkerActor.workLoop " + w.name, func() { go w.workLoop(qlen) })
+
 	w.taskq = make(chan taskWithNoReturn, qlen)
 	w.stopq = make(chan struct{}, 1)
-	go func() {
-		for {
-			select {
-			case <-w.stopq:
-				return
-			case task := <-w.taskq:
-				task()
-			}
+	for {
+		select {
+		case <-w.stopq:
+			return
+		case task := <-w.taskq:
+			task()
 		}
-	} ()
-	return true
+	}
 }
 
 func (w *WorkerActor) Stop() bool {

@@ -1,6 +1,7 @@
 package service_framework
 
 import (
+	"fmt"
 	//"sync/atomic"
 
 	"github.com/agility323/liberty/lbtactor"
@@ -19,7 +20,7 @@ func (ec *EntityCore) init(typ string, id lbtutil.ObjectID) {
 	}
 	ec.id = id
 	ec.typ = typ
-	ec.actor = lbtactor.NewWorkerActor()
+	ec.actor = lbtactor.NewWorkerActor(fmt.Sprintf("entity.%s", ec.id.Hex()))
 }
 
 func (ec *EntityCore) GetType() string {

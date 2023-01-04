@@ -1,13 +1,15 @@
 package lbtnet
 
 import (
+	"fmt"
 	"net"
 	"sync/atomic"
 	"encoding/binary"
 	"io"
 	"bytes"
-	"runtime/debug"
 	"errors"
+
+	"github.com/agility323/liberty/lbtutil"
 )
 
 const (
@@ -70,14 +72,8 @@ func (c *TcpConnection) Start() {
 }
 
 func (c *TcpConnection) readLoop() {
-		/*
-	defer func(){
-		if r := recover(); r != nil {
-			logger.Error("tcp conn panic in read %v %v", c.conn, r)
-			c.Close()
-		}
-	}()
-		*/
+	defer lbtutil.Recover(fmt.Sprintf("TcpConnection.readLoop %v", c.conn), c.Close)
+
 	for {
 		if c.readLoopFunc() { return }
 	}
@@ -152,12 +148,7 @@ func (c *TcpConnection) CloseWithoutCallback() bool {
 	if atomic.CompareAndSwapInt32(&c.closed, 0, 1) {
 		logger.Info("tcp conn close %s", c.raddr)
 		_ = c.conn.Close()
-		defer func() {
-			if r := recover(); r != nil {
-				debug.PrintStack()
-				logger.Error("tcp conn panic in close %v %v", c.conn, r)
-			}
-		}()
+		defer lbtutil.Recover(fmt.Sprintf("TcpConnection.CloseWithoutCallback %v", c.conn), nil)
 		return true
 	}
 	return false

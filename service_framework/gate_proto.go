@@ -83,7 +83,7 @@ func runServiceRequestTask(c *lbtnet.TcpConnection, req *lbtproto.ServiceRequest
 		}
 		return struct{}{}
 	}
-	lbtactor.RunTaskActor(ctx, task)
+	lbtactor.RunTaskActor(ctx, "runServiceRequestTask." + req.Method, task)
 }
 
 func Service_service_reply(c *lbtnet.TcpConnection, buf []byte) error {

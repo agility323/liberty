@@ -1,10 +1,10 @@
 package lbtnet
 
 import (
+	"fmt"
 	"net"
 	"strconv"
 	"sync/atomic"
-	"runtime/debug"
 	"os"
 
 	"github.com/agility323/liberty/lbtutil"
@@ -59,12 +59,8 @@ func (server *TcpServer) GetAddr() string {
 }
 
 func (server *TcpServer) acceptLoop() {
-	defer func() {
-		err := recover(); if err != nil {
-			debug.PrintStack()
-			go server.acceptLoop()
-		}
-	}()
+	defer lbtutil.Recover(fmt.Sprintf("TcpServer.acceptLoop %v", server.listener), func() { go server.acceptLoop() })
+
 	for  {
 		conn, err := server.listener.AcceptTCP()
 		if err != nil {
