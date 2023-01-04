@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"fmt"
 
 	"github.com/gogo/protobuf/proto"
 )
@@ -21,6 +22,9 @@ type MessageSender interface {
 }
 
 func DecodeMethodIndex(buf []byte) (uint16, error) {
+	if len(buf) < int(IndexBody) {
+		return 0, fmt.Errorf("lbtproto.DecodeMethodIndex fail - short buf %d", len(buf))
+	}
 	var methodIndex uint16 = 0
 	if err := binary.Read(bytes.NewReader(buf[IndexHeader:IndexBody]), byteOrder, &methodIndex); err != nil {
 		return 0, errors.New("lbtproto.DecodeMethodIndex fail - " + err.Error())
@@ -29,6 +33,9 @@ func DecodeMethodIndex(buf []byte) (uint16, error) {
 }
 
 func DecodeMessage(buf []byte, msg proto.Message) error {
+	if len(buf) < int(IndexBody) {
+		return fmt.Errorf("lbtproto.DecodeMessage fail - short buf %d", len(buf))
+	}
 	return proto.Unmarshal(buf[IndexBody:], msg)
 }
 
