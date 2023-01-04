@@ -51,11 +51,21 @@ func (m *ClientManager) clientDisconnect(c *lbtnet.TcpConnection) {
 	m.locks[slot].Lock()
 	defer m.locks[slot].Unlock()
 
+	// delete client entry
 	entry, ok := m.clientSlots[slot][addr]
 	if !ok { return }
 	delete(m.clientSlots[slot], addr)
-	if entry.serviceAddr != "" {
-		info := lbtproto.BindClientInfo{Caddr: addr, Saddr: entry.serviceAddr}
+	saddr := entry.serviceAddr
+	if saddr != "" {
+		// delete bound client
+		if cm, ok := m.boundClientSlots[slot][saddr]; ok {
+			delete(cm, addr)
+			if len(cm) == 0 {
+				delete(m.boundClientSlots[slot], saddr)
+			}
+		}
+		// send client_disconnect to service
+		info := lbtproto.BindClientInfo{Caddr: addr, Saddr: saddr}
 		serviceEntry := serviceManager.getServiceEntry(info.Saddr)
 		if serviceEntry != nil && serviceEntry.state == ServiceStateConnected {
 			lbtproto.SendMessage(serviceEntry.cli, lbtproto.Service.Method_client_disconnect, &info)
