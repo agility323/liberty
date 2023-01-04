@@ -1,12 +1,12 @@
 package lbtutil
 
 import (
-	"time"
-	"os"
-	"io"
 	"fmt"
-	"sync/atomic"
+	"io"
+	"os"
 	"strconv"
+	"sync/atomic"
+	"time"
 )
 
 const (
