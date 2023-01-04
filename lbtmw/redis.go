@@ -4,11 +4,8 @@ import (
 	"strings"
 	"io/ioutil"
 	"os"
-	"strconv"
 
 	"github.com/go-redis/redis"
-	
-	sf "github.com/agility323/liberty/service_framework"
 )
 
 const RedisKeyDelimiter = ":"
@@ -18,6 +15,8 @@ var RedisScriptPath = "./redis_script/"
 var redisScriptCache = make(map[string]*redis.Script)
 
 var RedisClient redis.UniversalClient
+
+var Host string
 
 // 1. If the MasterName option is specified, a sentinel-backed FailoverClient is returned.
 // 2. if the number of Addrs is two or more, a ClusterClient is returned.
@@ -39,7 +38,7 @@ func RedisKey(fields []string) string {
 
 func RedisHostKey(fields []string) string {
 	s := strings.Join(fields, RedisKeyDelimiter)
-	return strings.Join([]string{strconv.Itoa(sf.GetServiceConf().Host), s}, RedisKeyDelimiter)
+	return strings.Join([]string{Host, s}, RedisKeyDelimiter)
 }
 
 func LoadAllRedisScript(spath string) {
