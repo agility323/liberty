@@ -75,6 +75,7 @@ func main() {
 	clientServer.Start()
 
 	// register, discrover, watch
+	InitRegData()
 	lbtreg.InitWithEtcd(Conf.Etcd)
 	ctxRegister, cancelRegister := context.WithCancel(context.Background())
 	// usually, gate exposes its addr directly to clients, so the entrance addr should be unique

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"strconv"
 
@@ -9,10 +10,22 @@ import (
 )
 
 var logger = lbtutil.NewLogger(strconv.Itoa(os.Getpid()), "gate")
-var regData *lbtreg.BasicRegData
 
-func init() {
-	regData = &lbtreg.BasicRegData{
-		Version: lbtutil.ReadVersionFile(),
+type GateRegData struct {
+	lbtreg.BasicRegData
+	EntranceAddr string
+}
+
+var regData *GateRegData
+
+func (d *GateRegData) Marshal() (string, error) {
+	b, err := json.Marshal(d)
+	return string(b), err
+}
+
+func InitRegData() {
+	regData = &GateRegData{
+		EntranceAddr: Conf.EntranceAddr,
 	}
+	regData.Version = lbtutil.ReadVersionFile()
 }
