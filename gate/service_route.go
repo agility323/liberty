@@ -1,13 +1,8 @@
 package main
 
-const (
-	RouteTypeRandomOne int32 = 1 << iota
-	RouteTypeHash
-	RouteTypeSpecific
-	RouteTypeAll
+import (
+	"github.com/agility323/liberty/lbtproto"
 )
-
-const defaultRouteType = RouteTypeRandomOne
 
 type routeInfo struct {
 	suggested int32
@@ -16,13 +11,14 @@ type routeInfo struct {
 
 var serviceRouteInfo = map[string]map[string]routeInfo {
 	"avatar_service": map[string]routeInfo {
-		"link_avatar": routeInfo{RouteTypeHash, RouteTypeHash | RouteTypeSpecific},
+		// method: {suggested, allowed}
+		"link_avatar": routeInfo{lbtproto.RouteTypeHash, lbtproto.RouteTypeHash | lbtproto.RouteTypeSpecific},
 	},
 }
 
 func getServiceRouteType(service, method string, rt int32, rp []byte) int32 {
 	// default
-	if rt == 0 { return defaultRouteType }
+	if rt == 0 { return lbtproto.DefaultRouteType }
 	// limit
 	if m, ok := serviceRouteInfo[service]; ok {
 		if info, ok := m[method]; ok {
@@ -30,6 +26,8 @@ func getServiceRouteType(service, method string, rt int32, rp []byte) int32 {
 		}
 	}
 	// check
-	if len(rp) == 0 && (rt & (RouteTypeHash | RouteTypeSpecific)) > 0 { return defaultRouteType }
+	if len(rp) == 0 && (rt & (lbtproto.RouteTypeHash | lbtproto.RouteTypeSpecific)) > 0 {
+		return lbtproto.DefaultRouteType
+	}
 	return rt
 }

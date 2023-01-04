@@ -14,6 +14,7 @@ import (
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtreg"
+	"github.com/agility323/liberty/lbtproto"
 
 	"github.com/agility323/liberty/gate/legacy"
 )
@@ -48,10 +49,10 @@ func main() {
 		ConnectServerService: Conf.ConnectServerHandler.Service,
 		ConnectServerMethod: Conf.ConnectServerHandler.Method,
 		LegacyRouteTypeMap: map[string]int32 {
-			"random": RouteTypeRandomOne,
-			"hash": RouteTypeHash,
-			"specific": RouteTypeSpecific,
-			"all": RouteTypeAll,
+			"random": lbtproto.RouteTypeRandomOne,
+			"hash": lbtproto.RouteTypeHash,
+			"specific": lbtproto.RouteTypeSpecific,
+			"all": lbtproto.RouteTypeAll,
 		},
 		ServiceAddrGetter: clientManager.getClientServiceAddr,
 		ServiceSender: serviceManager.sendToService,

@@ -178,7 +178,7 @@ func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byt
 	defer m.lock.RUnlock()
 
 	// specific
-	if rt == RouteTypeSpecific {
+	if rt == lbtproto.RouteTypeSpecific {
 		addr := string(rp)
 		if entry, ok := m.serviceMap[addr]; ok && entry.state == ServiceStateConnected {
 			return []*serviceEntry{entry}
@@ -190,7 +190,7 @@ func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byt
 	if !ok {
 		return nil
 	}
-	if rt & RouteTypeRandomOne > 0 {
+	if rt & lbtproto.RouteTypeRandomOne > 0 {
 		v := addrSet.RandomGetOne()
 		if v == nil {
 			return nil
@@ -200,7 +200,7 @@ func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byt
 			return []*serviceEntry{entry}
 		}
 		return nil
-	} else if rt & RouteTypeHash > 0 {
+	} else if rt & lbtproto.RouteTypeHash > 0 {
 		h := int(crc16.Checksum(rp, crc16.IBMTable))
 		vs := addrSet.GetAll()	// TODO service sort with id number
 		if len(vs) == 0 {
@@ -212,7 +212,7 @@ func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byt
 			return []*serviceEntry{entry}
 		}
 		return nil
-	} else if rt == RouteTypeAll {
+	} else if rt == lbtproto.RouteTypeAll {
 		vs := addrSet.GetAll()
 		entries := make([]*serviceEntry, 0)
 		for _, v := range vs {
