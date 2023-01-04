@@ -1,8 +1,9 @@
 package lbtreg
 
 import (
-	"time"
+	"context"
 	"strings"
+	"time"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -38,4 +39,15 @@ func GenEtcdKey(dirs ...string) string {
 
 func SplitEtcdKey(key string, n int) []string {
 	return strings.SplitN(key, etcdDelimeter, n)
+}
+
+func PutEtcdValue(ctx context.Context, key, val string) {
+	timeout := 3 * time.Second
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	kvc := clientv3.NewKV(etcdClient)
+	_, err := kvc.Put(ctx, key, val)
+	if err != nil {
+		logger.Warn("PutEtcdValue fail 1 %s %s", key, val)
+	}
 }

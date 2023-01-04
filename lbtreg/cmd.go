@@ -1,11 +1,31 @@
 package lbtreg
 
 import (
-	"strconv"
 	"context"
+	"strconv"
 )
 
 type WatchCallback func(int, string, []byte)
+
+func PutGateCmd(ctx context.Context, host int, cmd *CmdValue) {
+	key := GenEtcdKey(strconv.Itoa(host), "cmd", "gate")
+	val, err := cmd.Marshal()
+	if err != nil {
+		logger.Warn("PutGateCmd fail 1 %s %v %v", key, cmd, err)
+		return
+	}
+	PutEtcdValue(ctx, key, val)
+}
+
+func PutServiceCmd(ctx context.Context, host int, cmd *CmdValue) {
+	key := GenEtcdKey(strconv.Itoa(host), "cmd", "service")
+	val, err := cmd.Marshal()
+	if err != nil {
+		logger.Warn("PutServiceCmd fail 1 %s %v %v", key, cmd, err)
+		return
+	}
+	PutEtcdValue(ctx, key, val)
+}
 
 func StartWatchGateCmd(ctx context.Context, cb WatchCallback, host int) {
 	etcdKey := GenEtcdKey(strconv.Itoa(host), "cmd", "gate")
