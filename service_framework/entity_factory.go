@@ -59,7 +59,7 @@ func CreateEntity(name string, id lbtutil.ObjectID) interface{} {
 	id = ec.GetId()
 	// register
 	e := ptr.Interface()
-	registerEntity(id, e)
+	addEntity(id, e)
 	logger.Info("create entity %s %s", ec.GetType(), id.Hex())
 	return e
 }

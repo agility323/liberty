@@ -14,21 +14,59 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-var entities sync.Map
+var entmgr *EntityManager
 
-func registerEntity(id lbtutil.ObjectID, e interface{}) {
-	entities.Store(id, e)
+func init() {
+	entmgr = &EntityManager{
+	}
+	for slot := range entmgr.entitySlots {
+		entmgr.entitySlots[slot] = make(map[lbtutil.ObjectID]interface{})
+	}
+}
+
+const EntitySlotNum = 64
+
+type EntityManager struct {
+	locks [EntitySlotNum]sync.RWMutex
+	entitySlots [EntitySlotNum]map[lbtutil.ObjectID]interface{}
+}
+
+func addEntity(id lbtutil.ObjectID, e interface{}) {
+	slot := lbtutil.StringHash(id.Hex()) % EntitySlotNum
+	entmgr.locks[slot].Lock()
+	defer entmgr.locks[slot].Unlock()
+
+	entmgr.entitySlots[slot][id] = e
 }
 
 func removeEntity(id lbtutil.ObjectID) {
-	entities.Delete(id)
+	slot := lbtutil.StringHash(id.Hex()) % EntitySlotNum
+	entmgr.locks[slot].Lock()
+	defer entmgr.locks[slot].Unlock()
+
+	delete(entmgr.entitySlots[slot], id)
 }
 
 func GetEntity(id lbtutil.ObjectID) interface{} {
-	if v, ok := entities.Load(id); ok {
-		return v
+	slot := lbtutil.StringHash(id.Hex()) % EntitySlotNum
+	entmgr.locks[slot].RLock()
+	defer entmgr.locks[slot].RUnlock()
+
+	return entmgr.entitySlots[slot][id]
+}
+
+func (m *EntityManager) onStart() {
+	tickmgr.AddTickJob(m.OnTick)
+}
+
+func (m *EntityManager) OnTick() {
+	n := 0
+	for slot := range m.entitySlots {
+		m.locks[slot].RLock()
+		n += len(m.entitySlots[slot])
+		m.locks[slot].RUnlock()
 	}
-	return nil
+	logger.Info("entity manager tick %d", n)
 }
 
 func CallEntityMethodLocal(id lbtutil.ObjectID, method string, paramBytes []byte) error {
@@ -77,41 +115,6 @@ func CallEntityMethodLocal(id lbtutil.ObjectID, method string, paramBytes []byte
 		_ = rpc.m.Func.Call(params)
 	})
 	return nil
-
-	/*
-	typ := pec.GetType()
-	rpc, ok := entityRpcMap[typ][method]
-	if !ok {
-		return fmt.Errorf("CallEntityMethodLocal fail: method not found %s %s %s", typ, id.Hex(), method)
-	}
-	// parameters
-	params := make([]reflect.Value, 1, len(rpc.pts) + 1)
-	params[0] = v
-	for _, pt := range rpc.pts {
-		ptrVal := reflect.New(pt)
-		params = append(params, ptrVal.Elem())
-	}
-	rawArray := lbtutil.MsgpackRawArray(paramBytes)
-	if !rawArray.Valid() {
-		return fmt.Errorf("CallEntityMethodLocal fail: params is not array %v", paramBytes)
-	}
-	decoder := msgpack.NewDecoder(bytes.NewBuffer(rawArray.Body()))
-	for i := 1; i < len(params); i++ {
-		err := decoder.DecodeValue(params[i])
-		if err == io.EOF {
-			logger.Warn(fmt.Sprintf("CallEntityMethodLocal insufficient params: %s %s %s %d %d",
-				typ, id.Hex(), method, len(params) - 1, i - 1))
-			break
-		}
-		if err != nil {
-			return errors.New(fmt.Sprintf("CallEntityMethodLocal fail: msgpack decode fail [%v] %s %v %v",
-				err, method, paramBytes, rawArray.Body()))
-		}
-	}
-	// call
-	_ = rpc.m.Func.Call(params)
-	return nil
-	*/
 }
 
 func CallEntityMethod(addr string, id lbtutil.ObjectID, method string, params interface{}) {

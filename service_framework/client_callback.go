@@ -2,28 +2,74 @@ package service_framework
 
 import (
 	"sync"
+
+	"github.com/agility323/liberty/lbtutil"
 )
+
+var ccbmgr *ClientCallbackManager
+
+func init() {
+	ccbmgr = &ClientCallbackManager{}
+	for slot := range ccbmgr.ccbSlots {
+		ccbmgr.ccbSlots[slot] = make(map[string]ClientCallback)
+	}
+}
 
 type ClientCallback interface {
 	OnClientDisconnect()
 }
 
-var clientCallbackMap sync.Map
+const ClientCallbackSlotNum = 64
+
+type ClientCallbackManager struct {
+	locks [ClientCallbackSlotNum]sync.RWMutex
+	ccbSlots [ClientCallbackSlotNum]map[string]ClientCallback
+}
+
+func (m *ClientCallbackManager) onStart() {
+	tickmgr.AddTickJob(m.OnTick)
+}
+
+func (m *ClientCallbackManager) OnTick() {
+	n := 0
+	for slot := range m.ccbSlots {
+		m.locks[slot].RLock()
+		n += len(m.ccbSlots[slot])
+		m.locks[slot].RUnlock()
+	}
+	logger.Info("ccb manager tick %d", n)
+}
 
 func registerClientCallback(caddr string, cb ClientCallback) {
-	clientCallbackMap.Store(caddr, cb)
+	slot := lbtutil.StringHash(caddr) % ClientCallbackSlotNum
+	ccbmgr.locks[slot].Lock()
+	defer ccbmgr.locks[slot].Unlock()
+
+	ccbmgr.ccbSlots[slot][caddr] = cb
 }
 
 func unregisterClientCallback(caddr string) {
-	clientCallbackMap.Delete(caddr)
+	slot := lbtutil.StringHash(caddr) % ClientCallbackSlotNum
+	ccbmgr.locks[slot].Lock()
+	defer ccbmgr.locks[slot].Unlock()
+
+	delete(ccbmgr.ccbSlots[slot], caddr)
 }
 
 func getClientCallback(caddr string) ClientCallback {
-	if v, ok := clientCallbackMap.Load(caddr); ok { return v.(ClientCallback) }
-	return nil
+	slot := lbtutil.StringHash(caddr) % ClientCallbackSlotNum
+	ccbmgr.locks[slot].RLock()
+	defer ccbmgr.locks[slot].RUnlock()
+
+	return ccbmgr.ccbSlots[slot][caddr]
 }
 
 func popClientCallback(caddr string) ClientCallback {
-	if v, ok := clientCallbackMap.LoadAndDelete(caddr); ok { return v.(ClientCallback) }
-	return nil
+	slot := lbtutil.StringHash(caddr) % ClientCallbackSlotNum
+	ccbmgr.locks[slot].RLock()
+	defer ccbmgr.locks[slot].RUnlock()
+
+	cb, ok := ccbmgr.ccbSlots[slot][caddr]
+	if ok { delete(ccbmgr.ccbSlots[slot], caddr) }
+	return cb
 }

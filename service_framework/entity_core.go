@@ -73,14 +73,17 @@ func NewRemoteEntityStub(core *EntityCore, addr, remoteAddr string, cb func()) *
 }
 
 func (stub *RemoteEntityStub) GetLocalAddr() string {
+	if stub == nil { return "" }
 	return stub.localAddr
 }
 
 func (stub *RemoteEntityStub) GetRemoteAddr() string {
+	if stub == nil { return "" }
 	return stub.remoteAddr
 }
 
 func (stub *RemoteEntityStub) Bind() bool {
+	if stub == nil { return false }
 	c := gateManager.getGateByAddr(stub.addr)
 	if c == nil {
 		stub.disconnected = 1
@@ -97,6 +100,7 @@ func (stub *RemoteEntityStub) Bind() bool {
 }
 
 func (stub *RemoteEntityStub) Switch(addr, remoteAddr string) bool {
+	if stub == nil { return false }
 	c := gateManager.getGateByAddr(addr)
 	if c == nil { return false }
 	if oldc := gateManager.getGateByAddr(stub.addr); oldc != nil {
@@ -110,6 +114,7 @@ func (stub *RemoteEntityStub) Switch(addr, remoteAddr string) bool {
 }
 
 func (stub *RemoteEntityStub) Disconnect() bool {
+	if stub == nil { return false }
 	if stub.disconnected == 1 { return false }
 	stub.disconnected = 1
 	if c := gateManager.getGateByAddr(stub.addr); c != nil {
@@ -121,12 +126,14 @@ func (stub *RemoteEntityStub) Disconnect() bool {
 }
 
 func (stub *RemoteEntityStub) OnClientDisconnect() {
+	if stub == nil { return }
 	if stub.disconnected == 1 { return }
 	stub.disconnected = 1
 	stub.disconnectCallback()
 }
 
 func (stub *RemoteEntityStub) Yield(core *EntityCore) *RemoteEntityStub {
+	if stub == nil { return nil }
 	return &RemoteEntityStub{
 		core: core,
 		addr: stub.addr,
@@ -136,6 +143,7 @@ func (stub *RemoteEntityStub) Yield(core *EntityCore) *RemoteEntityStub {
 }
 
 func (stub *RemoteEntityStub) CreateEntity(data interface{}) bool {
+	if stub == nil { return false }
 	c := gateManager.getGateByAddr(stub.addr)
 	if c == nil {
 		stub.Disconnect()
@@ -150,6 +158,7 @@ func (stub *RemoteEntityStub) CreateEntity(data interface{}) bool {
 }
 
 func (stub *RemoteEntityStub) CallClientMethod(method string, params interface{}) bool {
+	if stub == nil { return false }
 	c := gateManager.getGateByAddr(stub.addr)
 	if c == nil {
 		stub.Disconnect()

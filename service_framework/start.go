@@ -53,6 +53,9 @@ func Start(cb func()) {
 	// watch
 	go lbtreg.StartWatchServiceCmd(ctx, OnWatchServiceCmd, serviceConf.Host)
 
+	// on start
+	onStart()
+
 	// wait for stop
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
 	<-stopCh
@@ -63,7 +66,17 @@ func Start(cb func()) {
 	cb()
 }
 
+func onStart() {
+	if serviceConf.TickTime > 0 {
+		tickmgr.ResetTickTime(serviceConf.TickTime)
+	}
+	entmgr.onStart()
+	ccbmgr.onStart()
+	tickmgr.Start()
+}
+
 func onStop() {
+	tickmgr.Stop()
 	logger.Info("service stopped %s", serviceConf.ServiceType)
 }
 

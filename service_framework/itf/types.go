@@ -9,4 +9,5 @@ type ServiceConfType struct {
 	Etcd []string `json:"etcd"`
 	ServiceRequestTimeout int `json:"service_request_timeout"`
 	ServerHotfixPath string `json:"server_hotfix_path"`
+	TickTime int `json:"tick_time"`
 }
