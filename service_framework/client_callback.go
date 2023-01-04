@@ -1,15 +1,24 @@
 package service_framework
 
+import (
+	"sync"
+)
+
 type ClientCallback interface {
 	OnClientDisconnect()
 }
 
-var clientCallbackMap = make(map[string]ClientCallback)	// TODO: thread safe
+var clientCallbackMap sync.Map
 
 func registerClientCallback(caddr string, cb ClientCallback) {
-	clientCallbackMap[caddr] = cb
+	clientCallbackMap.Store(caddr, cb)
 }
 
 func unregisterClientCallback(caddr string) {
-	delete(clientCallbackMap, caddr)
+	clientCallbackMap.Delete(caddr)
+}
+
+func getClientCallback(caddr string) ClientCallback {
+	if v, ok := clientCallbackMap.Load(caddr); ok { return v.(ClientCallback) }
+	return nil
 }

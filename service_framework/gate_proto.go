@@ -50,7 +50,7 @@ func Service_client_disconnect(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, info); err != nil {
 		return err
 	}
-	if cb, ok := clientCallbackMap[info.Caddr]; ok { cb.OnClientDisconnect() }
+	if cb := getClientCallback(info.Caddr); cb != nil { cb.OnClientDisconnect() }
 	return nil
 }
 
