@@ -1,19 +1,22 @@
 package service_framework
 
 import (
-	"github.com/agility323/liberty/lbtutil"
-	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtactor"
+	"github.com/agility323/liberty/lbtnet"
+	"github.com/agility323/liberty/lbtutil"
 )
 
 type EntityCore struct {
-	typ string
-	id lbtutil.ObjectID
+	typ   string
+	id    lbtutil.ObjectID
 	actor *lbtactor.WorkerActor
 }
 
-func (ec *EntityCore) init(typ string) {
-	ec.id = lbtutil.NewObjectID()
+func (ec *EntityCore) init(typ string, id lbtutil.ObjectID) {
+	if id.IsZero() {
+		id = lbtutil.NewObjectID()
+	}
+	ec.id = id
 	ec.typ = typ
 	ec.actor = lbtactor.NewWorkerActor()
 }
@@ -27,8 +30,8 @@ func (ec *EntityCore) GetId() lbtutil.ObjectID {
 }
 
 func (ec *EntityCore) Dump() map[string]string {
-	return map[string]string {
-		"id": string(ec.id[:]),
+	return map[string]string{
+		"id":  string(ec.id[:]),
 		"typ": ec.typ,
 	}
 }
@@ -46,8 +49,8 @@ func (ec *EntityCore) PushActorTask(task func()) bool {
 }
 
 type RemoteEntityStub struct {
-	core *EntityCore
-	c *lbtnet.TcpConnection
+	core       *EntityCore
+	c          *lbtnet.TcpConnection
 	remoteAddr string
 }
 

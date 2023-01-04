@@ -10,7 +10,7 @@ import (
 const EntityCoreFieldName = "EC"
 
 type rpcInfo struct {
-	m reflect.Method
+	m   reflect.Method
 	pts []reflect.Type
 }
 
@@ -37,7 +37,7 @@ func RegisterEntityType(name string, ptyp reflect.Type, rpcList []string) {
 			continue
 		}
 		n := m.Type.NumIn()
-		pts := make([]reflect.Type, 0, n - 1)
+		pts := make([]reflect.Type, 0, n-1)
 		for i := 1; i < n; i++ {
 			pts = append(pts, m.Type.In(i))
 		}
@@ -46,7 +46,7 @@ func RegisterEntityType(name string, ptyp reflect.Type, rpcList []string) {
 	}
 }
 
-func CreateEntity(name string) interface{} {
+func CreateEntity(name string, id lbtutil.ObjectID) interface{} {
 	typ, ok := entityTypeMap[name]
 	if !ok {
 		panic(fmt.Sprintf("CreateEntity failed: %s not registered", name))
@@ -55,8 +55,8 @@ func CreateEntity(name string) interface{} {
 	ptr := reflect.New(typ)
 	// init core
 	ec := ptr.Elem().FieldByName(EntityCoreFieldName).Addr().Interface().(*EntityCore)
-	ec.init(name)
-	id := ec.GetId()
+	ec.init(name, id)
+	id = ec.GetId()
 	// register
 	e := ptr.Interface()
 	registerEntity(id, e)
