@@ -39,7 +39,7 @@ type logger struct {
 
 var log = NewLogger(strconv.Itoa(os.Getpid()), "lbtutil")
 
-func NewLogger(prefix string, tag string) Logger { return &logger{prefix: fmt.Sprintf("%s %s", prefix, tag), tag: tag} }
+func NewLogger(prefix string, tag string) Logger { return &logger{prefix: fmt.Sprintf("%s|%s", prefix, tag), tag: tag} }
 
 func (l *logger) Debug(format string, params ...interface{}) {
 	logByLevel(Ldebug, "DEBUG", l.prefix, format, params...)
