@@ -40,10 +40,49 @@ func CallEntityMethodLocal(id lbtutil.ObjectId, method string, paramBytes []byte
 	// rpc method
 	v := reflect.ValueOf(entity)
 	pec := v.Elem().FieldByName(EntityCoreFieldName).Addr().Interface().(*EntityCore)
+	pec.PushActorTask(func() {
+		typ := pec.GetType()
+		rpc, ok := entityRpcMap[typ][method]
+		if !ok {
+			logger.Error("CallEntityMethodLocal fail: method not found %s %s %s", typ, id.Hex(), method)
+			return
+		}
+		// parameters
+		params := make([]reflect.Value, 1, len(rpc.pts) + 1)
+		params[0] = v
+		for _, pt := range rpc.pts {
+			ptrVal := reflect.New(pt)
+			params = append(params, ptrVal.Elem())
+		}
+		rawArray := lbtutil.MsgpackRawArray(paramBytes)
+		if !rawArray.Valid() {
+			logger.Error("CallEntityMethodLocal fail: params is not array %v", paramBytes)
+			return
+		}
+		decoder := msgpack.NewDecoder(bytes.NewBuffer(rawArray.Body()))
+		for i := 1; i < len(params); i++ {
+			err := decoder.DecodeValue(params[i])
+			if err == io.EOF {
+				logger.Warn(fmt.Sprintf("CallEntityMethodLocal insufficient params: %s %s %s %d %d",
+					typ, id.Hex(), method, len(params) - 1, i - 1))
+				break
+			}
+			if err != nil {
+				logger.Error("CallEntityMethodLocal fail: msgpack decode fail [%v] %s %v %v",
+					err, method, paramBytes, rawArray.Body())
+				return
+			}
+		}
+		// call
+		_ = rpc.m.Func.Call(params)
+	})
+	return nil
+
+	/*
 	typ := pec.GetType()
 	rpc, ok := entityRpcMap[typ][method]
 	if !ok {
-		return errors.New(fmt.Sprintf("CallEntityMethodLocal fail: method not found %s %s %s", typ, id.Hex(), method))
+		return fmt.Errorf("CallEntityMethodLocal fail: method not found %s %s %s", typ, id.Hex(), method)
 	}
 	// parameters
 	params := make([]reflect.Value, 1, len(rpc.pts) + 1)
@@ -72,6 +111,7 @@ func CallEntityMethodLocal(id lbtutil.ObjectId, method string, paramBytes []byte
 	// call
 	_ = rpc.m.Func.Call(params)
 	return nil
+	*/
 }
 
 func CallEntityMethod(addr string, id lbtutil.ObjectId, method string, params interface{}) {

@@ -3,11 +3,13 @@ package service_framework
 import (
 	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtnet"
+	"github.com/agility323/liberty/lbtactor"
 )
 
 type EntityCore struct {
 	typ string
 	id lbtutil.ObjectId
+	actor *lbtactor.WorkerActor
 }
 
 func (ec *EntityCore) init(typ string) {
@@ -28,6 +30,26 @@ func (ec *EntityCore) Dump() map[string]string {
 		"id": string(ec.id),
 		"typ": ec.typ,
 	}
+}
+
+func (ec *EntityCore) InitActor() {
+	ec.actor = lbtactor.NewWorkerActor(100)
+}
+
+func (ec *EntityCore) StartActor() bool {
+	if ec.actor == nil { return false }
+	ec.actor.Start()
+	return true
+}
+
+func (ec *EntityCore) StopActor() {
+	if ec.actor == nil { return }
+	ec.actor.Stop()
+}
+
+func (ec *EntityCore) PushActorTask(task func()) bool {
+	if ec.actor == nil { return false }
+	return ec.actor.PushTask(task)
 }
 
 type RemoteEntityStub struct {
