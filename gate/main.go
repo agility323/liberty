@@ -21,6 +21,15 @@ import (
 func init() {
 }
 
+var stopping = false
+var (
+	cancelRegister context.CancelFunc = nil
+	cancelDiscover context.CancelFunc = nil
+	cancelWatchCmd context.CancelFunc = nil
+)
+
+var stopCh = make(chan os.Signal, 1)
+
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	debug.SetGCPercent(200)
@@ -54,13 +63,14 @@ func main() {
 	}
 
 	// client server
-	listenAddr := Conf.ClientServerAddr
-	if listenAddr[0] == ':' {
+	if Conf.ClientServerAddr[0] == ':' {
 		if localip, err := lbtutil.GetLocalIP(); err != nil {
 			panic(fmt.Sprintf("get local ip fail: %v", err))
-		} else { listenAddr = localip + listenAddr }
+		} else {
+			Conf.ClientServerAddr = localip + Conf.ClientServerAddr
+		}
 	}
-	clientServer := lbtnet.NewTcpServer(listenAddr, ClientConnectionCreator)
+	clientServer := lbtnet.NewTcpServer(Conf.ClientServerAddr, ClientConnectionCreator)
 	logger.Info("create client server at %s entrance is %s", clientServer.GetAddr(), Conf.EntranceAddr)
 	clientServer.Start()
 
@@ -70,14 +80,13 @@ func main() {
 	// usually, gate exposes its addr directly to clients, so the entrance addr should be unique
 	// otherwise, such as there are proxies between gates and clients, the entrance varies
 	// so here we use listen addr as unique addr
-	go lbtreg.StartRegisterGate(ctxRegister, 11, Conf.Host, listenAddr, regData)
+	go lbtreg.StartRegisterGate(ctxRegister, 11, Conf.Host, Conf.ClientServerAddr, regData)
 	ctxDiscover, cancelDiscover := context.WithCancel(context.Background())
 	go lbtreg.StartDiscoverService(ctxDiscover, 11, serviceManager.OnDiscoverService, Conf.Host)
 	ctxWatchCmd, cancelWatchCmd := context.WithCancel(context.Background())
 	go lbtreg.StartWatchGateCmd(ctxWatchCmd, OnWatchGateCmd, Conf.Host)
 
 	// wait for stop
-	stopCh := make(chan os.Signal, 1)
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
 	<-stopCh
 
@@ -89,4 +98,17 @@ func main() {
 }
 
 func onStop() {
+	logger.Info("gate stopped")
+}
+
+func Stop() {
+	logger.Info("gate stop begin")
+	stopCh <- syscall.SIGTERM
+}
+
+func SoftStop() {
+	stopping = true
+	cancelRegister()
+	cancelDiscover()
+	clientManager.SoftStop()
 }

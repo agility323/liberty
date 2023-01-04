@@ -10,6 +10,7 @@ import (
 
 func init() {
 	lbtreg.RegisterCmdDataCreator("hotfix", func() lbtreg.CmdData { return &HotfixCmd{} })
+	lbtreg.RegisterCmdDataCreator("quit", func() lbtreg.CmdData { return &QuitCmd{} })
 	lbtreg.RegisterCmdDataCreator("broadcast", func() lbtreg.CmdData { return &BroadcastCmd{} })
 }
 
@@ -43,6 +44,15 @@ func (c *HotfixCmd) Process() {
 		return
 	}
 	f.(func(hitf.HotfixInterface) error)(hotfix.Hotfix)
+}
+
+type QuitCmd struct {
+	lbtreg.QuitCmdData
+}
+
+func(c *QuitCmd) Process() {
+	if c.Addr != Conf.ClientServerAddr { return }
+	SoftStop()
 }
 
 type BroadcastCmd struct {

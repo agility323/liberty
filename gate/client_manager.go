@@ -1,11 +1,14 @@
 package main
 
 import (
+	"context"
 	"sync"
+	"time"
 
 	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtproto"
+	"github.com/agility323/liberty/lbtactor"
 )
 
 type clientEntry struct {
@@ -169,4 +172,42 @@ func (m *ClientManager) broadcastMsgBySlot(slot int, data []byte) {
 	for _, entry := range m.clientSlots[slot] {
 		entry.c.SendData(data)
 	}
+}
+
+func (m *ClientManager) SoftStop() {
+	// TODO avoid duplicates
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	lbtactor.RunTaskActor(ctx, func() struct{} {
+		ticker := time.NewTicker(50 * time.Second)
+		stop := false
+		defer func() {
+			ticker.Stop()
+			if stop { Stop() }
+		}()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return struct{}{}
+			case <-ticker.C:
+				n := 0
+				for slot := 0; slot < ClientSlotNum; slot++ {
+					n += m.getClientsNumBySlot(slot)
+				}
+				if n == 0 {
+					stop = true
+					return struct{}{}
+				}
+				logger.Info("soft stop tick client manager %d", n)
+			}
+		}
+		return struct{}{}
+	})
+}
+
+func (m *ClientManager) getClientsNumBySlot(slot int) int {
+	m.locks[slot].RLock()
+	defer m.locks[slot].RUnlock()
+	return len(m.clientSlots[slot])
 }
