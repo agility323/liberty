@@ -176,7 +176,11 @@ func (c *TcpConnection) SendData(data []byte) error {
 		logger.Warn("tcp conn send fail 3")
 		return errors.New("TcpConnection.SendData: fail 3")
 	}
-	c.writeCh <- data
+	select {
+	case c.writeCh<- data:
+	default:
+		return errors.New("TcpConnection.SendData: fail 4")
+	}
 	return nil
 }
 

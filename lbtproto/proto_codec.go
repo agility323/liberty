@@ -50,10 +50,14 @@ func SendMessage(sender MessageSender, methodIndex uint16, msg proto.Message) er
 	// encode proto
 	data, err := EncodeMessage(methodIndex, msg)
 	if err != nil {
+		logger.Error("lbtproto.SendMessage fail 1: %d %v %v", methodIndex, msg, err)
 		return err
 	}
 	// send message
-	//logger.Debug("lbtproto.SendMessage %v", data)
-	sender.SendData(data)
+	err = sender.SendData(data)
+	if err != nil {
+		logger.Error("lbtproto.SendMessage fail 2: %d %v %v", methodIndex, msg, err)
+		return err
+	}
 	return nil
 }

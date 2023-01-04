@@ -159,27 +159,27 @@ func sendClientServiceReply(c *lbtnet.TcpConnection, addr, reqid string, data []
 	}
 }
 
-func SendBindClient(c *lbtnet.TcpConnection, saddr, caddr string) {
+func SendBindClient(c *lbtnet.TcpConnection, saddr, caddr string) error {
 	msg := &lbtproto.BindClientInfo{
 		Caddr: caddr,
 		Saddr: saddr,
 	}
-	lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_bind_client, msg)
+	return lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_bind_client, msg)
 }
 
-func SendUnbindClient(c *lbtnet.TcpConnection, saddr, caddr string) {
+func SendUnbindClient(c *lbtnet.TcpConnection, saddr, caddr string) error {
 	msg := &lbtproto.BindClientInfo{
 		Caddr: caddr,
 		Saddr: saddr,
 	}
-	lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_unbind_client, msg)
+	return lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_unbind_client, msg)
 }
 
-func SendCreateEntity(c *lbtnet.TcpConnection, addr string, id lbtutil.ObjectID, typ string, data interface{}) {
+func SendCreateEntity(c *lbtnet.TcpConnection, addr string, id lbtutil.ObjectID, typ string, data interface{}) error {
 	b, err := msgpack.Marshal(&data)
 	if err != nil {
 		logger.Error("SendCreateEntity failed: marshal data - %s", err.Error())
-		return
+		return err
 	}
 	logger.Debug("SendCreateEntity %s %s %s %v %v", addr, id.Hex(), typ, data, b)
 	msg := &lbtproto.EntityData{
@@ -191,14 +191,16 @@ func SendCreateEntity(c *lbtnet.TcpConnection, addr string, id lbtutil.ObjectID,
 	err = lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_create_entity, msg)
 	if err != nil {
 		logger.Error("SendCreateEntity failed: SendMessage - %s", err.Error())
+		return err
 	}
+	return nil
 }
 
-func SendClientEntityMsg(c *lbtnet.TcpConnection, addr string, id lbtutil.ObjectID, method string, params interface{}) {
+func SendClientEntityMsg(c *lbtnet.TcpConnection, addr string, id lbtutil.ObjectID, method string, params interface{}) error {
 	b, err := msgpack.Marshal(&params)
 	if err != nil {
 		logger.Error("SendClientEntityMsg failed 1 %s", err.Error())
-		return
+		return err
 	}
 	logger.Debug("SendClientEntityMsg %s %s %s %v", addr, id.Hex(), method, params)
 	msg := &lbtproto.EntityMsg{
@@ -210,7 +212,9 @@ func SendClientEntityMsg(c *lbtnet.TcpConnection, addr string, id lbtutil.Object
 	err = lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_client_entity_msg, msg)
 	if err != nil {
 		logger.Error("SendClientEntityMsg failed 2 %s", err.Error())
+		return err
 	}
+	return nil
 }
 
 /********** ProtoSender End **********/

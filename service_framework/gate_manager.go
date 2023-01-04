@@ -68,3 +68,11 @@ func (m *GateManager) getRandomGate() *lbtnet.TcpConnection {
 	}
 	return nil
 }
+
+func (m *GateManager) getGateByAddr(addr string) *lbtnet.TcpConnection {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	c, _ := m.gateMap[addr]
+	return c
+}
