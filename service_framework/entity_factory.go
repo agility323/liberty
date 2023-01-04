@@ -66,4 +66,5 @@ func CreateEntity(name string, id lbtutil.ObjectID) interface{} {
 
 func DestroyEntity(id lbtutil.ObjectID) {
 	removeEntity(id)
+	logger.Info("destroy entity %s", id.Hex())
 }
