@@ -167,11 +167,14 @@ func (c *TcpConnection) SendData(data []byte) error {
 		logger.Warn("tcp conn send fail 3")
 		return errors.New("TcpConnection.SendData: fail 3")
 	}
+	/*
 	select {
 	case c.writeCh<- data:
 	default:
 		return errors.New("TcpConnection.SendData: fail 4")
 	}
+	*/
+	c.writeCh<- data	// block when channel full, no data loss
 	return nil
 }
 
