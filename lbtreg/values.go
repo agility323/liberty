@@ -10,9 +10,9 @@ type Value interface {
 }
 
 type CmdValue struct {
-	Cmd string
-	Node string
-	Param map[string]interface{}
+	Cmd string	`json:"cmd"`
+	Node string	`json:"node"`
+	Param map[string]interface{}	`json:"param"`
 }
 
 func (v *CmdValue) Marshal() (string, error) {
