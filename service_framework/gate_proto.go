@@ -59,12 +59,16 @@ func Service_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, request); err != nil {
 		return err
 	}
+	/*
 	replyData, err := processServiceMethod(c, request.Addr, request.Reqid, request.Method, request.Params)
 	if err != nil {
 		return err
 	}
 	if replyData == nil { return nil }
 	sendServiceReply(c, request.Addr, request.Reqid, replyData)
+	*/
+	ma := newMethodActor(c, request, true)
+	go ma.start()
 	return nil
 }
 
@@ -82,12 +86,16 @@ func Service_client_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, request); err != nil {
 		return err
 	}
+	/*
 	replyData, err := processServiceMethod(c, request.Addr, request.Reqid, request.Method, request.Params)
 	if err != nil {
 		return err
 	}
 	if replyData == nil { return nil }
 	sendClientServiceReply(c, request.Addr, request.Reqid, replyData)
+	*/
+	ma := newMethodActor(c, request, false)
+	go ma.start()
 	return nil
 }
 
