@@ -57,3 +57,11 @@ func (c *BroadcastCmd) Process() {
 	}
 	clientManager.broadcastMsg(data)
 }
+
+type BanServiceCmd struct {
+	lbtreg.BanServiceCmdData
+}
+
+func (c *BanServiceCmd) Process() {
+	serviceManager.banService(c.Addr)
+}

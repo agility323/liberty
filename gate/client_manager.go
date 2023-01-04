@@ -54,7 +54,7 @@ func (m *ClientManager) clientDisconnect(c *lbtnet.TcpConnection) {
 	if entry.serviceAddr != "" {
 		info := lbtproto.BindClientInfo{Caddr: addr, Saddr: entry.serviceAddr}
 		serviceEntry := serviceManager.getServiceEntry(info.Saddr)
-		if serviceEntry != nil && serviceEntry.connected {
+		if serviceEntry != nil && serviceEntry.state == ServiceStateConnected {
 			lbtproto.SendMessage(serviceEntry.cli, lbtproto.Service.Method_client_disconnect, &info)
 		}
 	}

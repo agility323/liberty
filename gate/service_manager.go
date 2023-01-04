@@ -11,8 +11,14 @@ import (
 	"github.com/howeyc/crc16"
 )
 
+const (
+	ServiceStateInit = iota
+	ServiceStateConnected
+	ServiceStateBanned
+)
+
 type serviceEntry struct {
-	connected bool
+	state int
 	addr string
 	typ string
 	cli *lbtnet.TcpClient
@@ -45,10 +51,11 @@ func (m *ServiceManager) OnDiscoverService(services map[string][]byte) {
 			entry.cli.StartConnect(3)
 			continue
 		}
-		if !entry.connected {
+		if entry.state == ServiceStateInit {
 			logger.Warn("still connecting to service %s", addr)
 			continue
 		}
+		if entry.state == ServiceStateBanned { continue }
 	}
 }
 
@@ -60,7 +67,7 @@ func (m *ServiceManager) assureServiceEntry(typ, addr string) (*serviceEntry, bo
 		return entry, false
 	}
 	entry := &serviceEntry{
-		connected: false,
+		state: ServiceStateInit,
 		addr: addr,
 		typ: typ,
 		cli: lbtnet.NewTcpClient(addr, &ServiceConnectionHandler{}),
@@ -75,7 +82,7 @@ func (m *ServiceManager) serviceConnect(c *lbtnet.TcpConnection) {
 
 	addr := c.RemoteAddr()
 	if entry, ok := m.serviceMap[addr]; ok {
-		entry.connected = true
+		entry.state = ServiceStateConnected
 		if _, ok = m.serviceTypeToAddrSet[entry.typ]; !ok {
 			m.serviceTypeToAddrSet[entry.typ] = lbtutil.NewOrderedSet()
 		}
@@ -92,7 +99,7 @@ func (m *ServiceManager) serviceConnectFail(cli *lbtnet.TcpClient) {
 
 	addr := cli.RemoteAddr()
 	if entry, ok := m.serviceMap[addr]; ok {
-		if entry.connected{ return }
+		if entry.state == ServiceStateConnected { return }
 		delete(m.serviceMap, addr)
 	}
 }
@@ -122,8 +129,8 @@ func (m *ServiceManager) sendToService(addr string, buf []byte) {
 		logger.Warn("send to service fail 1 %s", addr)
 		return
 	}
-	if !entry.connected {
-		logger.Warn("send to service fail 2 %s", addr)
+	if entry.state != ServiceStateConnected {
+		logger.Warn("send to service fail 2 %s %d", addr, entry.state)
 		return
 	}
 	if err := entry.cli.SendData(buf); err != nil {
@@ -163,7 +170,7 @@ func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byt
 	// specific
 	if rt == RouteTypeSpecific {
 		addr := string(rp)
-		if entry, ok := m.serviceMap[addr]; ok && entry.connected {
+		if entry, ok := m.serviceMap[addr]; ok && entry.state == ServiceStateConnected {
 			return []*serviceEntry{entry}
 		}
 		return nil
@@ -179,7 +186,7 @@ func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byt
 			return nil
 		}
 		addr := v.(string)
-		if entry, ok := m.serviceMap[addr]; ok && entry.connected {
+		if entry, ok := m.serviceMap[addr]; ok && entry.state == ServiceStateConnected {
 			return []*serviceEntry{entry}
 		}
 		return nil
@@ -191,7 +198,7 @@ func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byt
 		}
 		v := vs[h % len(vs)]
 		addr := v.(string)
-		if entry, ok := m.serviceMap[addr]; ok && entry.connected {	// maybe should try next entry
+		if entry, ok := m.serviceMap[addr]; ok && entry.state == ServiceStateConnected {// maybe should try next entry
 			return []*serviceEntry{entry}
 		}
 		return nil
@@ -200,7 +207,7 @@ func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byt
 		entries := make([]*serviceEntry, 0)
 		for _, v := range vs {
 			addr := v.(string)
-			if entry, ok := m.serviceMap[addr]; ok && entry.connected {
+			if entry, ok := m.serviceMap[addr]; ok && entry.state == ServiceStateConnected {
 				entries = append(entries, entry)
 			}
 		}
@@ -210,4 +217,14 @@ func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byt
 		return nil
 	}
 	return nil
+}
+
+func (m *ServiceManager) banService(addr string) {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	if entry, ok := m.serviceMap[addr]; ok {
+		entry.state = ServiceStateBanned
+	}
+	logger.Info("ban service %s", addr)
 }
