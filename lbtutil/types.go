@@ -7,4 +7,7 @@ import (
 )
 
 type Void struct {}
-var VoidValue Void
+var (
+	VoidValue = Void{}
+	VoidPtr = &VoidValue
+)
