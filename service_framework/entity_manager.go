@@ -94,7 +94,7 @@ func CallEntityMethodLocal(id lbtutil.ObjectID, method string, paramBytes []byte
 		}
 		rawArray := lbtutil.MsgpackRawArray(paramBytes)
 		if !rawArray.Valid() {
-			logger.Error("CallEntityMethodLocal fail: params is not array %v", paramBytes)
+			logger.Error("CallEntityMethodLocal fail: params is not array %v %v", method, paramBytes)
 			return
 		}
 		decoder := msgpack.NewDecoder(bytes.NewBuffer(rawArray.Body()))
