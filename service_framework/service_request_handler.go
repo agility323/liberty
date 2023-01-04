@@ -30,10 +30,10 @@ func CallServiceMethod(service, method string, params map[string]interface{}, cb
 		logger.Error("CallServiceMethod fail 1 %v", err)
 		return
 	}
-	reqid := string(lbtutil.NewObjectId())
+	reqid := lbtutil.NewObjectID()
 	msg := &lbtproto.ServiceRequest{
 		Addr: serviceAddr,
-		Reqid: reqid,
+		Reqid: reqid[:],
 		Type: service,
 		Method: method,
 		Params: b,
@@ -43,7 +43,7 @@ func CallServiceMethod(service, method string, params map[string]interface{}, cb
 	serviceCallbackMap.Store(reqid, serviceCallback{f: cbf, expire: time.Now().Unix() + expire})
 }
 
-func processServiceReply(reqid string, reply []byte) {
+func processServiceReply(reqid lbtutil.ObjectID, reply []byte) {
 	cb, _ := serviceCallbackMap.LoadAndDelete(reqid)
 	if cb == nil { return }
 	var args []interface{}

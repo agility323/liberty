@@ -16,22 +16,22 @@ import (
 
 var entities sync.Map
 
-func registerEntity(id lbtutil.ObjectId, e interface{}) {
+func registerEntity(id lbtutil.ObjectID, e interface{}) {
 	entities.Store(id, e)
 }
 
-func removeEntity(id lbtutil.ObjectId) {
+func removeEntity(id lbtutil.ObjectID) {
 	entities.Delete(id)
 }
 
-func GetEntity(id lbtutil.ObjectId) interface{} {
+func GetEntity(id lbtutil.ObjectID) interface{} {
 	if v, ok := entities.Load(id); ok {
 		return v
 	}
 	return nil
 }
 
-func CallEntityMethodLocal(id lbtutil.ObjectId, method string, paramBytes []byte) error {
+func CallEntityMethodLocal(id lbtutil.ObjectID, method string, paramBytes []byte) error {
 	// entity
 	entity := GetEntity(id)
 	if entity == nil {
@@ -114,16 +114,16 @@ func CallEntityMethodLocal(id lbtutil.ObjectId, method string, paramBytes []byte
 	*/
 }
 
-func CallEntityMethod(addr string, id lbtutil.ObjectId, method string, params interface{}) {
+func CallEntityMethod(addr string, id lbtutil.ObjectID, method string, params interface{}) {
 	b, err := msgpack.Marshal(&params)
 	if err != nil {
 		logger.Error("CallEntityMethod failed 1 %s", err.Error())
 		return
 	}
-	//logger.Debug("CallEntityMethod %s %s %s %v", addr, lbtutil.ObjectId(id).Hex(), method, params)
+	//logger.Debug("CallEntityMethod %s %s %s %v", addr, id.Hex(), method, params)
 	msg := &lbtproto.EntityMsg{
 		Addr: addr,
-		Id: string(id),
+		Id: id[:],
 		Method: method,
 		Params: b,
 	}

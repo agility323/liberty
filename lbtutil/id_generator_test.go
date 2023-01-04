@@ -5,10 +5,10 @@ import (
 	"fmt"
 )
 
-func TestNewObjectId(t *testing.T) {
+func TestNewObjectID(t *testing.T) {
 	n := 5
 	for i := 0; i < n; i++ {
-		id := NewObjectId()
-		fmt.Printf("NewObjectId: [%s]\n", id.Hex())
+		id := NewObjectID()
+		fmt.Printf("NewObjectID: [%s]\n", id.Hex())
 	}
 }

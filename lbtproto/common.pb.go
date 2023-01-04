@@ -61,7 +61,7 @@ var xxx_messageInfo_Void proto.InternalMessageInfo
 type ServiceInfo struct {
 	Addr     string `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
 	Type     string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	Entityid string `protobuf:"bytes,3,opt,name=entityid,proto3" json:"entityid,omitempty"`
+	Entityid []byte `protobuf:"bytes,3,opt,name=entityid,proto3" json:"entityid,omitempty"`
 }
 
 func (m *ServiceInfo) Reset()         { *m = ServiceInfo{} }
@@ -111,16 +111,16 @@ func (m *ServiceInfo) GetType() string {
 	return ""
 }
 
-func (m *ServiceInfo) GetEntityid() string {
+func (m *ServiceInfo) GetEntityid() []byte {
 	if m != nil {
 		return m.Entityid
 	}
-	return ""
+	return nil
 }
 
 type ServiceRequest struct {
 	Addr   string `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
-	Reqid  string `protobuf:"bytes,2,opt,name=reqid,proto3" json:"reqid,omitempty"`
+	Reqid  []byte `protobuf:"bytes,2,opt,name=reqid,proto3" json:"reqid,omitempty"`
 	Type   string `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
 	Method string `protobuf:"bytes,4,opt,name=method,proto3" json:"method,omitempty"`
 	Params []byte `protobuf:"bytes,5,opt,name=params,proto3" json:"params,omitempty"`
@@ -168,11 +168,11 @@ func (m *ServiceRequest) GetAddr() string {
 	return ""
 }
 
-func (m *ServiceRequest) GetReqid() string {
+func (m *ServiceRequest) GetReqid() []byte {
 	if m != nil {
 		return m.Reqid
 	}
-	return ""
+	return nil
 }
 
 func (m *ServiceRequest) GetType() string {
@@ -212,7 +212,7 @@ func (m *ServiceRequest) GetRoutep() []byte {
 
 type ServiceReply struct {
 	Addr  string `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
-	Reqid string `protobuf:"bytes,2,opt,name=reqid,proto3" json:"reqid,omitempty"`
+	Reqid []byte `protobuf:"bytes,2,opt,name=reqid,proto3" json:"reqid,omitempty"`
 	Reply []byte `protobuf:"bytes,3,opt,name=reply,proto3" json:"reply,omitempty"`
 }
 
@@ -256,11 +256,11 @@ func (m *ServiceReply) GetAddr() string {
 	return ""
 }
 
-func (m *ServiceReply) GetReqid() string {
+func (m *ServiceReply) GetReqid() []byte {
 	if m != nil {
 		return m.Reqid
 	}
-	return ""
+	return nil
 }
 
 func (m *ServiceReply) GetReply() []byte {
@@ -272,7 +272,7 @@ func (m *ServiceReply) GetReply() []byte {
 
 type EntityData struct {
 	Addr string `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
-	Id   string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Id   []byte `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
 	Type string `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
 	Data []byte `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
 }
@@ -317,11 +317,11 @@ func (m *EntityData) GetAddr() string {
 	return ""
 }
 
-func (m *EntityData) GetId() string {
+func (m *EntityData) GetId() []byte {
 	if m != nil {
 		return m.Id
 	}
-	return ""
+	return nil
 }
 
 func (m *EntityData) GetType() string {
@@ -340,7 +340,7 @@ func (m *EntityData) GetData() []byte {
 
 type EntityMsg struct {
 	Addr   string `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
-	Id     string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
+	Id     []byte `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
 	Method string `protobuf:"bytes,3,opt,name=method,proto3" json:"method,omitempty"`
 	Params []byte `protobuf:"bytes,4,opt,name=params,proto3" json:"params,omitempty"`
 }
@@ -385,11 +385,11 @@ func (m *EntityMsg) GetAddr() string {
 	return ""
 }
 
-func (m *EntityMsg) GetId() string {
+func (m *EntityMsg) GetId() []byte {
 	if m != nil {
 		return m.Id
 	}
-	return ""
+	return nil
 }
 
 func (m *EntityMsg) GetMethod() string {
@@ -423,22 +423,22 @@ var fileDescriptor_555bd8c177793206 = []byte{
 	0x14, 0x85, 0x7b, 0xdb, 0xe9, 0xfc, 0xed, 0xfd, 0x87, 0x2e, 0x06, 0x91, 0xe0, 0x22, 0x94, 0xac,
 	0xba, 0x72, 0xe3, 0x1b, 0x88, 0x2e, 0x5c, 0x28, 0x18, 0x41, 0xdc, 0x49, 0xda, 0x44, 0x1d, 0xe8,
 	0x34, 0x69, 0x9a, 0x0a, 0xb3, 0xf3, 0x11, 0xfa, 0x24, 0x3e, 0x87, 0xcb, 0x2e, 0x5d, 0xca, 0xcc,
-	0x8b, 0xc8, 0x24, 0xc3, 0xd8, 0x45, 0x0b, 0xba, 0x3b, 0xe7, 0x23, 0x9c, 0x7b, 0xef, 0x21, 0x98,
+	0x8b, 0xc8, 0x24, 0xc3, 0xd8, 0x45, 0x0b, 0xba, 0x3b, 0xe7, 0x10, 0xbe, 0x7b, 0xef, 0x21, 0x98,
 	0xcc, 0x74, 0x9e, 0xeb, 0xc5, 0xa9, 0xb1, 0xda, 0xe9, 0x74, 0x30, 0x9f, 0x3a, 0xaf, 0x58, 0x8c,
 	0xd1, 0xbd, 0xce, 0x24, 0xbb, 0xc5, 0xff, 0x77, 0xca, 0xbe, 0x66, 0x33, 0x75, 0xb5, 0x78, 0xd2,
-	0x69, 0x8a, 0x91, 0x90, 0xd2, 0x12, 0x18, 0xc3, 0x64, 0xc8, 0xbd, 0xae, 0x99, 0x2b, 0x8c, 0x22,
-	0xdd, 0xc0, 0x6a, 0x9d, 0x9e, 0xe0, 0x40, 0x2d, 0x5c, 0xe6, 0x8a, 0x4c, 0x92, 0x9e, 0xe7, 0xad,
-	0x67, 0xef, 0x80, 0xa3, 0x26, 0x93, 0xab, 0xe5, 0x5a, 0xad, 0xdc, 0xde, 0xd8, 0x23, 0xec, 0x5b,
-	0xb5, 0xcc, 0x64, 0x93, 0x1b, 0x4c, 0x3b, 0xac, 0xb7, 0x33, 0xec, 0x18, 0xe3, 0x5c, 0xb9, 0x17,
-	0x2d, 0x49, 0xe4, 0x69, 0xe3, 0x6a, 0x6e, 0x84, 0x15, 0xf9, 0x8a, 0xf4, 0xc7, 0x30, 0x49, 0x78,
-	0xe3, 0x6a, 0x6e, 0xf5, 0xda, 0x29, 0x47, 0xe2, 0x31, 0x4c, 0xfa, 0xbc, 0x71, 0x2d, 0x37, 0xe4,
-	0x5f, 0x78, 0x1f, 0x1c, 0xbb, 0xc1, 0xa4, 0xdd, 0xd7, 0xcc, 0x8b, 0x3f, 0x6c, 0xeb, 0xa9, 0x99,
-	0x17, 0x7e, 0xdd, 0x84, 0x07, 0xc3, 0x1e, 0x10, 0x2f, 0x7d, 0x19, 0x17, 0xc2, 0x89, 0xbd, 0x69,
-	0x23, 0xec, 0xb6, 0x51, 0xdd, 0x03, 0x57, 0xa7, 0x18, 0x49, 0xe1, 0x84, 0xbf, 0x39, 0xe1, 0x5e,
-	0xb3, 0x47, 0x1c, 0x86, 0xe4, 0xeb, 0xd5, 0xf3, 0xaf, 0x82, 0x7f, 0xaa, 0xeb, 0x1d, 0xa8, 0x2e,
-	0xda, 0xad, 0xee, 0x9c, 0x7e, 0x94, 0x14, 0xb6, 0x25, 0x85, 0xaf, 0x92, 0xc2, 0xa6, 0xa2, 0x9d,
-	0x6d, 0x45, 0x3b, 0x9f, 0x15, 0xed, 0xbc, 0x01, 0x6c, 0x00, 0xa6, 0xb1, 0xff, 0x3d, 0x67, 0xdf,
-	0x01, 0x00, 0x00, 0xff, 0xff, 0xd6, 0x17, 0x5d, 0x89, 0x57, 0x02, 0x00, 0x00,
+	0x69, 0x8a, 0x91, 0x90, 0xd2, 0x12, 0x18, 0xc3, 0x64, 0xc8, 0xbd, 0xae, 0x33, 0x57, 0x18, 0x45,
+	0xba, 0x21, 0xab, 0x75, 0x7a, 0x82, 0x03, 0xb5, 0x70, 0x99, 0x2b, 0x32, 0x49, 0x7a, 0x63, 0x98,
+	0x24, 0xbc, 0xf5, 0xec, 0x1d, 0x70, 0xd4, 0x30, 0xb9, 0x5a, 0xae, 0xd5, 0xca, 0xed, 0xc5, 0x1e,
+	0x61, 0xdf, 0xaa, 0x65, 0x26, 0x3d, 0x37, 0xe1, 0xc1, 0xb4, 0xc3, 0x7a, 0x3b, 0xc3, 0x8e, 0x31,
+	0xce, 0x95, 0x7b, 0xd1, 0x92, 0x44, 0x3e, 0x6d, 0x5c, 0x9d, 0x1b, 0x61, 0x45, 0xbe, 0x22, 0x7d,
+	0x8f, 0x68, 0x5c, 0x9d, 0x5b, 0xbd, 0x76, 0xca, 0x91, 0x78, 0x0c, 0x93, 0x3e, 0x6f, 0x5c, 0x9b,
+	0x1b, 0xf2, 0x2f, 0xbc, 0x0f, 0x8e, 0xdd, 0x60, 0xd2, 0xee, 0x6b, 0xe6, 0xc5, 0x1f, 0xb6, 0xf5,
+	0xa9, 0x99, 0x17, 0x4d, 0x07, 0xc1, 0xb0, 0x07, 0xc4, 0x4b, 0x5f, 0xc6, 0x85, 0x70, 0x62, 0x2f,
+	0x6d, 0x84, 0xdd, 0x16, 0xd5, 0x3d, 0x70, 0x75, 0x8a, 0x91, 0x14, 0x4e, 0xf8, 0x9b, 0x13, 0xee,
+	0x35, 0x7b, 0xc4, 0x61, 0x20, 0x5f, 0xaf, 0x9e, 0x7f, 0x05, 0xfe, 0xa9, 0xae, 0x77, 0xa0, 0xba,
+	0x68, 0xb7, 0xba, 0x73, 0xfa, 0x51, 0x52, 0xd8, 0x96, 0x14, 0xbe, 0x4a, 0x0a, 0x9b, 0x8a, 0x76,
+	0xb6, 0x15, 0xed, 0x7c, 0x56, 0xb4, 0xf3, 0x06, 0xb0, 0x01, 0x98, 0xc6, 0xfe, 0xf7, 0x9c, 0x7d,
+	0x07, 0x00, 0x00, 0xff, 0xff, 0xf4, 0xb4, 0x26, 0x8a, 0x57, 0x02, 0x00, 0x00,
 }
 
 func (m *Void) Marshal() (dAtA []byte, err error) {
@@ -1025,7 +1025,7 @@ func (m *ServiceInfo) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Entityid", wireType)
 			}
-			var stringLen uint64
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowCommon
@@ -1035,23 +1035,25 @@ func (m *ServiceInfo) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthCommon
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthCommon
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Entityid = string(dAtA[iNdEx:postIndex])
+			m.Entityid = append(m.Entityid[:0], dAtA[iNdEx:postIndex]...)
+			if m.Entityid == nil {
+				m.Entityid = []byte{}
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1139,7 +1141,7 @@ func (m *ServiceRequest) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Reqid", wireType)
 			}
-			var stringLen uint64
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowCommon
@@ -1149,23 +1151,25 @@ func (m *ServiceRequest) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthCommon
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthCommon
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Reqid = string(dAtA[iNdEx:postIndex])
+			m.Reqid = append(m.Reqid[:0], dAtA[iNdEx:postIndex]...)
+			if m.Reqid == nil {
+				m.Reqid = []byte{}
+			}
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
@@ -1404,7 +1408,7 @@ func (m *ServiceReply) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Reqid", wireType)
 			}
-			var stringLen uint64
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowCommon
@@ -1414,23 +1418,25 @@ func (m *ServiceReply) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthCommon
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthCommon
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Reqid = string(dAtA[iNdEx:postIndex])
+			m.Reqid = append(m.Reqid[:0], dAtA[iNdEx:postIndex]...)
+			if m.Reqid == nil {
+				m.Reqid = []byte{}
+			}
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
@@ -1552,7 +1558,7 @@ func (m *EntityData) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
 			}
-			var stringLen uint64
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowCommon
@@ -1562,23 +1568,25 @@ func (m *EntityData) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthCommon
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthCommon
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Id = string(dAtA[iNdEx:postIndex])
+			m.Id = append(m.Id[:0], dAtA[iNdEx:postIndex]...)
+			if m.Id == nil {
+				m.Id = []byte{}
+			}
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
@@ -1732,7 +1740,7 @@ func (m *EntityMsg) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
 			}
-			var stringLen uint64
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowCommon
@@ -1742,23 +1750,25 @@ func (m *EntityMsg) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthCommon
 			}
-			postIndex := iNdEx + intStringLen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthCommon
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Id = string(dAtA[iNdEx:postIndex])
+			m.Id = append(m.Id[:0], dAtA[iNdEx:postIndex]...)
+			if m.Id == nil {
+				m.Id = []byte{}
+			}
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {

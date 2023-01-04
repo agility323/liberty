@@ -59,14 +59,6 @@ func Service_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, request); err != nil {
 		return err
 	}
-	/*
-	replyData, err := processServiceMethod(c, request.Addr, request.Reqid, request.Method, request.Params)
-	if err != nil {
-		return err
-	}
-	if replyData == nil { return nil }
-	sendServiceReply(c, request.Addr, request.Reqid, replyData)
-	*/
 	ma := newMethodActor(c, request, true)
 	go ma.start()
 	return nil
@@ -77,7 +69,8 @@ func Service_service_reply(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, reply); err != nil {
 		return err
 	}
-	processServiceReply(reply.Reqid, reply.Reply)
+	reqid := *(*lbtutil.ObjectID)(reply.Reqid)
+	processServiceReply(reqid, reply.Reply)
 	return nil
 }
 
@@ -86,14 +79,6 @@ func Service_client_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, request); err != nil {
 		return err
 	}
-	/*
-	replyData, err := processServiceMethod(c, request.Addr, request.Reqid, request.Method, request.Params)
-	if err != nil {
-		return err
-	}
-	if replyData == nil { return nil }
-	sendClientServiceReply(c, request.Addr, request.Reqid, replyData)
-	*/
 	ma := newMethodActor(c, request, false)
 	go ma.start()
 	return nil
@@ -104,7 +89,8 @@ func Service_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		return err
 	}
-	if err := CallEntityMethodLocal(lbtutil.ObjectId(msg.Id), msg.Method, msg.Params); err != nil {
+	id := *(*lbtutil.ObjectID)(msg.Id)
+	if err := CallEntityMethodLocal(id, msg.Method, msg.Params); err != nil {
 		return err
 	}
 	return nil
@@ -121,7 +107,7 @@ func sendRegisterService(c *lbtnet.TcpConnection) {
 	msg := &lbtproto.ServiceInfo{
 		Addr: c.LocalAddr(),
 		Type: serviceConf.ServiceType,
-		Entityid: "",
+		Entityid: []byte {},
 	}
 	lbtproto.SendMessage(
 		c,
@@ -133,7 +119,7 @@ func sendRegisterService(c *lbtnet.TcpConnection) {
 func sendServiceReply(c *lbtnet.TcpConnection, addr, reqid string, data []byte) {
 	reply := &lbtproto.ServiceReply{
 		Addr: addr,
-		Reqid: reqid,
+		Reqid: []byte(reqid),
 		Reply: data,
 	}
 	if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_service_reply, reply); err != nil {
@@ -144,7 +130,7 @@ func sendServiceReply(c *lbtnet.TcpConnection, addr, reqid string, data []byte) 
 func sendClientServiceReply(c *lbtnet.TcpConnection, addr, reqid string, data []byte) {
 	reply := &lbtproto.ServiceReply{
 		Addr: addr,
-		Reqid: reqid,
+		Reqid: []byte(reqid),
 		Reply: data,
 	}
 	if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_client_service_reply, reply); err != nil {
@@ -168,16 +154,16 @@ func SendUnbindClient(c *lbtnet.TcpConnection, saddr, caddr string) {
 	lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_unbind_client, msg)
 }
 
-func SendCreateEntity(c *lbtnet.TcpConnection, addr, id, typ string, data interface{}) {
+func SendCreateEntity(c *lbtnet.TcpConnection, addr string, id lbtutil.ObjectID, typ string, data interface{}) {
 	b, err := msgpack.Marshal(&data)
 	if err != nil {
 		logger.Error("SendCreateEntity failed: marshal data - %s", err.Error())
 		return
 	}
-	logger.Debug("SendCreateEntity %s %s %s %v %v", addr, lbtutil.ObjectId(id).Hex(), typ, data, b)
+	logger.Debug("SendCreateEntity %s %s %s %v %v", addr, id.Hex(), typ, data, b)
 	msg := &lbtproto.EntityData{
 		Addr: addr,
-		Id: id,
+		Id: id[:],
 		Type: typ,
 		Data: b,
 	}
@@ -187,16 +173,16 @@ func SendCreateEntity(c *lbtnet.TcpConnection, addr, id, typ string, data interf
 	}
 }
 
-func SendClientEntityMsg(c *lbtnet.TcpConnection, addr, id, method string, params interface{}) {
+func SendClientEntityMsg(c *lbtnet.TcpConnection, addr string, id lbtutil.ObjectID, method string, params interface{}) {
 	b, err := msgpack.Marshal(&params)
 	if err != nil {
 		logger.Error("SendClientEntityMsg failed 1 %s", err.Error())
 		return
 	}
-	logger.Debug("SendClientEntityMsg %s %s %s %v", addr, lbtutil.ObjectId(id).Hex(), method, params)
+	logger.Debug("SendClientEntityMsg %s %s %s %v", addr, id.Hex(), method, params)
 	msg := &lbtproto.EntityMsg{
 		Addr: addr,
-		Id: id,
+		Id: id[:],
 		Method: method,
 		Params: b,
 	}

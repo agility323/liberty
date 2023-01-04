@@ -64,6 +64,6 @@ func CreateEntity(name string) interface{} {
 	return e
 }
 
-func DestroyEntity(id lbtutil.ObjectId) {
+func DestroyEntity(id lbtutil.ObjectID) {
 	removeEntity(id)
 }

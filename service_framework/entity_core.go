@@ -8,12 +8,12 @@ import (
 
 type EntityCore struct {
 	typ string
-	id lbtutil.ObjectId
+	id lbtutil.ObjectID
 	actor *lbtactor.WorkerActor
 }
 
 func (ec *EntityCore) init(typ string) {
-	ec.id = lbtutil.NewObjectId()
+	ec.id = lbtutil.NewObjectID()
 	ec.typ = typ
 }
 
@@ -21,13 +21,13 @@ func (ec *EntityCore) GetType() string {
 	return ec.typ
 }
 
-func (ec *EntityCore) GetId() lbtutil.ObjectId {
+func (ec *EntityCore) GetId() lbtutil.ObjectID {
 	return ec.id
 }
 
 func (ec *EntityCore) Dump() map[string]string {
 	return map[string]string {
-		"id": string(ec.id),
+		"id": string(ec.id[:]),
 		"typ": ec.typ,
 	}
 }
@@ -87,9 +87,9 @@ func (stub *RemoteEntityStub) Yield(core *EntityCore) *RemoteEntityStub {
 }
 
 func (stub *RemoteEntityStub) CreateEntity(data interface{}) {
-	SendCreateEntity(stub.c, stub.remoteAddr, string(stub.core.GetId()), stub.core.GetType(), data)
+	SendCreateEntity(stub.c, stub.remoteAddr, stub.core.GetId(), stub.core.GetType(), data)
 }
 
 func (stub *RemoteEntityStub) CallClientMethod(method string, params interface{}) {
-	SendClientEntityMsg(stub.c, stub.remoteAddr, string(stub.core.GetId()), method, params)
+	SendClientEntityMsg(stub.c, stub.remoteAddr, stub.core.GetId(), method, params)
 }
