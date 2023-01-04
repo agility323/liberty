@@ -3,7 +3,7 @@ module github.com/agility323/liberty
 go 1.17
 
 require (
-	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/howeyc/crc16 v0.0.0-20171223171357-2b2a61e366a6
