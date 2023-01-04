@@ -1,6 +1,7 @@
 package service_framework
 
 import (
+	"context"
 	"plugin"
 
 	"github.com/agility323/liberty/lbtreg"
@@ -51,4 +52,17 @@ type QuitCmd struct {
 
 func(c *QuitCmd) Process() {
 	Stop()
+}
+
+func GateBroadcast(ctx context.Context, method string, param interface{}) {
+	cmd := lbtreg.CmdValue{
+		Cmd: "broadcast",
+		Node: "",
+		Data: &lbtreg.BroadcastCmdData{
+			Method: method,
+			Param: param,
+		},
+	}
+	host := serviceConf.Host
+	lbtreg.PutGateCmd(ctx, host, &cmd)
 }
