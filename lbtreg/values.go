@@ -12,6 +12,7 @@ type Value interface {
 type CmdValue struct {
 	Cmd string
 	Node string
+	Param map[string]interface{}
 }
 
 func (v *CmdValue) Marshal() (string, error) {

@@ -7,7 +7,7 @@ import (
 	"github.com/agility323/liberty/hotfix"
 )
 
-var cmdMap = map[string]func() {
+var cmdMap = map[string]func(map[string]interface{}) {
 	"hotfix": CMD_hotfix,
 }
 
@@ -26,11 +26,11 @@ func OnWatchServiceCmd(typ int, key string, val []byte) {
 		return
 	}
 	logger.Info("cmd begin %v", cmd)
-	f()
+	f(cmd.Param)
 	logger.Info("cmd end %v", cmd)
 }
 
-func CMD_hotfix() {
+func CMD_hotfix(param map[string]interface{}) {
 	p, err := plugin.Open("hotfix/hotfix.so")
 	if err != nil {
 		logger.Error("hotfix fail 1 %v", err)
