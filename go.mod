@@ -3,6 +3,7 @@ module github.com/agility323/liberty
 go 1.17
 
 require (
+	github.com/agiledragon/gomonkey/v2 v2.9.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
