@@ -27,6 +27,7 @@ type TcpConnection struct {
 	w io.Writer
 	handler ConnectionHandler
 	writeCh chan []byte
+	stopCh chan struct{}
 	vars map[string]interface{}	// customed variables
 	readLoopFunc func() bool
 }
@@ -46,6 +47,7 @@ func NewTcpConnection(conn net.Conn, handler ConnectionHandler) *TcpConnection {
 		w: conn,
 		handler: handler,
 		writeCh: make(chan []byte, WriteChLen),
+		stopCh: make(chan struct{}, 1),
 		vars: make(map[string]interface{}),
 	}
 	c.readLoopFunc = c.readLoopOnce
@@ -116,21 +118,33 @@ func (c *TcpConnection) readLoopOnce() bool {
 }
 
 func (c *TcpConnection) writeLoop() {
-	for data := range c.writeCh {
-		//logger.Debug("tcp conn write %s %v", c.raddr, data)
-		n, err := c.w.Write(data)
-		if err != nil {
-			logger.Warn("tcp conn %s write fail %d %d %s", c.raddr, len(data), n, err.Error())
-			c.Close()
+	for {
+		select {
+		case <-c.stopCh:
+			logger.Info("tcp conn %s write loop quit", c.raddr)
 			return
+		case data := <-c.writeCh:
+			//logger.Debug("tcp conn write %s %v", c.raddr, data)
+			n, err := c.w.Write(data)
+			if err != nil {
+				logger.Warn("tcp conn %s write fail %d %d %s", c.raddr, len(data), n, err.Error())
+				c.Close()
+				return
+			}
 		}
+
 	}
 }
 
 func (c *TcpConnection) Close() {
 	if c.CloseWithoutCallback() {
 		c.handler.OnConnectionClose(c)
-		close(c.writeCh)
+		select {
+		case c.stopCh<- struct{}{}:
+			return
+		default:
+			return
+		}
 	}
 }
 

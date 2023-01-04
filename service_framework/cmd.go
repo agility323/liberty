@@ -55,7 +55,7 @@ func(c *QuitCmd) Process() {
 	if c.Mode & lbtreg.QuitModeMaskSoftHard > 0 {
 		Stop()
 	} else {
-		Stop()	// TODO
+		Stop()	// TODO soft stop
 	}
 }
 
