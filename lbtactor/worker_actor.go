@@ -28,6 +28,8 @@ func NewWorkerActor(name string) *WorkerActor {
 
 func (w *WorkerActor) Start(qlen int) bool {
 	if !atomic.CompareAndSwapInt32(&w.state, 0, 1) { return false }
+	w.taskq = make(chan taskWithNoReturn, qlen)
+	w.stopq = make(chan struct{}, 1)
 	go w.workLoop(qlen)
 	return true
 }
@@ -35,8 +37,6 @@ func (w *WorkerActor) Start(qlen int) bool {
 func (w *WorkerActor) workLoop(qlen int) {
 	defer lbtutil.Recover("WorkerActor.workLoop " + w.name, func() { go w.workLoop(qlen) })
 
-	w.taskq = make(chan taskWithNoReturn, qlen)
-	w.stopq = make(chan struct{}, 1)
 	for {
 		select {
 		case <-w.stopq:
