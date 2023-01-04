@@ -73,7 +73,7 @@ func CallEntityMethodLocal(id lbtutil.ObjectID, method string, paramBytes []byte
 	// entity
 	entity := GetEntity(id)
 	if entity == nil {
-		return errors.New(fmt.Sprintf("CallEntityMethodLocal fail: entity not found %s", id.Hex()))
+		return errors.New(fmt.Sprintf("CallEntityMethodLocal fail: entity not found %s %s", id.Hex(), method))
 	}
 	// rpc method
 	v := reflect.ValueOf(entity)
