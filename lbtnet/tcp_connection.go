@@ -130,6 +130,7 @@ func (c *TcpConnection) writeLoop() {
 func (c *TcpConnection) Close() {
 	if c.CloseWithoutCallback() {
 		c.handler.OnConnectionClose(c)
+		close(c.writeCh)
 	}
 }
 
