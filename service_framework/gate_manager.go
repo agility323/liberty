@@ -56,7 +56,9 @@ func (m *GateManager) getPrimaryGate() *lbtnet.TcpConnection {
 func (m *GateManager) getRandomGate() *lbtnet.TcpConnection {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
-
+	if len(m.gateMap) == 0 {
+		return nil
+	}
 	n := rand.Intn(len(m.gateMap))
 	for _, c := range m.gateMap {
 		if n--; n >= 0 { continue }
