@@ -2,7 +2,6 @@ package lbtreg
 
 import (
 	"time"
-	"context"
 	"strings"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -13,7 +12,6 @@ const (
 )
 
 var etcdClient *clientv3.Client = nil
-var etcdContext = context.Background()
 
 func InitEtcdClient(endpoints []string) {
 	client, err := clientv3.New(clientv3.Config{

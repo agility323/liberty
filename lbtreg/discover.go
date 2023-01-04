@@ -10,38 +10,38 @@ import (
 
 type DiscoverCallback func(map[string][]byte)
 
-func StartDiscoverProxy(tickTime int, stopCh chan bool, cb DiscoverCallback, host int) {
+func StartDiscoverProxy(ctx context.Context, tickTime int, cb DiscoverCallback, host int) {
 	etcdKey := GenEtcdKey(strconv.Itoa(host), "gate", "")
-	startDiscoverJob(tickTime, stopCh, cb, etcdKey)
+	startDiscoverJob(ctx, tickTime, cb, etcdKey)
 }
 
-func StartDiscoverService(tickTime int, stopCh chan bool, cb DiscoverCallback, host int) {
+func StartDiscoverService(ctx context.Context, tickTime int, cb DiscoverCallback, host int) {
 	etcdKey := GenEtcdKey(strconv.Itoa(host), "service", "")
-	startDiscoverJob(tickTime, stopCh, cb, etcdKey)
+	startDiscoverJob(ctx, tickTime, cb, etcdKey)
 }
 
-func startDiscoverJob(tickTime int, stopCh chan bool, cb DiscoverCallback, etcdKey string) {
+func startDiscoverJob(ctx context.Context, tickTime int, cb DiscoverCallback, etcdKey string) {
 	stopped := false
 	ticker := time.NewTicker(time.Duration(tickTime) * time.Second)
 	defer func() {
 		ticker.Stop()
 		if !stopped {
-			go startDiscoverJob(tickTime, stopCh, cb, etcdKey)
+			go startDiscoverJob(ctx, tickTime, cb, etcdKey)
 		}
 	}()
 	// keep alive tick
 	lenPrefix := len(etcdKey)
 	for {
 		select {
-		case <- stopCh:
+		case <-ctx.Done():
 			stopped = true
 			logger.Info("discover job stopped %s", etcdKey)
 			return
-		case <- ticker.C:
+		case <-ticker.C:
 			// etcd get
-			ctx, cancel := context.WithTimeout(etcdContext, 3 * time.Second)
+			lctx, cancel := context.WithTimeout(ctx, 3 * time.Second)
 			kvc := clientv3.NewKV(etcdClient)
-			resp, err := kvc.Get(ctx, etcdKey, clientv3.WithPrefix())
+			resp, err := kvc.Get(lctx, etcdKey, clientv3.WithPrefix())
 			cancel()
 			if err != nil {
 				logger.Warn("discover job failed: etcd get %s", etcdKey)

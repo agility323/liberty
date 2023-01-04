@@ -55,16 +55,16 @@ func startRegJob(ctx context.Context, tickTime int, etcdKey string, data RegData
 		}
 	}()
 	// create etcd value
-	etcdVal, err := data.Marshal()
+	etcdVal, err := data.Marshal()// TODO regenerate (version update)
 	if err != nil {
 		logger.Warn("register job failed: etcd value marshal %v %v", data, err)
 		return
 	}
 	// create lease
-	ctx, cancel := context.WithTimeout(etcdContext, 3 * time.Second)
+	lctx, cancel := context.WithTimeout(ctx, 3 * time.Second)
 	margin := tickTime / 5
 	if margin < 1 { margin = 1 }
-	resp, err := etcdClient.Grant(ctx, int64(tickTime + margin))
+	resp, err := etcdClient.Grant(lctx, int64(tickTime + margin))
 	cancel()
 	if err != nil {
 		logger.Warn("register job failed: etcd grant %s", etcdKey)
@@ -72,9 +72,9 @@ func startRegJob(ctx context.Context, tickTime int, etcdKey string, data RegData
 	}
 	leaseID	:= resp.ID
 	// etcd put
-	ctx, cancel = context.WithTimeout(etcdContext, 3 * time.Second)
+	lctx, cancel = context.WithTimeout(ctx, 3 * time.Second)
 	kvc := clientv3.NewKV(etcdClient)
-	_, err = kvc.Put(ctx, etcdKey, etcdVal, clientv3.WithLease(leaseID))
+	_, err = kvc.Put(lctx, etcdKey, etcdVal, clientv3.WithLease(leaseID))
 	cancel()
 	if err != nil {
 		logger.Warn("register job failed: etcd put %s", etcdKey)
@@ -88,8 +88,8 @@ func startRegJob(ctx context.Context, tickTime int, etcdKey string, data RegData
 			logger.Info("register job stopped %s", etcdKey)
 			return
 		case <-ticker.C:
-			ctx, cancel = context.WithTimeout(etcdContext, 3 * time.Second)
-			_, err := etcdClient.KeepAliveOnce(ctx, leaseID)
+			lctx, cancel = context.WithTimeout(ctx, 3 * time.Second)
+			_, err := etcdClient.KeepAliveOnce(lctx, leaseID)
 			cancel()
 			if err != nil {
 				logger.Warn("register job failed: etcd ka %s", etcdKey)
