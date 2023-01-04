@@ -33,8 +33,8 @@ func (ec *EntityCore) Dump() map[string]string {
 	}
 }
 
-func (ec *EntityCore) StartActor() bool {
-	return ec.actor.Start(100)
+func (ec *EntityCore) StartActor(qlen int) bool {
+	return ec.actor.Start(qlen)
 }
 
 func (ec *EntityCore) StopActor() bool {
