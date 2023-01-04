@@ -3,6 +3,8 @@ package hotfix
 import (
 	"testing"
 	"fmt"
+
+	"github.com/agility323/liberty/hotfix/itf"
 )
 
 //go:noinline
@@ -29,7 +31,7 @@ func NewSF(s *S) string {
 }
 
 func TestHotfix(t *testing.T) {
-	entries := []interface{} {
+	entries := []itf.HotfixEntry {
 		Hotfix.NewFuncEntry(F, NewF),
 		Hotfix.NewMethodEntry((*S)(nil), "F", NewSF),
 	}
