@@ -15,6 +15,7 @@ func init() {
 		started: 0,
 		jobCh: make(chan gateManagerJob, 20),
 		gateMap: make(map[string]*lbtnet.TcpConnection),
+		primaryGateAddr: "",
 	}
 }
 
@@ -38,6 +39,7 @@ type GateManager struct {
 	started int32
 	jobCh chan gateManagerJob
 	gateMap map[string]*lbtnet.TcpConnection
+	primaryGateAddr string
 }
 
 func (gm *GateManager) start() {
@@ -76,18 +78,30 @@ func (gm *GateManager) gateDisconnect(c *lbtnet.TcpConnection) {
 	//TODO.OnConnectionClose()
 	addr := c.RemoteAddr()
 	delete(gm.gateMap, addr)
+	if gm.primaryGateAddr == addr { gm.primaryGateAddr = "" }
 }
 
 func (gm *GateManager) entityMsg(msg *lbtproto.EntityMsg) {
-	n := rand.Intn(len(gm.gateMap))
-	for _, c := range gm.gateMap {
-		if n--; n >= 0 { continue }
-		if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_entity_msg, msg); err != nil {
-			logger.Error("entityMsg failed 1 %s", err.Error())
-		}
+	c := gm.getPrimaryGate()
+	if c == nil {
+		logger.Error("entityMsg failed 1 no gate connection")
 		return
 	}
-	logger.Error("entityMsg failed 2 no gate connection")
+	if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_entity_msg, msg); err != nil {
+		logger.Error("entityMsg failed 2 %s", err.Error())
+	}
+}
+
+func (gm *GateManager) getPrimaryGate() *lbtnet.TcpConnection {
+	c, ok := gm.gateMap[gm.primaryGateAddr]
+	if ok && c != nil { return c }
+	n := rand.Intn(len(gm.gateMap))
+	for addr, c := range gm.gateMap {
+		if n--; n >= 0 { continue }
+		gm.primaryGateAddr = addr
+		return c
+	}
+	return nil
 }
 
 func (gm *GateManager) serviceRequest(msg *lbtproto.ServiceRequest) {
