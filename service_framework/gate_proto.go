@@ -2,10 +2,12 @@ package service_framework
 
 import (
 	"errors"
+	"context"
 
 	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtproto"
+	"github.com/agility323/liberty/lbtactor"
 
 	"github.com/vmihailenco/msgpack"
 )
@@ -59,9 +61,28 @@ func Service_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, request); err != nil {
 		return err
 	}
-	ma := newMethodActor(c, request, true)
-	go ma.start()
+	runServiceRequestTask(c, request, true)
 	return nil
+}
+
+func runServiceRequestTask(c *lbtnet.TcpConnection, req *lbtproto.ServiceRequest, fromService bool) {
+	ctx, _ := context.WithTimeout(context.Background(), serviceRequestTimeout)
+	task := func() struct{} {
+		reqid := string(req.Reqid)
+		replyData, err := processServiceMethod(c, req.Addr, reqid, req.Method, req.Params)
+		if err != nil {
+			logger.Warn("service request task fail [%v] [%v]", err, req)
+			return struct{}{}
+		}
+		if replyData == nil { return struct{}{} }
+		if fromService {
+			sendServiceReply(c, req.Addr, reqid, replyData)
+		} else {
+			sendClientServiceReply(c, req.Addr, reqid, replyData)
+		}
+		return struct{}{}
+	}
+	lbtactor.RunTaskActor(ctx, task)
 }
 
 func Service_service_reply(c *lbtnet.TcpConnection, buf []byte) error {
@@ -79,8 +100,7 @@ func Service_client_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, request); err != nil {
 		return err
 	}
-	ma := newMethodActor(c, request, false)
-	go ma.start()
+	runServiceRequestTask(c, request, false)
 	return nil
 }
 
