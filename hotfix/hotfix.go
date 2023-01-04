@@ -11,13 +11,16 @@ import (
 
 var logger = lbtutil.NewLogger(strconv.Itoa(os.Getpid()), "sf")
 
+type HotfixInterface interface {
+	NewFuncEntry(interface{}, interface{}) interface{}
+	NewMethodEntry(interface{}, string, interface{}) interface{}
+	ApplyHotfix([]interface{})
+	ApplyHotfixEntry(interface{})
+}
+
 type FuncEntry struct {
 	target interface{}
 	double interface{}
-}
-
-func NewFuncEntry(target interface{}, double interface{}) *FuncEntry {
-	return &FuncEntry{target: target, double: double}
 }
 
 type MethodEntry struct {
@@ -26,19 +29,27 @@ type MethodEntry struct {
 	double interface{}
 }
 
-func NewMethodEntry(target interface{}, method string, double interface{}) *MethodEntry {
+type HotfixImpl struct {}
+
+var Hotfix *HotfixImpl
+
+func (h *HotfixImpl) NewFuncEntry(target interface{}, double interface{}) *FuncEntry {
+	return &FuncEntry{target: target, double: double}
+}
+
+func (h *HotfixImpl) NewMethodEntry(target interface{}, method string, double interface{}) *MethodEntry {
 	return &MethodEntry{target: target, method: method, double: double}
 }
 
-func ApplyHotfix(entries []interface{}) {
+func (h *HotfixImpl) ApplyHotfix(entries []interface{}) {
 	logger.Info("apply hotfix begin %d", len(entries))
 	for _, entry := range entries {
-		ApplyHotfixEntry(entry)
+		h.ApplyHotfixEntry(entry)
 	}
 	logger.Info("apply hotfix end")
 }
 
-func ApplyHotfixEntry(i interface{}) {
+func (h *HotfixImpl) ApplyHotfixEntry(i interface{}) {
 	switch i.(type) {
 	case *MethodEntry:
 		e := i.(*MethodEntry)
