@@ -27,6 +27,7 @@ func (m *GateManager) gateConnect(c *lbtnet.TcpConnection) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	m.gateMap[addr] = c
+	logger.Info("gate connect %s", addr)
 }
 
 func (m *GateManager) gateDisconnect(c *lbtnet.TcpConnection) {
@@ -36,6 +37,7 @@ func (m *GateManager) gateDisconnect(c *lbtnet.TcpConnection) {
 	defer m.lock.Unlock()
 	delete(m.gateMap, addr)
 	if m.primaryGateAddr == addr { m.primaryGateAddr = "" }
+	logger.Info("gate disconnect %s", addr)
 }
 
 func (m *GateManager) getPrimaryGate() *lbtnet.TcpConnection {

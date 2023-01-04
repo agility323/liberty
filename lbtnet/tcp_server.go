@@ -3,9 +3,7 @@ package lbtnet
 import (
 	"fmt"
 	"net"
-	"strconv"
 	"sync/atomic"
-	"os"
 
 	"github.com/agility323/liberty/lbtutil"
 )
@@ -34,10 +32,9 @@ func NewTcpServer(addr string, cc connectionCreatorFunc) *TcpServer {
 		started: 0,
 		stop: 0,
 		listener: listener,
-		logger: lbtutil.NewLogger(strconv.Itoa(os.Getpid()), "TcpServer"),
 		cc: cc,
 	}
-	server.logger.Info("tcp server listen at %s", server.GetAddr())
+	logger.Info("tcp server listen at %s", server.GetAddr())
 	return server
 }
 
@@ -65,12 +62,12 @@ func (server *TcpServer) acceptLoop() {
 		conn, err := server.listener.AcceptTCP()
 		if err != nil {
 			if atomic.LoadInt32(&server.stop) != 0 {
-				server.logger.Info("server close listen address %s", server.GetAddr())
+				logger.Info("tcp server close %s", server.GetAddr())
 				return
 			}
 			continue
 		}
-		server.logger.Info("new connection from %s", conn.RemoteAddr().String())
+		logger.Info("tcp server new conn %s", conn.RemoteAddr().String())
 		server.cc(conn)
 	}
 }
