@@ -22,9 +22,9 @@ func logBI(BTag, event string, trackingInfo map[string]interface{}) {
 	trackingStr := fmt.Sprintf("[%s] [%s]", event, trackingBytes)
 
 	now := time.Now()
-	tstr := fmt.Sprintf("[%04d-%02d-%02d %02d:%02d:%02d]",
+	tstr := fmt.Sprintf("[%04d-%02d-%02d %02d:%02d:%02d.%03d]",
 		now.Year(), now.Month(), now.Day(),
-		now.Hour(), now.Minute(), now.Second())
+		now.Hour(), now.Minute(), now.Second(), now.Nanosecond()/1e6)
 
 	bPrefix := "[BI]"
 	n := len(tstr) + 1 + len(bPrefix) + 1 + len(BTag) + 1 + len(trackingStr) + 1
