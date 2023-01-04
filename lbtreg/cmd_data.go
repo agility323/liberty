@@ -4,6 +4,18 @@ type CmdData interface{
 	Process()
 }
 
+var cmdDataCreatorMap = map[string]func() CmdData{}
+
+func RegisterCmdDataCreator(cmd string, hc func() CmdData) {
+	cmdDataCreatorMap[cmd] = hc
+}
+
+func CreateCmdData(cmd string) CmdData {
+	hc, ok := cmdDataCreatorMap[cmd]
+	if ok && hc != nil { return hc() }
+	return nil
+}
+
 type BaseCmdData struct {
 }
 
@@ -32,14 +44,7 @@ type BroadcastCmdData struct {
 	Param interface{} `json:"param"`
 }
 
-var cmdDataCreatorMap = map[string]func() CmdData{}
-
-func RegisterCmdDataCreator(cmd string, hc func() CmdData) {
-	cmdDataCreatorMap[cmd] = hc
-}
-
-func CreateCmdData(cmd string) CmdData {
-	hc, ok := cmdDataCreatorMap[cmd]
-	if ok && hc != nil { return hc() }
-	return nil
+type BanServiceCmdData struct {
+	BaseCmdData
+	Addr string `json:"addr"`
 }
