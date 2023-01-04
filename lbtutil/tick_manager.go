@@ -1,26 +1,11 @@
-package service_framework
+package lbtutil
 
 import (
 	"sync"
 	"time"
-
-	"github.com/agility323/liberty/lbtutil"
 )
 
 const MinTickTime = 30
-
-var tickmgr *TickManager
-
-func init() {
-	interval := 600
-	tickmgr = &TickManager{
-		ticker: time.NewTicker(time.Duration(interval) * time.Second),
-		stopq: make(chan struct{}, 1),
-		interval: interval,
-		idcnt: 0,
-		jobs: make(map[uint64]func()),
-	}
-}
 
 type TickManager struct {
 	lock sync.RWMutex
@@ -29,6 +14,16 @@ type TickManager struct {
 	interval int
 	idcnt uint64
 	jobs map[uint64]func()
+}
+
+func NewTickManager(interval int) *TickManager {
+	return &TickManager{
+		ticker: time.NewTicker(time.Duration(interval) * time.Second),
+		stopq: make(chan struct{}, 1),
+		interval: interval,
+		idcnt: 0,
+		jobs: make(map[uint64]func()),
+	}
 }
 
 func (m *TickManager) AddTickJob(job func()) uint64 {
@@ -58,7 +53,7 @@ func (m *TickManager) resetTickTime() {
 	interval := (m.interval + n - 1) / n
 	if interval < MinTickTime { interval = MinTickTime }
 	m.ticker.Reset(time.Duration(interval) * time.Second)
-	logger.Info("tick manager tick time set to %d", interval)
+	log.Info("tick manager tick time set to %d", interval)
 }
 
 func (m *TickManager) ResetTickTime(interval int) {
@@ -70,18 +65,18 @@ func (m *TickManager) ResetTickTime(interval int) {
 }
 
 func (m *TickManager) Start() {
-	defer lbtutil.Recover("TickManager.Start", m.Start)
+	defer Recover("TickManager.Start", m.Start)
 
 	go func() {
-		logger.Info("tick manager start")
+		log.Info("tick manager start")
 		for {
 			for id, job := range m.jobs {
 				select {
 				case <-m.stopq:
-					logger.Info("tick manager stop")
+					log.Info("tick manager stop")
 					return
 				case <-m.ticker.C:
-					logger.Info("tick job start %d", id)
+					log.Info("tick job start %d", id)
 					job()
 				}
 			}

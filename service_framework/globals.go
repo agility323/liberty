@@ -16,9 +16,12 @@ var Logger = logger
 var serviceAddr string = ""
 var regData *lbtreg.BasicRegData
 
+var tickmgr *lbtutil.TickManager
+
 func init() {
 	msgpack.SetEnableLuaMapDecode(true)
 	regData = &lbtreg.BasicRegData{
 		Version: lbtutil.ReadVersionFile(),
 	}
+	tickmgr = lbtutil.NewTickManager(600)
 }
