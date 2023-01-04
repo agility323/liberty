@@ -4,8 +4,11 @@ import (
 	"strings"
 	"io/ioutil"
 	"os"
+	"strconv"
 
 	"github.com/go-redis/redis"
+	
+	sf "github.com/agility323/liberty/service_framework"
 )
 
 const RedisKeyDelimiter = ":"
@@ -32,6 +35,11 @@ func InitRedisClient(addrs []string, masterName string) {
 
 func RedisKey(fields []string) string {
 	return strings.Join(fields, RedisKeyDelimiter)
+}
+
+func RedisHostKey(fields []string) string {
+	s := strings.Join(fields, RedisKeyDelimiter)
+	return strings.Join([]string{strconv.Itoa(sf.GetServiceConf().Host), s}, RedisKeyDelimiter)
 }
 
 func LoadAllRedisScript(spath string) {
