@@ -1,8 +1,8 @@
 package service_framework
 
 import (
-	"sync"
 	"math/rand"
+	"sync"
 
 	"github.com/agility323/liberty/lbtnet"
 )
@@ -41,7 +41,9 @@ func (m *GateManager) gateDisconnect(c *lbtnet.TcpConnection) {
 func (m *GateManager) getPrimaryGate() *lbtnet.TcpConnection {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
-
+	if len(m.gateMap) == 0 {
+		return nil
+	}
 	c, ok := m.gateMap[m.primaryGateAddr]
 	if ok && c != nil { return c }
 	n := rand.Intn(len(m.gateMap))
