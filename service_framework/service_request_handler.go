@@ -27,6 +27,10 @@ func init() {
 }
 
 func CallServiceMethod(service, method string, params map[string]interface{}, handler callbackHandler, expire int64) {
+	CallServiceMethodWithRoute(service, method, params, handler, expire, lbtproto.DefaultRouteType, []byte{})
+}
+
+func CallServiceMethodWithRoute(service, method string, params map[string]interface{}, handler callbackHandler, expire int64, routeType int32, routParam []byte) {
 	// marshal
 	b, err := msgpack.Marshal(&params)
 	if err != nil {
@@ -41,6 +45,8 @@ func CallServiceMethod(service, method string, params map[string]interface{}, ha
 		Type: service,
 		Method: method,
 		Params: b,
+		Routet: routeType,
+		Routep: routParam,
 	}
 	c := gateManager.getRandomGate()
 	if c == nil {
