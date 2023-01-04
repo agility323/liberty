@@ -16,6 +16,7 @@ type confType struct {
 	Etcd []string `json:"etcd"`
 	PrivateRsaKey string `json:"private_rsa_key"`
 	ProfilePort int `json:"profile_port"`
+	TickTime int `json:"tick_time"`
 }
 
 var Conf confType

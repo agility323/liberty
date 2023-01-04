@@ -39,6 +39,16 @@ func init() {
 	}
 }
 
+func (m *ServiceManager) onStart() {
+	tickmgr.AddTickJob(m.OnTick)
+}
+
+func (m *ServiceManager) OnTick() {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+	logger.Info("service manager tick %v %v", m.serviceMap, m.serviceTypeToAddrSet)
+}
+
 func (m *ServiceManager) OnDiscoverService(services map[string][]byte) {
 	for service, _ := range services {
 		pair := lbtreg.SplitEtcdKey(service, 2)

@@ -36,6 +36,20 @@ func init() {
 	}
 }
 
+func (m *ClientManager) onStart() {
+	tickmgr.AddTickJob(m.OnTick)
+}
+
+func (m *ClientManager) OnTick() {
+	n := 0
+	for slot := range m.clientSlots {
+		m.locks[slot].RLock()
+		n += len(m.clientSlots[slot])
+		m.locks[slot].RUnlock()
+	}
+	logger.Info("client manager tick %d", n)
+}
+
 func (m *ClientManager) clientConnect(c *lbtnet.TcpConnection) {
 	addr := c.RemoteAddr()
 	slot := lbtutil.StringHash(addr) % ClientSlotNum
@@ -43,6 +57,7 @@ func (m *ClientManager) clientConnect(c *lbtnet.TcpConnection) {
 	defer m.locks[slot].Unlock()
 
 	m.clientSlots[slot][addr] = &clientEntry{c: c, serviceAddr: ""}
+	logger.Info("client connect %s", addr)
 }
 
 func (m *ClientManager) clientDisconnect(c *lbtnet.TcpConnection) {
@@ -71,41 +86,45 @@ func (m *ClientManager) clientDisconnect(c *lbtnet.TcpConnection) {
 			lbtproto.SendMessage(serviceEntry.cli, lbtproto.Service.Method_client_disconnect, &info)
 		}
 	}
+	logger.Info("client disconnect %s", addr)
 }
 
 func (m *ClientManager) bindClient(info lbtproto.BindClientInfo) {
-	addr := info.Caddr
-	slot := lbtutil.StringHash(addr) % ClientSlotNum
+	caddr := info.Caddr
+	saddr := info.Saddr
+	slot := lbtutil.StringHash(caddr) % ClientSlotNum
 	m.locks[slot].Lock()
 	defer m.locks[slot].Unlock()
 
-	entry, ok := m.clientSlots[slot][info.Caddr]
+	entry, ok := m.clientSlots[slot][caddr]
 	if !ok { return }
-	entry.serviceAddr = info.Saddr
-	if _, ok := m.boundClientSlots[slot][info.Saddr]; !ok {
-		m.boundClientSlots[slot][info.Saddr] = make(map[string]int)
+	entry.serviceAddr = saddr
+	if _, ok := m.boundClientSlots[slot][saddr]; !ok {
+		m.boundClientSlots[slot][saddr] = make(map[string]int)
 	}
-	m.boundClientSlots[slot][info.Saddr][info.Caddr] = 1
+	m.boundClientSlots[slot][saddr][caddr] = 1
+	logger.Info("client bind %s %s", caddr, saddr)
 }
 
 func (m *ClientManager) unbindClient(info lbtproto.BindClientInfo) {
-	addr := info.Caddr
-	slot := lbtutil.StringHash(addr) % ClientSlotNum
+	caddr := info.Caddr
+	saddr := info.Saddr
+	slot := lbtutil.StringHash(caddr) % ClientSlotNum
 	m.locks[slot].Lock()
 	defer m.locks[slot].Unlock()
 
-	saddr := info.Saddr
-	if entry, ok := m.clientSlots[slot][addr]; ok {
-		delete(m.clientSlots[slot], addr)
+	if entry, ok := m.clientSlots[slot][caddr]; ok {
+		delete(m.clientSlots[slot], caddr)
 		entry.c.CloseWithoutCallback()
 		saddr = entry.serviceAddr
 	}
 	if cm, ok := m.boundClientSlots[slot][saddr]; ok {
-		delete(cm, addr)
+		delete(cm, caddr)
 		if len(cm) == 0 {
 			delete(m.boundClientSlots[slot], saddr)
 		}
 	}
+	logger.Info("client unbind %s %s", caddr, saddr)
 }
 
 func (m *ClientManager) getClientConnection(addr string) *lbtnet.TcpConnection {
@@ -188,7 +207,7 @@ func (m *ClientManager) SoftStop() {
 	// TODO avoid duplicates
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	lbtactor.RunTaskActor(ctx, func() struct{} {
+	lbtactor.RunTaskActor(ctx, "ClientManager.SoftStop", func() struct{} {
 		ticker := time.NewTicker(50 * time.Second)
 		stop := false
 		defer func() {

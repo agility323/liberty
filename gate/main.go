@@ -87,6 +87,9 @@ func main() {
 	ctxWatchCmd, cancelWatchCmd := context.WithCancel(context.Background())
 	go lbtreg.StartWatchGateCmd(ctxWatchCmd, OnWatchGateCmd, Conf.Host)
 
+	// on start
+	onStart()
+
 	// wait for stop
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
 	<-stopCh
@@ -98,7 +101,17 @@ func main() {
 	onStop()
 }
 
+func onStart() {
+	if Conf.TickTime > 0 {
+		tickmgr.ResetTickTime(Conf.TickTime)
+	}
+	clientManager.onStart()
+	serviceManager.onStart()
+	tickmgr.Start()
+}
+
 func onStop() {
+	tickmgr.Stop()
 	logger.Info("gate stopped")
 }
 

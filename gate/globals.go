@@ -11,6 +11,12 @@ import (
 
 var logger = lbtutil.NewLogger(strconv.Itoa(os.Getpid()), "gate")
 
+var tickmgr *lbtutil.TickManager
+
+func init() {
+	tickmgr = lbtutil.NewTickManager(600)
+}
+
 type GateRegData struct {
 	lbtreg.BasicRegData
 	EntranceAddr string
