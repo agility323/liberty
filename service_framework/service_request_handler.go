@@ -47,13 +47,14 @@ func CallServiceMethod(service, method string, params map[string]interface{}, ha
 		logger.Error("CallServiceMethod fail 2 no gate connection")
 		return
 	}
+	if expire <= 0 { expire = 15 }
+	// calback
+	serviceCallbackMap.Store(reqid, serviceCallback{handler: handler, expire: time.Now().Unix() + expire})
 	if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_service_request, msg); err != nil {
 		logger.Error("CallServiceMethod fail 3 %s", err.Error())
+		serviceCallbackMap.Delete(reqid)
 		return
 	}
-	// calback
-	if expire <= 0 { expire = 15 }
-	serviceCallbackMap.Store(reqid, serviceCallback{handler: handler, expire: time.Now().Unix() + expire})
 }
 
 func processServiceReply(reqid lbtutil.ObjectID, replyByte []byte) {
