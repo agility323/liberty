@@ -35,7 +35,7 @@ func (d *BasicRegData) Unmarshal(b []byte) error {
 	return json.Unmarshal(b, d)
 }
 
-func StartRegisterGate(ctx context.Context, tickTime int, host int, serviceType string, addr string, data RegData) {
+func StartRegisterGate(ctx context.Context, tickTime int, host int, addr string, data RegData) {
 	etcdKey := GenEtcdKey(strconv.Itoa(host), "gate", addr)
 	startRegJob(ctx, tickTime, etcdKey, data)
 }
