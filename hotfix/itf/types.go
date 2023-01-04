@@ -5,7 +5,7 @@ type HotfixEntry interface {
 }
 
 type HotfixInterface interface {
-	NewFuncEntry(interface{}, interface{}) HotfixEntry
+	NewFuncEntry(interface{}, string, interface{}) HotfixEntry
 	NewMethodEntry(interface{}, string, interface{}) HotfixEntry
 	ApplyHotfix([]HotfixEntry)
 }

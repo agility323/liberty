@@ -1,22 +1,33 @@
 package hotfix
 
 import (
+	"reflect"
+
 	"github.com/agility323/liberty/hotfix/itf"
+	"github.com/agility323/liberty/hotfix/lookup"
 
 	"github.com/agiledragon/gomonkey/v2"
 )
 
 type FuncEntry struct {
 	target interface{}
+	name string
 	double interface{}
 }
 
-func (h *HotfixImpl) NewFuncEntry(target interface{}, double interface{}) itf.HotfixEntry {
-	return &FuncEntry{target: target, double: double}
+func (h *HotfixImpl) NewFuncEntry(target interface{}, name string, double interface{}) itf.HotfixEntry {
+	return &FuncEntry{target: target, name: name, double: double}
 }
 
 func (e *FuncEntry) Apply() {
-	gomonkey.ApplyFunc(e.target, e.double)
+	//gomonkey.ApplyFunc(e.target, e.double)	// wrong demonstration
+
+	realt, err := lookup.MakeValueByFunctionName(e.target, e.name)
+	if err != nil {
+		logger.Error("hotfix.FuncEntry.Apply fail 1: %v", err)
+		return
+	}
+	gomonkey.NewPatches().ApplyCore(realt, reflect.ValueOf(e.double))
 }
 
 type MethodEntry struct {
