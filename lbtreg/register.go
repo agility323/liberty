@@ -4,29 +4,62 @@ import (
 	"time"
 	"strconv"
 	"context"
+	"encoding/json"
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
-func StartRegisterGate(tickTime int, stopCh chan bool, host int, addr string) {
+func GateRegisterKey(host int, addr string) string {
+	return GenEtcdKey(strconv.Itoa(host), "gate", addr)
+}
+
+func ServiceRegisterKey(host int, typ, addr string) string {
+	return GenEtcdKey(strconv.Itoa(host), "service", typ, addr)
+}
+
+type RegData interface {
+	Marshal() (string, error)
+	Unmarshal([]byte) error
+}
+
+type BasicRegData struct {
+	Version string
+}
+
+func (d *BasicRegData) Marshal() (string, error) {
+	b, err := json.Marshal(d)
+	return string(b), err
+}
+
+func (d *BasicRegData) Unmarshal(b []byte) error {
+	return json.Unmarshal(b, d)
+}
+
+func StartRegisterGate(ctx context.Context, tickTime int, host int, serviceType string, addr string, data RegData) {
 	etcdKey := GenEtcdKey(strconv.Itoa(host), "gate", addr)
-	startRegisterJob(tickTime, stopCh, etcdKey)
+	startRegJob(ctx, tickTime, etcdKey, data)
 }
 
-func StartRegisterService(tickTime int, stopCh chan bool, host int, serviceType string, addr string) {
+func StartRegisterService(ctx context.Context, tickTime int, host int, serviceType string, addr string, data RegData) {
 	etcdKey := GenEtcdKey(strconv.Itoa(host), "service", serviceType, addr)
-	startRegisterJob(tickTime, stopCh, etcdKey)
+	startRegJob(ctx, tickTime, etcdKey, data)
 }
 
-func startRegisterJob(tickTime int, stopCh chan bool, etcdKey string) {
+func startRegJob(ctx context.Context, tickTime int, etcdKey string, data RegData) {
 	stopped := false
 	ticker := time.NewTicker(time.Duration(tickTime) * time.Second)
 	defer func() {
 		ticker.Stop()
 		if !stopped {
-			go startRegisterJob(tickTime, stopCh, etcdKey)
+			go startRegJob(ctx, tickTime, etcdKey, data)
 		}
 	}()
+	// create etcd value
+	etcdVal, err := data.Marshal()
+	if err != nil {
+		logger.Warn("register job failed: etcd value marshal %v %v", data, err)
+		return
+	}
 	// create lease
 	ctx, cancel := context.WithTimeout(etcdContext, 3 * time.Second)
 	margin := tickTime / 5
@@ -41,7 +74,7 @@ func startRegisterJob(tickTime int, stopCh chan bool, etcdKey string) {
 	// etcd put
 	ctx, cancel = context.WithTimeout(etcdContext, 3 * time.Second)
 	kvc := clientv3.NewKV(etcdClient)
-	_, err = kvc.Put(ctx, etcdKey, "1", clientv3.WithLease(leaseID))
+	_, err = kvc.Put(ctx, etcdKey, etcdVal, clientv3.WithLease(leaseID))
 	cancel()
 	if err != nil {
 		logger.Warn("register job failed: etcd put %s", etcdKey)
@@ -50,11 +83,11 @@ func startRegisterJob(tickTime int, stopCh chan bool, etcdKey string) {
 	// keep alive tick
 	for {
 		select {
-		case <- stopCh:
+		case <-ctx.Done():
 			stopped = true
 			logger.Info("register job stopped %s", etcdKey)
 			return
-		case <- ticker.C:
+		case <-ticker.C:
 			ctx, cancel = context.WithTimeout(etcdContext, 3 * time.Second)
 			_, err := etcdClient.KeepAliveOnce(ctx, leaseID)
 			cancel()

@@ -5,6 +5,8 @@ import (
 	"os/signal"
 	"syscall"
 	"fmt"
+	"context"
+
 	"net/http"
 	_ "net/http/pprof"
 
@@ -39,12 +41,14 @@ func Start(cb func()) {
 
 	// register
 	lbtreg.InitWithEtcd(serviceConf.Etcd)
+	ctx, cancel := context.WithCancel(context.Background())
 	go lbtreg.StartRegisterService(
+		ctx,
 		11,
-		make(chan bool),
 		serviceConf.Host,
 		serviceConf.ServiceType,
 		serviceAddr,
+		regData,
 	)
 
 	// wait for stop
@@ -52,6 +56,7 @@ func Start(cb func()) {
 	<-stopCh
 
 	// on stop
+	cancel()
 	onStop()
 	cb()
 }
