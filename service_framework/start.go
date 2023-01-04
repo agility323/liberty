@@ -36,7 +36,6 @@ func Start(cb func()) {
 	gateServer := lbtnet.NewTcpServer(serviceAddr, GateConnectionCreator)
 	logger.Info("create service server at %s", gateServer.GetAddr())
 	gateServer.Start()
-	gateManager.start()
 
 	// register
 	lbtreg.InitWithEtcd(serviceConf.Etcd)
@@ -62,7 +61,6 @@ func onStop() {
 }
 
 func Stop() {
-	gateManager.stop()
 	serviceCheckStopCh <- true
 	stopCh <- syscall.SIGTERM
 }

@@ -1,117 +1,66 @@
 package service_framework
 
 import (
-	"sync/atomic"
+	"sync"
 	"math/rand"
 
 	"github.com/agility323/liberty/lbtnet"
-	"github.com/agility323/liberty/lbtproto"
 )
 
-var gateManager GateManager
+type GateManager struct {
+	lock sync.RWMutex
+	gateMap map[string]*lbtnet.TcpConnection
+	primaryGateAddr string
+}
+
+var gateManager *GateManager
 
 func init() {
-	gateManager = GateManager{
-		started: 0,
-		jobCh: make(chan gateManagerJob, 20),
+	gateManager = &GateManager{
 		gateMap: make(map[string]*lbtnet.TcpConnection),
 		primaryGateAddr: "",
 	}
 }
 
-type gateManagerJob struct {
-	op string
-	jd interface{}
-}
-
-func postGateManagerJob(op string, jd interface{}) bool {
-	if atomic.LoadInt32(&gateManager.started) == 0 { return false }
-	select {
-		case gateManager.jobCh <- gateManagerJob{op: op, jd: jd}:
-			return true
-		default:
-			return false
-	}
-	return false
-}
-
-type GateManager struct {
-	started int32
-	jobCh chan gateManagerJob
-	gateMap map[string]*lbtnet.TcpConnection
-	primaryGateAddr string
-}
-
-func (gm *GateManager) start() {
-	if atomic.CompareAndSwapInt32(&gm.started, 0, 1) {
-		logger.Info("gate manager start ...")
-		go gm.workLoop()
-	}
-}
-
-func (gm *GateManager) stop() {
-	//TODO.Stop()
-}
-
-func (gm *GateManager) workLoop() {
-	for job := range gm.jobCh {
-		if job.op == "connect" {
-			gm.gateConnect(job.jd.(*lbtnet.TcpConnection))
-		} else if job.op == "disconnect" {
-			gm.gateDisconnect(job.jd.(*lbtnet.TcpConnection))
-		} else if job.op == "entity_msg" {
-			gm.entityMsg(job.jd.(*lbtproto.EntityMsg))
-		} else if job.op == "service_request" {
-			gm.serviceRequest(job.jd.(*lbtproto.ServiceRequest))
-		} else {
-			logger.Warn("GateManager unrecogonized op %s", job.op)
-		}
-	}
-}
-
-func (gm *GateManager) gateConnect(c *lbtnet.TcpConnection) {
+func (m *GateManager) gateConnect(c *lbtnet.TcpConnection) {
 	addr := c.RemoteAddr()
-	gm.gateMap[addr] = c
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	m.gateMap[addr] = c
 }
 
-func (gm *GateManager) gateDisconnect(c *lbtnet.TcpConnection) {
+func (m *GateManager) gateDisconnect(c *lbtnet.TcpConnection) {
 	//TODO.OnConnectionClose()
 	addr := c.RemoteAddr()
-	delete(gm.gateMap, addr)
-	if gm.primaryGateAddr == addr { gm.primaryGateAddr = "" }
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	delete(m.gateMap, addr)
+	if m.primaryGateAddr == addr { m.primaryGateAddr = "" }
 }
 
-func (gm *GateManager) entityMsg(msg *lbtproto.EntityMsg) {
-	c := gm.getPrimaryGate()
-	if c == nil {
-		logger.Error("entityMsg failed 1 no gate connection")
-		return
-	}
-	if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_entity_msg, msg); err != nil {
-		logger.Error("entityMsg failed 2 %s", err.Error())
-	}
-}
+func (m *GateManager) getPrimaryGate() *lbtnet.TcpConnection {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
 
-func (gm *GateManager) getPrimaryGate() *lbtnet.TcpConnection {
-	c, ok := gm.gateMap[gm.primaryGateAddr]
+	c, ok := m.gateMap[m.primaryGateAddr]
 	if ok && c != nil { return c }
-	n := rand.Intn(len(gm.gateMap))
-	for addr, c := range gm.gateMap {
+	n := rand.Intn(len(m.gateMap))
+	for addr, c := range m.gateMap {
 		if n--; n >= 0 { continue }
-		gm.primaryGateAddr = addr
+		m.primaryGateAddr = addr
 		return c
 	}
 	return nil
 }
 
-func (gm *GateManager) serviceRequest(msg *lbtproto.ServiceRequest) {
-	n := rand.Intn(len(gm.gateMap))
-	for _, c := range gm.gateMap {
+func (m *GateManager) getRandomGate() *lbtnet.TcpConnection {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	n := rand.Intn(len(m.gateMap))
+	for _, c := range m.gateMap {
 		if n--; n >= 0 { continue }
-		if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_service_request, msg); err != nil {
-			logger.Error("serviceRequest failed 1 %s", err.Error())
-		}
-		return
+		return c
 	}
-	logger.Error("serviceRequest failed 2 no gate connection")
+	return nil
 }

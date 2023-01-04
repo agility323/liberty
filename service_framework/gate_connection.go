@@ -21,12 +21,12 @@ func (handler *GateConnectionHandler) HandleProto(c *lbtnet.TcpConnection, buf [
 }
 
 func (handler *GateConnectionHandler) OnConnectionReady(c *lbtnet.TcpConnection) {
-	postGateManagerJob("connect", c)
+	gateManager.gateConnect(c)
 	sendRegisterService(c)
 }
 
 func (handler *GateConnectionHandler) OnConnectionClose(c *lbtnet.TcpConnection) {
-	postGateManagerJob("disconnect", c)
+	gateManager.gateDisconnect(c)
 }
 
 func (handler *GateConnectionHandler) OnConnectionFail(cli *lbtnet.TcpClient) {

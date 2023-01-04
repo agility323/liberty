@@ -25,11 +25,13 @@ func init() {
 }
 
 func CallServiceMethod(service, method string, params map[string]interface{}, cbf serviceCallbackFunc, expire int64) {
+	// marshal
 	b, err := msgpack.Marshal(&params)
 	if err != nil {
 		logger.Error("CallServiceMethod fail 1 %v", err)
 		return
 	}
+	// proto msg
 	reqid := lbtutil.NewObjectID()
 	msg := &lbtproto.ServiceRequest{
 		Addr: serviceAddr,
@@ -38,7 +40,16 @@ func CallServiceMethod(service, method string, params map[string]interface{}, cb
 		Method: method,
 		Params: b,
 	}
-	postGateManagerJob("service_request", msg)
+	c := gateManager.getRandomGate()
+	if c == nil {
+		logger.Error("CallServiceMethod fail 2 no gate connection")
+		return
+	}
+	if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_service_request, msg); err != nil {
+		logger.Error("CallServiceMethod fail 3 %s", err.Error())
+		return
+	}
+	// calback
 	if expire <= 0 { expire = 15 }
 	serviceCallbackMap.Store(reqid, serviceCallback{f: cbf, expire: time.Now().Unix() + expire})
 }

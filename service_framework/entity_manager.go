@@ -117,7 +117,7 @@ func CallEntityMethodLocal(id lbtutil.ObjectID, method string, paramBytes []byte
 func CallEntityMethod(addr string, id lbtutil.ObjectID, method string, params interface{}) {
 	b, err := msgpack.Marshal(&params)
 	if err != nil {
-		logger.Error("CallEntityMethod failed 1 %s", err.Error())
+		logger.Error("CallEntityMethod fail 1 %s", err.Error())
 		return
 	}
 	//logger.Debug("CallEntityMethod %s %s %s %v", addr, id.Hex(), method, params)
@@ -127,5 +127,12 @@ func CallEntityMethod(addr string, id lbtutil.ObjectID, method string, params in
 		Method: method,
 		Params: b,
 	}
-	postGateManagerJob("entity_msg", msg)
+	c := gateManager.getPrimaryGate()
+	if c == nil {
+		logger.Error("CallEntityMethod fail 2 no gate connection")
+		return
+	}
+	if err = lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_entity_msg, msg); err != nil {
+		logger.Error("CallEntityMethod fail 3 %v", err)
+	}
 }
