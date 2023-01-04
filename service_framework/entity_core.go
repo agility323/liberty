@@ -15,6 +15,7 @@ type EntityCore struct {
 func (ec *EntityCore) init(typ string) {
 	ec.id = lbtutil.NewObjectID()
 	ec.typ = typ
+	ec.actor = lbtactor.NewWorkerActor()
 }
 
 func (ec *EntityCore) GetType() string {
@@ -32,23 +33,15 @@ func (ec *EntityCore) Dump() map[string]string {
 	}
 }
 
-func (ec *EntityCore) InitActor() {
-	ec.actor = lbtactor.NewWorkerActor(100)
-}
-
 func (ec *EntityCore) StartActor() bool {
-	if ec.actor == nil { return false }
-	ec.actor.Start()
-	return true
+	return ec.actor.Start(100)
 }
 
-func (ec *EntityCore) StopActor() {
-	if ec.actor == nil { return }
-	ec.actor.Stop()
+func (ec *EntityCore) StopActor() bool {
+	return ec.actor.Stop()
 }
 
 func (ec *EntityCore) PushActorTask(task func()) bool {
-	if ec.actor == nil { return false }
 	return ec.actor.PushTask(task)
 }
 

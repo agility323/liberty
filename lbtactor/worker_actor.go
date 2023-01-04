@@ -1,27 +1,38 @@
 package lbtactor
 
+import (
+	"sync/atomic"
+)
+
 type actorTask func()
 
 type WorkerActor struct {
+	state int32
 	taskq chan actorTask
 }
 
-func NewWorkerActor(qlen int) *WorkerActor {
+func NewWorkerActor() *WorkerActor {
 	return &WorkerActor{
-		taskq: make(chan actorTask, qlen),
+		state: 0,
+		taskq: nil,
 	}
 }
 
-func (w *WorkerActor) Start() {
+func (w *WorkerActor) Start(qlen int) bool {
+	if !atomic.CompareAndSwapInt32(&w.state, 0, 1) { return false }
+	w.taskq = make(chan actorTask, qlen)
 	go func() {
 		for task := range w.taskq {
 			task()
 		}
 	}()
+	return true
 }
 
-func (w *WorkerActor) Stop() {
+func (w *WorkerActor) Stop() bool {
+	if !atomic.CompareAndSwapInt32(&w.state, 1, 2) { return false }
 	close(w.taskq)
+	return true
 }
 
 func (w *WorkerActor) PushTask(task actorTask) bool {
