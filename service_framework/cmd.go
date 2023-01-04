@@ -19,7 +19,7 @@ func OnWatchServiceCmd(typ int, key string, val []byte) {
 	if typ != 0 { return }	// EventTypePut only
 	cmd := lbtreg.CmdValue{}
 	if err := cmd.Unmarshal(val); err != nil {
-		logger.Warn("invalid cmd val %d %s %q", typ, key, val)
+		logger.Warn("invalid cmd val %d %s %q %s", typ, key, val, err.Error())
 		return
 	}
 	if serviceConf.ServiceType != cmd.Node { return }
@@ -33,7 +33,7 @@ type HotfixCmd struct {
 }
 
 func (c *HotfixCmd) Process() {
-	p, err := plugin.Open("hotfix/hotfix.so")
+	p, err := plugin.Open(serviceConf.ServerHotfixPath)
 	if err != nil {
 		logger.Error("hotfix fail 1 %v", err)
 		return

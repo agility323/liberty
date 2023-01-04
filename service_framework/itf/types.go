@@ -8,4 +8,5 @@ type ServiceConfType struct {
 	ProfilePort int `json:"profile_port"`
 	Etcd []string `json:"etcd"`
 	ServiceRequestTimeout int `json:"service_request_timeout"`
+	ServerHotfixPath string `json:"server_hotfix_path"`
 }
