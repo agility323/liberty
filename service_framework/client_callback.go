@@ -22,3 +22,8 @@ func getClientCallback(caddr string) ClientCallback {
 	if v, ok := clientCallbackMap.Load(caddr); ok { return v.(ClientCallback) }
 	return nil
 }
+
+func popClientCallback(caddr string) ClientCallback {
+	if v, ok := clientCallbackMap.LoadAndDelete(caddr); ok { return v.(ClientCallback) }
+	return nil
+}
