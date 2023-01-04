@@ -1,18 +1,12 @@
 package service_framework
 
-type ServiceConfType struct {
-	LogLevel int `json:"log_level"`
-	Host int `json:"host"`
-	ServiceType string `json:"service_type"`
-	GateServerAddr string `json:"gate_server_addr"`
-	ProfilePort int `json:"profile_port"`
-	Etcd []string `json:"etcd"`
-	ServiceRequestTimeout int `json:"service_request_timeout"`
-}
+import (
+	itf "github.com/agility323/liberty/service_framework/itf"
+)
 
-var serviceConf = ServiceConfType{ServiceRequestTimeout: 20}
+var serviceConf = itf.ServiceConfType{ServiceRequestTimeout: 20}
 
-func GetServiceConf() *ServiceConfType {
+func GetServiceConf() *itf.ServiceConfType {
 	return &serviceConf
 }
 

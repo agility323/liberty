@@ -5,6 +5,7 @@ import (
 
 	"github.com/agility323/liberty/lbtreg"
 	"github.com/agility323/liberty/hotfix"
+	"github.com/agility323/liberty/hotfix/itf"
 )
 
 var cmdMap = map[string]func(map[string]interface{}) {
@@ -41,5 +42,5 @@ func CMD_hotfix(param map[string]interface{}) {
 		logger.Error("hotfix fail 2 %v", err)
 		return
 	}
-	f.(func(hotfix.HotfixInterface) error)(hotfix.Hotfix)
+	f.(func(itf.HotfixInterface) error)(hotfix.Hotfix)
 }
