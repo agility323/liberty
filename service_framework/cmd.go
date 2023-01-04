@@ -10,6 +10,7 @@ import (
 
 var cmdMap = map[string]func(map[string]interface{}) {
 	"hotfix": CMD_hotfix,
+	"quit": CMD_quit,
 }
 
 func OnWatchServiceCmd(typ int, key string, val []byte) {
@@ -43,4 +44,8 @@ func CMD_hotfix(param map[string]interface{}) {
 		return
 	}
 	f.(func(itf.HotfixInterface) error)(hotfix.Hotfix)
+}
+
+func CMD_quit(param map[string]interface{}) {
+	Stop()
 }
