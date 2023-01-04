@@ -1,7 +1,7 @@
 package lbtutil
 
 import (
-	//"github.com/vmihailenco/msgpack/v5"
+	"github.com/vmihailenco/msgpack/v5/msgpcode"
 )
 
 // MsgpackRawArray - Start
@@ -25,5 +25,17 @@ func (raw MsgpackRawArray) Len() int {
 
 func (raw MsgpackRawArray) Body() []byte {
 	return []byte(raw[raw.HeaderSize():])
+}
+
+func (raw MsgpackRawArray) Valid() bool {
+	rawSize := len(raw)
+	if rawSize == 0 { return false }
+	c := raw[0]
+	if msgpcode.IsFixedArray(c) { return true }
+	switch c {
+	case msgpcode.Array16, msgpcode.Array32:
+		return true
+	}
+	return false
 }
 // MsgpackRawArray - End
