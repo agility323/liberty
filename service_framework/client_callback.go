@@ -66,8 +66,8 @@ func getClientCallback(caddr string) ClientCallback {
 
 func popClientCallback(caddr string) ClientCallback {
 	slot := lbtutil.StringHash(caddr) % ClientCallbackSlotNum
-	ccbmgr.locks[slot].RLock()
-	defer ccbmgr.locks[slot].RUnlock()
+	ccbmgr.locks[slot].Lock()
+	defer ccbmgr.locks[slot].Unlock()
 
 	cb, ok := ccbmgr.ccbSlots[slot][caddr]
 	if ok { delete(ccbmgr.ccbSlots[slot], caddr) }
