@@ -75,7 +75,7 @@ func LoadConfFromCmdLine(defs map[string]interface{}, args []string, pconf inter
 		for k, v := range conf { confData[k] = v }
 	}
 	// show conf
-	for k, v := range confData { log.Debug("conf entry %s %v", k, v) }
+	for k, v := range confData { log.Info("conf entry %s %v", k, v) }
 	// writo to conf
 	b, _ := json.Marshal(confData)
 	if err := json.Unmarshal(b, pconf); err != nil {
