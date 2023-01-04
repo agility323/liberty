@@ -10,10 +10,12 @@ import (
 	"github.com/agility323/liberty/lbtutil"
 )
 
-type serviceCallbackFunc func(map[string]interface{})
+type callbackHandler interface{
+	Callback()
+}
 
 type serviceCallback struct {
-	f serviceCallbackFunc
+	handler callbackHandler
 	expire int64
 }
 
@@ -24,7 +26,7 @@ func init() {
 	go lbtutil.StartTickJob("checkServiceCallback", 17, serviceCheckStopCh, checkServiceCallback)
 }
 
-func CallServiceMethod(service, method string, params map[string]interface{}, cbf serviceCallbackFunc, expire int64) {
+func CallServiceMethod(service, method string, params map[string]interface{}, handler callbackHandler, expire int64) {
 	// marshal
 	b, err := msgpack.Marshal(&params)
 	if err != nil {
@@ -51,19 +53,19 @@ func CallServiceMethod(service, method string, params map[string]interface{}, cb
 	}
 	// calback
 	if expire <= 0 { expire = 15 }
-	serviceCallbackMap.Store(reqid, serviceCallback{f: cbf, expire: time.Now().Unix() + expire})
+	serviceCallbackMap.Store(reqid, serviceCallback{handler: handler, expire: time.Now().Unix() + expire})
 }
 
-func processServiceReply(reqid lbtutil.ObjectID, reply []byte) {
-	cb, _ := serviceCallbackMap.LoadAndDelete(reqid)
-	if cb == nil { return }
-	var args []interface{}
-	if err := msgpack.Unmarshal(reply, &args); err != nil {
-		logger.Error("processServiceReply fail 1 %v %v", reply, err)
+func processServiceReply(reqid lbtutil.ObjectID, replyByte []byte) {
+	cbI, _ := serviceCallbackMap.LoadAndDelete(reqid)
+	if cbI == nil { return }
+	cb, _ := cbI.(serviceCallback)
+	replyidStr := ""
+	if err := msgpack.Unmarshal(replyByte, &[]interface{}{&replyidStr, cb.handler}); err != nil {
+		logger.Error("processServiceReply fail 1 %v %v", replyByte, err)
 		return
 	}
-	params, _ := args[1].(map[string]interface{})
-	cb.(serviceCallback).f(params)
+	cb.handler.Callback()
 }
 
 func checkServiceCallback() {
