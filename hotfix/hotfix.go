@@ -33,11 +33,11 @@ type HotfixImpl struct {}
 
 var Hotfix *HotfixImpl
 
-func (h *HotfixImpl) NewFuncEntry(target interface{}, double interface{}) *FuncEntry {
+func (h *HotfixImpl) NewFuncEntry(target interface{}, double interface{}) interface{} {
 	return &FuncEntry{target: target, double: double}
 }
 
-func (h *HotfixImpl) NewMethodEntry(target interface{}, method string, double interface{}) *MethodEntry {
+func (h *HotfixImpl) NewMethodEntry(target interface{}, method string, double interface{}) interface{} {
 	return &MethodEntry{target: target, method: method, double: double}
 }
 

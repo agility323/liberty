@@ -50,6 +50,8 @@ func Start(cb func()) {
 		serviceAddr,
 		regData,
 	)
+	// watch
+	go lbtreg.StartWatchServiceCmd(ctx, OnWatchServiceCmd, serviceConf.Host)
 
 	// wait for stop
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
