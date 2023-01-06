@@ -6,6 +6,6 @@ type HotfixEntry interface {
 
 type HotfixInterface interface {
 	NewFuncEntry(interface{}, string, interface{}) HotfixEntry
-	NewMethodEntry(interface{}, string, interface{}) HotfixEntry
 	ApplyHotfix([]HotfixEntry)
+	ResetHotfix()
 }
