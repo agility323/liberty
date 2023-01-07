@@ -14,6 +14,7 @@ import (
 type clientEntry struct {
 	c *lbtnet.TcpConnection
 	serviceAddr string
+	filterData map[string]int32
 }
 
 const ClientSlotNum int = 128
@@ -56,7 +57,7 @@ func (m *ClientManager) clientConnect(c *lbtnet.TcpConnection) {
 	m.locks[slot].Lock()
 	defer m.locks[slot].Unlock()
 
-	m.clientSlots[slot][addr] = &clientEntry{c: c, serviceAddr: ""}
+	m.clientSlots[slot][addr] = &clientEntry{c: c, serviceAddr: "", filterData: make(map[string]int32)}
 	logger.Info("client connect %s", addr)
 }
 
@@ -240,3 +241,65 @@ func (m *ClientManager) getClientsNumBySlot(slot int) int {
 	defer m.locks[slot].RUnlock()
 	return len(m.clientSlots[slot])
 }
+
+func (m *ClientManager) registerFilterData(addr string, filterData map[string]int32) {
+	slot := lbtutil.StringHash(addr) % ClientSlotNum
+	m.locks[slot].RLock()
+	defer m.locks[slot].RUnlock()
+	entry, ok := m.clientSlots[slot][addr]
+	if !ok { return }
+	entry.filterData = filterData
+}
+
+func (m *ClientManager) filterClients(filters []*lbtproto.Filter) [][]*lbtnet.TcpConnection {
+	arr := make([][]*lbtnet.TcpConnection, 0)
+	for i := 0; i < ClientSlotNum; i++ {
+		if clients := m.filterClientsBySlot(i, filters); len(clients) > 0 {
+			arr = append(arr, clients)
+		}
+	}
+	return arr
+}
+
+func (m *ClientManager) filterClientsBySlot(slot int, filters []*lbtproto.Filter) []*lbtnet.TcpConnection {
+	m.locks[slot].RLock()
+	defer m.locks[slot].RUnlock()
+	clients := make([]*lbtnet.TcpConnection, 0)
+	for _, entry := range m.clientSlots[slot] {
+		if checkFilter(filters, entry.filterData) {
+			clients = append(clients, entry.c)
+		}
+	}
+	return clients
+}
+
+func checkFilter(filters []*lbtproto.Filter, fdata map[string]int32) bool {
+	for _, filter := range filters {
+		attr := filter.Attr
+		op := filter.Op
+		val := filter.Val
+		f, ok := filterOpFunc[op]
+		if !ok {
+			logger.Warn("no filter func for %s", op)
+			return false
+		}
+		v, ok := fdata[attr]
+		if !ok { return false }
+		if !f(v, val) { return false }
+	}
+	return true
+}
+
+var filterOpFunc = map[string]func(int32, int32) bool {
+	">": filterGreater,
+	"<": filterLess,
+	"=": filterEqual,
+	">=": filterGreaterOrEqual,
+	"<=": filterLessOrEqual,
+}
+
+func filterGreater(v, th int32) bool { return v > th }
+func filterLess(v, th int32) bool { return v < th }
+func filterEqual(v, th int32) bool { return v == th }
+func filterGreaterOrEqual(v, th int32) bool { return v >= th }
+func filterLessOrEqual(v, th int32) bool { return v <= th }
