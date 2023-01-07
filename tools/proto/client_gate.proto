@@ -12,6 +12,8 @@ option py_generic_services = true;
 // client-gate rpc
 service IClientGate {
 	// legacy methods
+	rpc requestEncryptToken(Void) returns (Void);	// 向Gate获取用于加密过程的token
+	rpc confirmEncryptKey(EncryptKeyString) returns (Void);   // 向Gate确认用于加密的密钥字符串
 	rpc connectServer(ConnectServerReq) returns (Void);
 	rpc entityMessage(EntityMessage) returns (Void);
 	rpc channelMessage(ChannelMessage) returns (Void);
@@ -23,6 +25,8 @@ service IClientGate {
 // gate-client rpc
 service IClient {
 	// legacy methods
+	rpc responseEncryptToken(EncryptToken) returns (Void);       // 通知Client用于加密过程的token
+	rpc confirmEncryptKeyAck(Void) returns (Void);               // 通知Client加密字符串已经确认成功
 	rpc connectResponse(ConnectServerResp) returns (Void);
 	rpc createChannelEntity(ChannelEntityInfo) returns (Void);
 	rpc entityMessage(EntityMessage) returns (Void);

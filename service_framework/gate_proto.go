@@ -217,4 +217,20 @@ func SendClientEntityMsg(c *lbtnet.TcpConnection, addr string, id lbtutil.Object
 	return nil
 }
 
+type Filter lbtproto.Filter
+func makeFilterMsgData(method string, params interface{}, filters []*Filter) ([]byte, error) {
+	b, err := msgpack.Marshal(&params)
+	if err != nil {
+		return nil, err
+	}
+	fs := []*lbtproto.Filter{}
+	for _, f := range filters { fs = append(fs, (*lbtproto.Filter)(f)) }
+	msg := &lbtproto.FilterMsg{
+		Method: method,
+		Params: b,
+		Filters: fs,
+	}
+	return lbtproto.EncodeMessage(lbtproto.ServiceGate.Method_filter_msg, msg)
+}
+
 /********** ProtoSender End **********/

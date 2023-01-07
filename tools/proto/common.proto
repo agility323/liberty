@@ -11,40 +11,42 @@ message Void { }
 message ServiceInfo {
 	string addr = 1;
 	string type = 2;
-	string entityid = 3;
+	bytes entityid = 3;
 }
 
 message ServiceRequest {
 	string addr = 1;	// src addr
-	string reqid = 2;	// for requester callback
+	bytes reqid = 2;	// for requester callback
 	string type = 3;
 	string method = 4;
 	bytes params = 5;
+	int32 routet = 6;	// route type
+	bytes routep = 7;	// route param
 }
 
 message ServiceReply {
 	string addr = 1;	// src addr
-	string reqid = 2;	// for requester callback
+	bytes reqid = 2;	// for requester callback
 	bytes reply = 3;
 }
 
 /*
 message MailBox {
 	string addr = 1;
-	string id = 2;
+	bytes id = 2;
 }
 */
 
 message EntityData {
 	string addr = 1;
-	string id = 2;
+	bytes id = 2;
 	string type = 3;
 	bytes data = 4;
 }
 
 message EntityMsg {
 	string addr = 1;	// target entity addr
-	string id = 2;	// target entity id
+	bytes id = 2;	// target entity id
 	string method = 3;
 	bytes params = 4;
 }
@@ -52,7 +54,7 @@ message EntityMsg {
 /*
 message ClientEntityMsg {	// service-gate-client entity msg
 	string addr = 1;	// target entity addr
-	string id = 2;	// target entity id
+	bytes id = 2;	// target entity id
 	string method = 3;
 	bytes params = 4;
 }

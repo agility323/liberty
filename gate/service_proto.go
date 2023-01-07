@@ -23,6 +23,7 @@ func initServiceGateMethodHandler() {
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_create_entity] = ServiceGate_create_entity
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_entity_msg] = ServiceGate_entity_msg
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_client_entity_msg] = ServiceGate_client_entity_msg
+	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_filter_msg] = ServiceGate_filter_msg
 }
 
 func processServiceProto(c *lbtnet.TcpConnection, buf []byte) error {
@@ -144,5 +145,22 @@ func ServiceGate_client_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 		return nil
 	}
 	sendEntityMsg(cc, msg.Id, msg.Method, msg.Params)
+	return nil
+}
+
+func ServiceGate_filter_msg(c *lbtnet.TcpConnection, buf []byte) error {
+	msg := &lbtproto.FilterMsg{}
+	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
+		logger.Warn("ServiceGate_filter_msg fail 1 %v", err)
+		return nil
+	}
+	data, err := makeBroadcastMsgData(msg.Method, msg.Params)
+	if err != nil {
+		logger.Error("broadcast fail 1 %v", err)
+		return nil
+	}
+	// TODO: filter
+	//msg.Filters
+	clientManager.broadcastMsg(data)
 	return nil
 }

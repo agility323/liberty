@@ -78,3 +78,14 @@ func (m *GateManager) getGateByAddr(addr string) *lbtnet.TcpConnection {
 	c, _ := m.gateMap[addr]
 	return c
 }
+
+func (m *GateManager) getAllGates() []*lbtnet.TcpConnection {
+	m.lock.RLock()
+	defer m.lock.RUnlock()
+
+	gates := []*lbtnet.TcpConnection{}
+	for _, c := range m.gateMap {
+		gates = append(gates, c)
+	}
+	return gates
+}

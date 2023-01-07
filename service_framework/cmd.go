@@ -71,3 +71,15 @@ func GateBroadcast(ctx context.Context, method string, param interface{}) {
 	host := serviceConf.Host
 	lbtreg.PutGateCmd(ctx, host, &cmd)
 }
+
+func FilterMsg(method string, params interface{}, filters []*Filter) {
+	data, err := makeFilterMsgData(method, params, filters)
+	if err != nil {
+		logger.Error("makeFilterMsgData fail %v", err)
+		return
+	}
+	gates := gateManager.getAllGates()
+	for _, c := range gates {
+		c.SendData(data)
+	}
+}

@@ -6,6 +6,21 @@ package lbtproto;
 option cc_generic_services = true;
 option py_generic_services = true;
 
+message EncryptToken {
+	int64 token = 1;   // 用于加密过程的token，不同的connection生成不同的token,避免重放攻击
+}
+
+message EncryptKey {
+	bytes headPadding = 1; //随机长度的padding，用于防止黑客在网络流中通过长度轻易追查到key的位置
+	bytes key = 2;     // 加密的会话密钥串
+	int64 token = 3;   // 用于加密过程的token，不同的connection生成不同的token,避免重放攻击
+	bytes tailPadding = 4; //随机长度的padding，可以让每个链接的网络流的rpc起始位置不同
+}
+
+message EncryptKeyString {
+	bytes keyString = 1;  //EncryptKey message加密后的字节流
+}
+
 message ConnectServerReq {
 	enum ReqType {
 		NewConnection = 0;

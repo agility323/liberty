@@ -12,6 +12,18 @@ message BindClientInfo {
 	string saddr = 2;
 }
 
+message Filter {
+	string attr = 1;
+	string op = 2;
+	int32 val = 3;
+}
+
+message FilterMsg {
+	string method = 1;
+	bytes params = 2;
+	repeated Filter filters = 3;
+}
+
 // service-gate rpc
 service IServiceGate {
 	rpc register_service(ServiceInfo) returns (Void);
@@ -23,6 +35,7 @@ service IServiceGate {
 	rpc create_entity(EntityData) returns (Void);
 	rpc entity_msg(EntityMsg) returns (Void);
 	rpc client_entity_msg(EntityMsg) returns (Void);
+	rpc filter_msg(FilterMsg) returns (Void);
 }
 
 // gate-service rpc

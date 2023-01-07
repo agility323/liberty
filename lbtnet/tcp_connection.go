@@ -15,7 +15,7 @@ import (
 const (
 	SizeLen uint32 = 4
 	MaxMsgLen uint32 = 100000
-	WriteChLen int = 20
+	WriteChLen int = 200
 )
 
 type TcpConnection struct {
