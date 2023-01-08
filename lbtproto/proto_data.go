@@ -49,7 +49,7 @@ type ServiceGateType struct {
 	Method_create_entity,
 	Method_entity_msg,
 	Method_client_entity_msg,
-	Method_register_filter_data,
+	Method_set_filter_data,
 	Method_filter_msg uint16
 }
 

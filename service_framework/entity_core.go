@@ -5,6 +5,7 @@ import (
 
 	"github.com/agility323/liberty/lbtactor"
 	"github.com/agility323/liberty/lbtutil"
+	"github.com/agility323/liberty/lbtproto"
 )
 
 type EntityCore struct {
@@ -170,4 +171,19 @@ func (stub *RemoteEntityStub) CallClientMethod(method string, params interface{}
 		return false
 	}
 	return true
+}
+
+func (stub *RemoteEntityStub) SetFilterData(fdata map[string]int32) {
+	if stub == nil { return }
+	SendSetFilterData(lbtproto.FilterData_SET, stub.addr, stub.remoteAddr, fdata)
+}
+
+func (stub *RemoteEntityStub) UpdateFilterData(fdata map[string]int32) {
+	if stub == nil { return }
+	SendSetFilterData(lbtproto.FilterData_UPDATE, stub.addr, stub.remoteAddr, fdata)
+}
+
+func (stub *RemoteEntityStub) DeleteFilterData(fdata map[string]int32) {
+	if stub == nil { return }
+	SendSetFilterData(lbtproto.FilterData_DELETE, stub.addr, stub.remoteAddr, fdata)
 }

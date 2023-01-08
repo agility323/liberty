@@ -19,8 +19,14 @@ message Filter {
 }
 
 message FilterData {
-	string id = 1;
-	map<string, int32> data = 2;	// {attr: val}
+	enum FilterDataType {
+		SET = 0;
+		UPDATE = 1;
+		DELETE = 2;
+	}
+	FilterDataType type = 1;
+	string id = 2;
+	map<string, int32> data = 3;	// {attr: val}
 }
 
 message FilterMsg {
@@ -40,7 +46,7 @@ service IServiceGate {
 	rpc create_entity(EntityData) returns (Void);
 	rpc entity_msg(EntityMsg) returns (Void);
 	rpc client_entity_msg(EntityMsg) returns (Void);
-	rpc register_filter_data(FilterData) returns(Void);
+	rpc set_filter_data(FilterData) returns(Void);
 	rpc filter_msg(FilterMsg) returns (Void);
 }
 

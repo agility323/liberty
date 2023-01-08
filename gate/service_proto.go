@@ -23,7 +23,7 @@ func initServiceGateMethodHandler() {
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_create_entity] = ServiceGate_create_entity
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_entity_msg] = ServiceGate_entity_msg
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_client_entity_msg] = ServiceGate_client_entity_msg
-	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_register_filter_data] = ServiceGate_register_filter_data
+	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_set_filter_data] = ServiceGate_set_filter_data
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_filter_msg] = ServiceGate_filter_msg
 }
 
@@ -149,13 +149,21 @@ func ServiceGate_client_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 	return nil
 }
 
-func ServiceGate_register_filter_data(c *lbtnet.TcpConnection, buf []byte) error {
+func ServiceGate_set_filter_data(c *lbtnet.TcpConnection, buf []byte) error {
 	msg := &lbtproto.FilterData{}
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
-		logger.Warn("ServiceGate_register_filter_data fail 1 %v", err)
+		logger.Warn("ServiceGate_set_filter_data fail 1 %v", err)
 		return nil
 	}
-	clientManager.registerFilterData(msg.Id, msg.Data)
+	if msg.Type == lbtproto.FilterData_SET {
+		clientManager.setFilterData(msg.Id, msg.Data)
+	} else if msg.Type == lbtproto.FilterData_UPDATE {
+		clientManager.updateFilterData(msg.Id, msg.Data)
+	} else if msg.Type == lbtproto.FilterData_DELETE {
+		clientManager.deleteFilterData(msg.Id, msg.Data)
+	} else {
+		logger.Error("invalid filter data %v", msg)
+	}
 	return nil
 }
 

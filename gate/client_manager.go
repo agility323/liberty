@@ -242,13 +242,39 @@ func (m *ClientManager) getClientsNumBySlot(slot int) int {
 	return len(m.clientSlots[slot])
 }
 
-func (m *ClientManager) registerFilterData(addr string, filterData map[string]int32) {
+func (m *ClientManager) setFilterData(addr string, filterData map[string]int32) {
 	slot := lbtutil.StringHash(addr) % ClientSlotNum
 	m.locks[slot].RLock()
 	defer m.locks[slot].RUnlock()
 	entry, ok := m.clientSlots[slot][addr]
 	if !ok { return }
 	entry.filterData = filterData
+}
+
+func (m *ClientManager) updateFilterData(addr string, filterData map[string]int32) {
+	slot := lbtutil.StringHash(addr) % ClientSlotNum
+	m.locks[slot].Lock()
+	defer m.locks[slot].Unlock()
+	entry, ok := m.clientSlots[slot][addr]
+	if !ok { return }
+	for k, v := range filterData {
+		entry.filterData[k] = v
+	}
+}
+
+func (m *ClientManager) deleteFilterData(addr string, filterData map[string]int32) {
+	slot := lbtutil.StringHash(addr) % ClientSlotNum
+	m.locks[slot].Lock()
+	defer m.locks[slot].Unlock()
+	entry, ok := m.clientSlots[slot][addr]
+	if !ok { return }
+	if len(filterData) == 0 {
+		entry.filterData = make(map[string]int32)
+	} else {
+		for k, _ := range filterData {
+			delete(entry.filterData, k)
+		}
+	}
 }
 
 func (m *ClientManager) filterClients(filters []*lbtproto.Filter) [][]*lbtnet.TcpConnection {
