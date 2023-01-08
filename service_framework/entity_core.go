@@ -104,7 +104,7 @@ func (stub *RemoteEntityStub) Switch(addr, remoteAddr string) bool {
 	c := gateManager.getGateByAddr(addr)
 	if c == nil { return false }
 	if oldc := gateManager.getGateByAddr(stub.addr); oldc != nil {
-		SendUnbindClient(c, stub.localAddr, stub.remoteAddr)
+		SendUnbindClient(oldc, stub.localAddr, stub.remoteAddr)
 	}
 	unregisterClientCallback(stub.remoteAddr)
 	stub.addr = addr
