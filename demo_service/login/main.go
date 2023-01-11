@@ -5,19 +5,20 @@ import (
 
 	"github.com/agility323/liberty/lbtutil"
 	sf "github.com/agility323/liberty/service_framework"
+
+	"github.com/agility323/liberty/demo_service/login/misc"
+	"github.com/agility323/liberty/demo_service/login/method"
 )
 
 var logger = sf.Logger
 
 func main() {
 	// conf
-	Conf.Service = sf.GetServiceConf()
-	lbtutil.LoadConfFromCmdLine(defaultConf, os.Args[1:], &Conf)
-
+	misc.Conf.Service = sf.GetServiceConf()
+	lbtutil.LoadConfFromCmdLine(misc.DefaultConf, os.Args[1:], &misc.Conf)
 	// method
-	sf.RegisterMethodHandlerCreator("connect_server", func() sf.MethodHandler {return new(connectServerHandler)})
-	sf.RegisterMethodHandlerCreator("login", func() sf.MethodHandler {return new(loginHandler)})
-
+	sf.RegisterMethodHandlerCreator("connect_server", func() sf.MethodHandler {return new(method.ConnectServerHandler)})
+	sf.RegisterMethodHandlerCreator("login", func() sf.MethodHandler {return new(method.LoginHandler)})
 	// start
 	sf.Start(OnShutdown)
 }
