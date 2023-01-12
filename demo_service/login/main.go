@@ -19,6 +19,7 @@ func main() {
 	// method
 	sf.RegisterMethodHandlerCreator("connect_server", func() sf.MethodHandler {return new(method.ConnectServerHandler)})
 	sf.RegisterMethodHandlerCreator("login", func() sf.MethodHandler {return new(method.LoginHandler)})
+	sf.RegisterMethodHandlerCreator("create_role", func() sf.MethodHandler {return new(method.CreateRoleHandler)})
 	// start
 	sf.Start(OnShutdown)
 }

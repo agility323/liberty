@@ -7,20 +7,6 @@ import (
 	"github.com/agility323/liberty/demo_service/login/core"
 )
 
-const (
-	LoginSuccess int = iota
-	LoginPasswordError
-	LoginAccountNotExist
-	LoginAvatarNotExist
-	LoginWrongState
-	LoginRedisErr
-	LoginParamErr
-	LoginInternalErr
-	LoginTokenError
-	LoginSameRoleExist
-	LoginClientVersionError
-)
-
 type LoginRequest struct {
 	Account string `msgpack:"account"`
 	Password string `msgpack:"password"`
@@ -28,6 +14,7 @@ type LoginRequest struct {
 
 type LoginReply struct {
 	Code int `msgpack:"code"`
+	Avatars map[string]*core.AvatarData `msgpack:"avatars"`
 	Token string `msgpack:"token"`
 }
 
@@ -42,10 +29,10 @@ func (h *LoginHandler) GetReply() interface{} {return &(h.reply)}
 func (h *LoginHandler) Process(c *lbtnet.TcpConnection, srcAddr string) error {
 	acc := h.request.Account
 	if !lbtutil.IsSimpleString(acc) {
-		h.reply = LoginReply{Code: LoginAccountNotExist, Token: ""}
+		h.reply = LoginReply{Code: core.LoginAccountNotExist, Token: ""}
 		return nil
 	}
-	code, token := core.StartLogin(acc)
-	h.reply = LoginReply{Code: code, Token: token}
+	code, avatars, token := core.StartLogin(srcAddr, acc)
+	h.reply = LoginReply{Code: code, Avatars: avatars, Token: token}
 	return nil
 }

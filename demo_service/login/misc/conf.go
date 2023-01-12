@@ -24,7 +24,7 @@ var Conf confType
 
 var DefaultConf = map[string]interface{} {
 	"service": map[string]interface{} {
-		"log_level": lbtutil.Ldebug,
+		//"log_level": lbtutil.Ldebug,
 		"host": 101,
 		"service_type": "login_service",
 		"gate_server_addr": "127.0.0.1:5002",

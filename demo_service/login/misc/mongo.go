@@ -38,6 +38,6 @@ func CloseMongoClient() {
 	}
 }
 
-func GetColletion(colname string) {
+func GetColletion(colname string) *mongo.Collection {
 	return MongoClient.Database(Conf.Mongo.Db).Collection(colname)
 }
