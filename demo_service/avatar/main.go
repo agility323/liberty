@@ -5,23 +5,21 @@ import (
 
 	"github.com/agility323/liberty/lbtutil"
 	sf "github.com/agility323/liberty/service_framework"
+
+	"github.com/agility323/liberty/demo_service/avatar/misc"
 )
 
 var logger = sf.Logger
 
 func main() {
 	// conf
-	Conf.Service = sf.GetServiceConf()
-	lbtutil.LoadConfFromCmdLine(defaultConf, os.Args[1:], &Conf)
-
+	misc.Conf.Service = sf.GetServiceConf()
+	lbtutil.LoadConfFromCmdLine(misc.DefaultConf, os.Args[1:], &misc.Conf)
 	// db
-	InitRedisClient(Conf.Redis.Addrs, Conf.Redis.MasterName)
-	InitMongoClient(Conf.Mongo.Uri)
-
+	//misc.InitRedisClient(misc.Conf.Redis.Addrs, misc.Conf.Redis.MasterName)
+	misc.InitMongoClient(misc.Conf.Mongo.Uri)
 	// method
-	sf.RegisterMethodHandlerCreator("connect_server", func() sf.MethodHandler {return new(connectServerHandler)})
-	sf.RegisterMethodHandlerCreator("create_avatar", func() sf.MethodHandler {return new(createAvatarHandler)})
-
+	sf.RegisterMethodHandlerCreator("create_avatar", func() sf.MethodHandler {return new(method.CreateAvatarHandler)})
 	// start
 	sf.Start(OnShutdown)
 }
