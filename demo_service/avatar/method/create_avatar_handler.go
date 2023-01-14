@@ -5,13 +5,14 @@ import (
 	"github.com/agility323/liberty/lbtnet"
 	sf "github.com/agility323/liberty/service_framework"
 
-	"github.com/agility323/liberty/demo_service/avatar/avatardata"
 	"github.com/agility323/liberty/demo_service/avatar/core"
 )
 
 type CreateAvatarRequest struct {
-	Account string `msgpack:"account"`
-	LoginToken string `msgpack:"login_token"`
+	Token string `msgpack:"token"`
+	AvatarId string `msgpack:"avatar_id"`
+	AvatarInfo gameplay.NewAvatarInfo `msgpack:"avatar_info"`
+	SDKInfo *core.TrackingInfo `msgpack:"tracking_info"`
 }
 
 type CreateAvatarReply struct {
@@ -27,14 +28,10 @@ func (h *CreateAvatarHandler) GetRequest() interface{} {return &(h.request)}
 func (h *CreateAvatarHandler) GetReply() interface{} {return &(h.reply)}
 
 func (h *CreateAvatarHandler) Process(c *lbtnet.TcpConnection, srcAddr string) error {
-	acc := h.request.Account
-	token := h.request.LoginToken
 	// TODO: verify token on redis
 	logger.Debug("verify token %s %s", acc, token)
 	// create avatar
-	core.xxx.CreateAvatar()
-	avatar := sf.CreateEntity("Avatar").(*Avatar)
-	avatar.Init(sf.NewRemoteEntityStub(&avatar.EC, c, srcAddr), &avatardata.AvatarData{}, true)
-	avatar.Start()
+	code := core.CreateAvatar(srcAddr, h.request.Token, h.request.AvatarId, h.request.SDKInfo)
+	h.reply = CreateAvatarReply{Code: code}
 	return nil
 }

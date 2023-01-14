@@ -38,6 +38,7 @@ type AccountData struct {
 	// runtime data
 	Token string `bson:"token" msgpack:"-"`
 	Online int `bson:"online" msgpack:"-"`
+	OnlineId int `bson:"online_id" msgpack:"-"`
 	Saddr string `bson:"saddr" msgpack:"-"`
 	Caddr string `bson:"caddr" msgpack:"-"`
 }
@@ -58,8 +59,9 @@ type SdkAccountData struct {
 }
 
 func StartLogin(caddr, aid string) (int, map[string]*AvatarData, string) {
-	// getset account data
+	// assure account data
 	token := lbtutil.NewObjectID().Hex()
+	ctoken := aid + "|" + token
 	doc := AccountData{}
 	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
 	defer cancel()
@@ -68,10 +70,10 @@ func StartLogin(caddr, aid string) (int, map[string]*AvatarData, string) {
 		bson.M{"_id": aid},
 		bson.M{"$setOnInsert": bson.M{
 			"avatars": bson.M{},
-			"token": token,
-			"online": int(time.Now().Unix()),
+			//"token": token,
+			"online": 0,
 			"saddr": "",
-			"caddr": caddr,
+			"caddr": "",
 		}},
 		options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After),
 	).Decode(&doc)
@@ -85,7 +87,7 @@ func StartLogin(caddr, aid string) (int, map[string]*AvatarData, string) {
 	}
 	// new account
 	if len(doc.Avatars) == 0 {
-		return LoginSuccess, nil, token
+		return LoginSuccess, nil, ctoken
 	}
 	// old account
 	if len(doc.Avatars) > 0 {
@@ -93,7 +95,7 @@ func StartLogin(caddr, aid string) (int, map[string]*AvatarData, string) {
 		for _, data := range doc.Avatars {
 			avatars[data.Id] = &data
 		}
-		return LoginSuccess, avatars, token
+		return LoginSuccess, avatars, ctoken
 	}
 	// unexpected
 	logger.Error("start login fail 3 %s %s %v", aid, caddr, doc)

@@ -16,6 +16,8 @@ func main() {
 	// conf
 	misc.Conf.Service = sf.GetServiceConf()
 	lbtutil.LoadConfFromCmdLine(misc.DefaultConf, os.Args[1:], &misc.Conf)
+	//db
+	misc.InitMongoClient(misc.Conf.Mongo.Uri)
 	// method
 	sf.RegisterMethodHandlerCreator("connect_server", func() sf.MethodHandler {return new(method.ConnectServerHandler)})
 	sf.RegisterMethodHandlerCreator("login", func() sf.MethodHandler {return new(method.LoginHandler)})

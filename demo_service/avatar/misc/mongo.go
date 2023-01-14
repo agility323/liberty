@@ -12,10 +12,12 @@ var MongoClient *mongo.Client
 
 const (
 	ColNameAccount = "account"
+	ColNameEntity = "entities"
 )
 
 var (
 	ColAccount *mongo.Collection
+	ColEntity *mongo.Collection
 )
 
 func InitMongoClient(uri string) {
@@ -28,6 +30,7 @@ func InitMongoClient(uri string) {
 	MongoClient = client
 	// collections
 	ColAccount = GetColletion(ColNameAccount)
+	ColEntity = GetColletion(ColNameEntity)
 }
 
 func CloseMongoClient() {
