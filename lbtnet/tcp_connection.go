@@ -14,8 +14,12 @@ import (
 
 const (
 	SizeLen uint32 = 4
-	MaxMsgLen uint32 = 100000
 	WriteChLen int = 200
+)
+
+var (
+	MaxMsgLenOnRead uint32 = 500000
+	MaxMsgLenOnWrite uint32 = 450000
 )
 
 type TcpConnection struct {
@@ -39,11 +43,12 @@ func NewTcpConnection(conn net.Conn, handler ConnectionHandler) *TcpConnection {
 	raddrStr := ""
 	if laddr := conn.LocalAddr(); laddr != nil { laddrStr = laddr.String() }
 	if raddr := conn.RemoteAddr(); raddr != nil { raddrStr = raddr.String() }
+	bufsize := SizeLen + MaxMsgLenOnRead
 	c := &TcpConnection{
 		started: 0,
 		laddr: laddrStr,
 		raddr: raddrStr,
-		buf: make([]byte, SizeLen + MaxMsgLen),
+		buf: make([]byte, bufsize, bufsize),
 		conn: conn,
 		r: conn,
 		w: conn,
@@ -90,7 +95,7 @@ func (c *TcpConnection) readLoopOnce() bool {
 		return true
 	}
 	err = binary.Read(bytes.NewReader(bufHead), byteOrder, &bodyLen)
-	if err != nil || bodyLen == 0 || bodyLen > MaxMsgLen {
+	if err != nil || bodyLen == 0 || bodyLen > uint32(len(c.buf)) - SizeLen {
 		logger.Warn("tcp conn %s invalid body len %d %v", c.raddr, bodyLen, err)
 		c.Close()
 		return true
@@ -159,13 +164,17 @@ func (c *TcpConnection) SendData(data []byte) error {
 		logger.Warn("tcp conn send fail 1")
 		return errors.New("TcpConnection.SendData: fail 1")
 	}
-	if c == nil {
-		logger.Warn("tcp conn send fail 2")
+	if uint32(len(data)) > MaxMsgLenOnWrite {
+		logger.Error("tcp conn send fail 2 data len %d", len(data))
 		return errors.New("TcpConnection.SendData: fail 2")
 	}
-	if c.writeCh == nil {
+	if c == nil {
 		logger.Warn("tcp conn send fail 3")
 		return errors.New("TcpConnection.SendData: fail 3")
+	}
+	if c.writeCh == nil {
+		logger.Warn("tcp conn send fail 4")
+		return errors.New("TcpConnection.SendData: fail 4")
 	}
 	/*
 	select {
