@@ -1,12 +1,13 @@
 package main
 
 import (
+	"sort"
 	"sync"
 
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtproto"
-	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtreg"
+	"github.com/agility323/liberty/lbtutil"
 
 	"github.com/howeyc/crc16"
 )
@@ -206,8 +207,12 @@ func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byt
 		if len(vs) == 0 {
 			return nil
 		}
-		v := vs[h % len(vs)]
-		addr := v.(string)
+		addrSlice := make([]string, len(vs))
+		for index, v := range vs {
+			addrSlice[index] = v.(string)
+		}
+		sort.Strings(addrSlice)
+		addr := addrSlice[h % len(addrSlice)]
 		if entry, ok := m.serviceMap[addr]; ok && entry.state == ServiceStateConnected {// maybe should try next entry
 			return []*serviceEntry{entry}
 		}
