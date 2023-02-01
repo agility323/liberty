@@ -46,7 +46,7 @@ func CreateAvatar(caddr, ctoken, avatarid string, sdkinfo *TrackingInfo) int {
 	aid := arr[0]
 	token := arr[1]
 	// getset online state in account data
-	doc := AccountData{}
+	doc := &AccountData{}
 	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
 	defer cancel()
 	err := misc.ColAccount.FindOneAndUpdate(
@@ -59,21 +59,53 @@ func CreateAvatar(caddr, ctoken, avatarid string, sdkinfo *TrackingInfo) int {
 			"caddr": caddr,
 		}},
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
-	).Decode(&doc)
+	).Decode(doc)
 	if err != nil && err != mongo.ErrNoDocuments {
 		logger.Error("create avatar fail 1 %s %s %v", aid, caddr, err)
 		return 12345
 	}
 	// check online avatar
 	if err == mongo.ErrNoDocuments {
-		// relogin online
+		doc = GetAccountData(aid)
+		if doc.Online > 0 && doc.OnlineId != "" && doc.Saddr != "" {
+			// TODO relogin
+
+		}
+
 		return 12345
 	}
 	// load from db
-
-	avatar := sf.CreateEntity("Avatar").(*Avatar)
-	avatar.Init(sf.NewRemoteEntityStub(&avatar.EC, c, srcAddr), &avatardata.AvatarData{}, true)
+	adoc := &avatardata.AvatarData{}
+	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	defer cancel()
+	err := misc.ColEntity.FindOne(
+		ctx,
+		bson.M{"_id": avatarid},
+		options.FindOne(),
+	).Decode(adoc)
+	if err != nil {
+		return 12345
+	}
+	avatar := sf.CreateEntity("Avatar", avatarid).(*Avatar)
+	avatar.Init(sf.NewRemoteEntityStub(&avatar.EC, c, srcAddr), adata, true)
 	avatar.Start()
+
+	avatarmanager.add(avatar)
 	return 0
 }
 
+func GetAccountData(aid string) *AccountData {
+	doc := &AccountData{}
+	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	defer cancel()
+	err := misc.ColAccount.FindOne(
+		ctx,
+		bson.M{"_id": aid},
+		options.FindOne(),
+	).Decode(doc)
+	if err != nil {
+		logger.Error("get online fail 1 %s %v", aid, err)
+		return nil
+	}
+	return doc
+}
