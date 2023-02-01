@@ -2,11 +2,14 @@ package service_framework
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"plugin"
+	"strings"
 
-	"github.com/agility323/liberty/lbtreg"
 	"github.com/agility323/liberty/hotfix"
 	hitf "github.com/agility323/liberty/hotfix/itf"
+	"github.com/agility323/liberty/lbtreg"
 )
 
 func init() {
@@ -33,14 +36,36 @@ type HotfixCmd struct {
 }
 
 func (c *HotfixCmd) Process() {
-	p, err := plugin.Open(serviceConf.ServerHotfixPath)
-	if err != nil {
-		logger.Error("hotfix fail 1 %v", err)
+	if serviceConf.ServerHotfixPath == "" {
+		logger.Error("hotfix fail read path fail, ServerHotfixPath empty")
 		return
 	}
-	f, err := p.Lookup("Hotfix")
+	files, err := os.ReadDir(serviceConf.ServerHotfixPath)
 	if err != nil {
-		logger.Error("hotfix fail 2 %v", err)
+		logger.Error("hotfix fail read path fail %v", err)
+		return
+	}
+	fileName := ""
+	for _, file := range files {
+		fn := file.Name()
+		if !strings.HasPrefix(fn, "hotfix") { continue }
+		if !strings.HasSuffix(fn, ".so") { continue }
+		if fn > fileName { fileName = fn }
+	}
+	if fileName == "" {
+		logger.Error("hotfix fail fail, has no hotfix*.so")
+		return
+	}
+	logger.Info("begin load hotfix file %s", fileName)
+	p, err1 := plugin.Open(filepath.Join(serviceConf.ServerHotfixPath, fileName))
+	logger.Info("hotfix plugin open %p", p)
+	if err1 != nil {
+		logger.Error("hotfix fail 1 %v", err1)
+		return
+	}
+	f, err2 := p.Lookup("Hotfix")
+	if err2 != nil {
+		logger.Error("hotfix fail 2 %v", err2)
 		return
 	}
 	f.(func(hitf.HotfixInterface) error)(hotfix.Hotfix)
