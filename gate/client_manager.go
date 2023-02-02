@@ -64,12 +64,25 @@ func (m *ClientManager) clientConnect(c *lbtnet.TcpConnection) {
 func (m *ClientManager) clientDisconnect(c *lbtnet.TcpConnection) {
 	addr := c.RemoteAddr()
 	slot := lbtutil.StringHash(addr) % ClientSlotNum
+	saddr := m.PopDisconnectedClient(slot, addr)
+	if saddr != "" {
+		// send client_disconnect to service
+		info := lbtproto.BindClientInfo{Caddr: addr, Saddr: saddr}
+		serviceEntry := serviceManager.getServiceEntry(saddr)	// service manager lock
+		if serviceEntry != nil && serviceEntry.state == ServiceStateConnected {
+			lbtproto.SendMessage(serviceEntry.cli, lbtproto.Service.Method_client_disconnect, &info)
+		}
+	}
+	logger.Info("client disconnect %s %s", addr, saddr)
+}
+
+func (m *ClientManager) PopDisconnectedClient(slot int, addr string) string {
 	m.locks[slot].Lock()
 	defer m.locks[slot].Unlock()
 
 	// delete client entry
 	entry, ok := m.clientSlots[slot][addr]
-	if !ok { return }
+	if !ok { return "" }
 	delete(m.clientSlots[slot], addr)
 	saddr := entry.serviceAddr
 	if saddr != "" {
@@ -80,14 +93,8 @@ func (m *ClientManager) clientDisconnect(c *lbtnet.TcpConnection) {
 				delete(m.boundClientSlots[slot], saddr)
 			}
 		}
-		// send client_disconnect to service
-		info := lbtproto.BindClientInfo{Caddr: addr, Saddr: saddr}
-		serviceEntry := serviceManager.getServiceEntry(info.Saddr)
-		if serviceEntry != nil && serviceEntry.state == ServiceStateConnected {
-			lbtproto.SendMessage(serviceEntry.cli, lbtproto.Service.Method_client_disconnect, &info)
-		}
 	}
-	logger.Info("client disconnect %s", addr)
+	return saddr
 }
 
 func (m *ClientManager) bindClient(info lbtproto.BindClientInfo) {
