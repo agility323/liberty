@@ -2,11 +2,14 @@ package service_framework
 
 import (
 	"github.com/agility323/liberty/lbtutil"
+	"reflect"
 )
 
 var ServiceInstance *ServiceEntity
 
 func init() {
+	rpclist := []string{"CMD_hashed_task"}
+	RegisterEntityType("ServiceEntity", reflect.TypeOf((*ServiceEntity)(nil)), rpclist)
 	ServiceInstance = CreateEntity("ServiceEntity", lbtutil.NilObjectID).(*ServiceEntity)
 }
 
