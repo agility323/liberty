@@ -1,7 +1,7 @@
 package service_framework
 
 import (
-	"gitlab-gz.funplus.io/liberty/liberty/lbtutil"
+	"github.com/agility323/liberty/lbtutil"
 )
 
 var ServiceInstance *ServiceEntity
