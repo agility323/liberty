@@ -81,7 +81,7 @@ func runServiceRequestTask(c *lbtnet.TcpConnection, req *lbtproto.ServiceRequest
 		}
 		return
 	}
-	lbtactor.RunTaskActor("runServiceRequestTask." + req.Method, task)
+	lbtactor.RunTask("runServiceRequestTask." + req.Method, task)
 }
 
 func Service_service_reply(c *lbtnet.TcpConnection, buf []byte) error {
@@ -109,7 +109,7 @@ func Service_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 		return err
 	}
 	id := *(*lbtutil.ObjectID)(msg.Id)
-	if err := CallEntityMethodLocal(id, msg.Method, msg.Params); err != nil {
+	if err := CallEntityMethodLocal(id, msg.Method, msg.Params, int(msg.Hval)); err != nil {
 		return err
 	}
 	return nil

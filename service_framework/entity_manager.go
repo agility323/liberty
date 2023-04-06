@@ -69,7 +69,7 @@ func (m *EntityManager) OnTick() {
 	logger.Info("entity manager tick %d", n)
 }
 
-func CallEntityMethodLocal(id lbtutil.ObjectID, method string, paramBytes []byte) error {
+func CallEntityMethodLocal(id lbtutil.ObjectID, method string, paramBytes []byte, hval int) error {
 	// entity
 	entity := GetEntity(id)
 	if entity == nil {
@@ -78,7 +78,7 @@ func CallEntityMethodLocal(id lbtutil.ObjectID, method string, paramBytes []byte
 	// rpc method
 	v := reflect.ValueOf(entity)
 	pec := v.Elem().FieldByName(EntityCoreFieldName).Addr().Interface().(*EntityCore)
-	pec.PushActorTask(func() {
+	task := func() {
 		typ := pec.GetType()
 		rpc, ok := entityRpcMap[typ][method]
 		if !ok {
@@ -113,11 +113,20 @@ func CallEntityMethodLocal(id lbtutil.ObjectID, method string, paramBytes []byte
 		}
 		// call
 		_ = rpc.m.Func.Call(params)
-	})
+	}
+	if hval >= 0 {
+		pec.PushHashedTask(task, hval)
+	} else {
+		pec.PushMainTask(task)
+	}
 	return nil
 }
 
 func CallEntityMethod(addr string, id lbtutil.ObjectID, method string, params interface{}) error {
+	return CallHashedEntityMethod(addr, id, method, params, -1)
+}
+
+func CallHashedEntityMethod(addr string, id lbtutil.ObjectID, method string, params interface{}, hval int) error {
 	b, err := msgpack.Marshal(&params)
 	if err != nil {
 		logger.Error("CallEntityMethod fail 1 %s", err.Error())
@@ -129,6 +138,7 @@ func CallEntityMethod(addr string, id lbtutil.ObjectID, method string, params in
 		Id: id[:],
 		Method: method,
 		Params: b,
+		Hval: int32(hval),
 	}
 	c := gateManager.getPrimaryGate()
 	if c == nil {

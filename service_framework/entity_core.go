@@ -9,9 +9,10 @@ import (
 )
 
 type EntityCore struct {
-	typ   string
-	id    lbtutil.ObjectID
-	actor *lbtactor.WorkerActor
+	typ string
+	id lbtutil.ObjectID
+	mw *lbtactor.Worker	// main worker
+	hw *lbtactor.HashedWorker	// hashed worker
 }
 
 func (ec *EntityCore) init(typ string, id lbtutil.ObjectID) {
@@ -20,7 +21,8 @@ func (ec *EntityCore) init(typ string, id lbtutil.ObjectID) {
 	}
 	ec.id = id
 	ec.typ = typ
-	ec.actor = lbtactor.NewWorkerActor("entity." + ec.id.Hex())
+	ec.mw = nil
+	ec.hw = nil
 }
 
 func (ec *EntityCore) GetType() string {
@@ -38,16 +40,34 @@ func (ec *EntityCore) Dump() map[string]string {
 	}
 }
 
-func (ec *EntityCore) StartActor(qlen int) bool {
-	return ec.actor.Start(qlen)
+func (ec *EntityCore) InitMainWorker(qlen int) {
+	ec.mw = lbtactor.NewWorker("entity." + ec.id.Hex(), qlen)
 }
 
-func (ec *EntityCore) StopActor() bool {
-	return ec.actor.Stop()
+func (ec *EntityCore) initHashedWorker(size, qlen int) {
+	ec.hw = lbtactor.NewHashedWorker(size, "entity." + ec.id.Hex(), qlen)
 }
 
-func (ec *EntityCore) PushActorTask(task func()) bool {
-	return ec.actor.PushTask(task)
+func (ec *EntityCore) StartWorker() {
+	ec.mw.Start()
+	if ec.hw != nil {
+		ec.hw.Start()
+	}
+}
+
+func (ec *EntityCore) StopWorker() {
+	ec.mw.Stop()
+	if ec.hw != nil {
+		ec.hw.Stop()
+	}
+}
+
+func (ec *EntityCore) PushMainTask(task func()) bool {
+	return ec.mw.PushTask(task)
+}
+
+func (ec *EntityCore) PushHashedTask(task func(), hval int) bool {
+	return ec.hw.PushTask(task, hval)
 }
 
 type RemoteEntityStub struct {
@@ -122,7 +142,7 @@ func (stub *RemoteEntityStub) Disconnect() bool {
 		SendUnbindClient(c, stub.localAddr, stub.remoteAddr)
 	}
 	unregisterClientCallback(stub.remoteAddr)
-	stub.core.PushActorTask(stub.disconnectCallback)
+	stub.core.PushMainTask(stub.disconnectCallback)
 	return true
 }
 
@@ -130,7 +150,7 @@ func (stub *RemoteEntityStub) OnClientDisconnect() {
 	if stub == nil { return }
 	if stub.disconnected == 1 { return }
 	stub.disconnected = 1
-	stub.core.PushActorTask(stub.disconnectCallback)
+	stub.core.PushMainTask(stub.disconnectCallback)
 }
 
 func (stub *RemoteEntityStub) Yield(core *EntityCore) *RemoteEntityStub {

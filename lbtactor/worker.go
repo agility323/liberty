@@ -9,33 +9,35 @@ import (
 
 type taskWithNoReturn func()
 
-type WorkerActor struct {
+type Worker struct {
 	name string
 	state int32
 	activet int32
+	qlen int
 	taskq chan taskWithNoReturn
 	stopq chan struct{}
 }
 
-func NewWorkerActor(name string) *WorkerActor {
-	return &WorkerActor{
+func NewWorker(name string, qlen int) *Worker {
+	return &Worker{
 		name: name,
 		state: 0,
+		activet: int32(time.Now().Unix()),
+		qlen: qlen,
 		taskq: nil,
 		stopq: nil,
 	}
 }
 
-func (w *WorkerActor) Start(qlen int) bool {
-	if !atomic.CompareAndSwapInt32(&w.state, 0, 1) { return false }
-	w.taskq = make(chan taskWithNoReturn, qlen)
+func (w *Worker) Start() {
+	if !atomic.CompareAndSwapInt32(&w.state, 0, 1) { return }
+	w.taskq = make(chan taskWithNoReturn, w.qlen)
 	w.stopq = make(chan struct{}, 1)
-	go w.workLoop(qlen)
-	return true
+	go w.workLoop(w.qlen)
 }
 
-func (w *WorkerActor) workLoop(qlen int) {
-	defer lbtutil.Recover("WorkerActor.workLoop " + w.name, func() { go w.workLoop(qlen) })
+func (w *Worker) workLoop(qlen int) {
+	defer lbtutil.Recover("Worker.workLoop " + w.name, func() { go w.workLoop(qlen) })
 
 	for {
 		select {
@@ -47,17 +49,15 @@ func (w *WorkerActor) workLoop(qlen int) {
 	}
 }
 
-func (w *WorkerActor) Stop() bool {
-	if !atomic.CompareAndSwapInt32(&w.state, 1, 2) { return false }
+func (w *Worker) Stop() {
+	if !atomic.CompareAndSwapInt32(&w.state, 1, 2) { return }
 	select {
 	case w.stopq<- struct{}{}:
-		return true
 	default:
-		return false
 	}
 }
 
-func (w *WorkerActor) PushTask(task taskWithNoReturn) bool {
+func (w *Worker) PushTask(task taskWithNoReturn) bool {
 	if w.state == 2 {
 		return false
 	}
@@ -68,5 +68,4 @@ func (w *WorkerActor) PushTask(task taskWithNoReturn) bool {
 	default:
 		return false
 	}
-	return false
 }
