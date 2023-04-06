@@ -279,7 +279,9 @@ func (c *TcpConnection) EnableEncryptAndCompress(key []byte) error {
 	// replace readLoopFunc to enable read compress
 	c.readLoopFunc = func() bool {
 		defer func() { c.readLoopFunc = c.readLoopOnce }()
+		timer := time.AfterFunc(7 * time.Second, c.Close)	// avoid blocking at io read in NewCompressReader
 		cr, err := NewCompressReader(c.r)
+		timer.Stop()
 		if err != nil {
 			logger.Warn("EnableEncryptAndCompress fail 4 %s %v", c.raddr, err)
 			c.Close()
