@@ -8,6 +8,7 @@ import (
 	"io"
 	"bytes"
 	"time"
+	"os"
 
 	"github.com/agility323/liberty/lbtutil"
 )
@@ -34,7 +35,7 @@ type TcpConnection struct {
 	w io.Writer
 	handler ConnectionHandler
 	writeCh chan []byte
-	stopCh chan struct{}
+	stopCh chan struct{}	// used to force quit write loop when chan full
 	vars map[string]interface{}	// customed variables
 	readLoopFunc func() bool
 	conf ConnectionConfig
@@ -131,41 +132,64 @@ func (c *TcpConnection) readLoopOnce() bool {
 }
 
 func (c *TcpConnection) writeLoop() {
-	for {
+	cond := true
+	for cond {
 		select {
-		case <-c.stopCh:
-			logger.Info("tcp conn %s write loop quit", c.raddr)
-			return
 		case data := <-c.writeCh:
-			//logger.Debug("tcp conn write %s %v", c.raddr, data)
-			n, err := c.w.Write(data)
-			if err != nil {
-				c.errlog("tcp conn %s write fail %d %d %v", c.raddr, len(data), n, err)
-				c.Close()
-				return
-			}
+			cond = c.HandleWrite(data)
+		case <-c.stopCh:
+			logger.Info("tcp conn write loop quit end %s", c.raddr)
+			cond = false
 		}
-
 	}
+	// close socket
+	if err := c.conn.Close(); err != nil {
+		logger.Error("tcp conn close err %s %v", c.raddr, err)
+	}
+}
+
+func (c *TcpConnection) HandleWrite(data []byte) bool {
+	//logger.Debug("tcp conn write %s %v", c.raddr, data)
+	if data == nil {
+		return false
+	}
+	n, err := c.w.Write(data)
+	if err != nil {
+		if err == os.ErrDeadlineExceeded {
+			logger.Warn("tcp conn write timeout %s", c.raddr)
+			return false
+		}
+		c.errlog("tcp conn write fail %s %d %d %v", c.raddr, len(data), n, err)
+		c.Close()
+		return false
+	}
+	return true
 }
 
 func (c *TcpConnection) Close() {
 	if c.CloseWithoutCallback() {
 		c.handler.OnConnectionClose(c)
-		select {
-		case c.stopCh<- struct{}{}:
-			return
-		default:
-			return
-		}
 	}
 }
 
 func (c *TcpConnection) CloseWithoutCallback() bool {
 	if atomic.CompareAndSwapInt32(&c.closed, 0, 1) {
 		logger.Info("tcp conn close %s", c.raddr)
-		_ = c.conn.Close()
-		defer lbtutil.Recover(fmt.Sprintf("TcpConnection.CloseWithoutCallback %v", c.conn), nil)
+		// last 2 seconds to handle read/write
+		c.conn.SetDeadline(time.Now().Add(time.Second * 2))
+		// tell write loop to quit
+		select {
+		case c.writeCh<- nil:
+		default:
+			select {
+			case c.stopCh<- struct{}{}:
+			default:
+				logger.Error("tcp conn close fail %s", c.raddr)
+				if err := c.conn.Close(); err != nil {
+					logger.Error("tcp conn close err %s %v", c.raddr, err)
+				}
+			}
+		}
 		return true
 	}
 	return false
