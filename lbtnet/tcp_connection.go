@@ -193,25 +193,32 @@ func (c *TcpConnection) SendData(data []byte) error {
 	case c.writeCh<- data:
 		return nil
 	default:
-		if c.conf.WriteChWaitTime == 0 {
+		// non-blocking
+		if c.conf.WriteChWaitTime <= 0 {
 			logger.Error("tcp conn send fail chan full %s %s", c.laddr, c.raddr)
 			c.Close()
 			return ErrSendChanFull
-		} else {
-			ts := time.Now().UnixMilli()
-			t := time.NewTimer(c.conf.WriteChWaitTime * time.Second)
-			select {
-			case c.writeCh<- data:
-				if !t.Stop() {
-					// do nothing
-				}
-				logger.Error("tcp conn send block for %d ms %s %s", time.Now().UnixMilli() - ts, c.laddr, c.raddr)
-				return nil
-			case <-t.C:
-				logger.Error("tcp conn send fail chan full %s %s", c.laddr, c.raddr)
-				c.Close()
-				return ErrSendChanFull
+		}
+		// heartbeat expired
+		if !c.handler.CheckHeartbeat() {
+			logger.Error("tcp conn send fail heartbeat expired %s %s", c.laddr, c.raddr)
+			c.Close()
+			return ErrSendHeartbeatExpired
+		}
+		// blocking for seconds
+		ts := time.Now().UnixMilli()
+		t := time.NewTimer(c.conf.WriteChWaitTime * time.Second)
+		select {
+		case c.writeCh<- data:
+			if !t.Stop() {
+				// do nothing
 			}
+			logger.Error("tcp conn send block for %d ms %s %s", time.Now().UnixMilli() - ts, c.laddr, c.raddr)
+			return nil
+		case <-t.C:
+			logger.Error("tcp conn send fail chan full %s %s", c.laddr, c.raddr)
+			c.Close()
+			return ErrSendChanFull
 		}
 	}
 }

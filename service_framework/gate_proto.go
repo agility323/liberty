@@ -121,6 +121,7 @@ func Service_service_shutdown(c *lbtnet.TcpConnection, buf []byte) error {
 }
 
 func Service_heartbeat(c *lbtnet.TcpConnection, buf []byte) error {
+	c.OnHeartbeat(0)
 	return c.SendData(buf)
 }
 /********** ProtoHandler End **********/

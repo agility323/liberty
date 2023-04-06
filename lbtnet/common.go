@@ -19,6 +19,7 @@ type ConnectionHandler interface {
 	HandleProto(*TcpConnection, []byte) error
 	OnConnectionClose(*TcpConnection)
 	OnHeartbeat(*TcpConnection, int64)
+	CheckHeartbeat() bool
 	// client only
 	OnConnectionReady(*TcpConnection)
 	OnConnectionFail(*TcpClient)

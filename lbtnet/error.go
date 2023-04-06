@@ -9,4 +9,5 @@ var (
 	ErrSendInvalidChan = errors.New("send fail invalid chan")
 	ErrSendChanFull = errors.New("send fail chan full")
 	ErrSendClientNotReady = errors.New("send fail client not ready")
+	ErrSendHeartbeatExpired = errors.New("send fail heartbeat expired")
 )

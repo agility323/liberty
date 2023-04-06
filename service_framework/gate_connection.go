@@ -2,14 +2,21 @@ package service_framework
 
 import (
 	"net"
+	"sync/atomic"
+	"time"
+
 	"github.com/agility323/liberty/lbtnet"
 )
 
+var GateConnectionHeartbeatTorlerance int64 = 36000	// time in milliseconds
+
 type GateConnectionHandler struct {
+	hbtime int64
 }
 
 func GateConnectionCreator(conn net.Conn) {
 	handler := &GateConnectionHandler{
+		hbtime: time.Now().UnixMilli(),
 	}
 	conf := lbtnet.ConnectionConfig{
 		WriteChLen: lbtnet.DefaultWriteChLen,
@@ -38,5 +45,9 @@ func (handler *GateConnectionHandler) OnConnectionFail(cli *lbtnet.TcpClient) {
 }
 
 func (handler *GateConnectionHandler) OnHeartbeat(c *lbtnet.TcpConnection, t int64) {
-	// handled at proto layer, nothing here
+	atomic.StoreInt64(&handler.hbtime, time.Now().UnixMilli())
+}
+
+func (handler *GateConnectionHandler) CheckHeartbeat() bool {
+	return time.Now().UnixMilli() - atomic.LoadInt64(&handler.hbtime) < GateConnectionHeartbeatTorlerance
 }
