@@ -130,11 +130,9 @@ func sendRegisterService(c *lbtnet.TcpConnection) {
 		Type: serviceConf.ServiceType,
 		Entityid: []byte {},
 	}
-	lbtproto.SendMessage(
-		c,
-		lbtproto.ServiceGate.Method_register_service,
-		msg,
-	)
+	if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_register_service, msg); err != nil {
+		logger.Error("sendRegisterService failed %v", err)
+	}
 }
 
 func sendServiceReply(c *lbtnet.TcpConnection, addr, reqid string, data []byte) {

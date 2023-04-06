@@ -6,7 +6,6 @@ import (
 	"sync/atomic"
 	"os"
 	"time"
-	"errors"
 
 	"github.com/agility323/liberty/lbtutil"
 )
@@ -91,7 +90,8 @@ func (client *TcpClient) StartConnect(reconnectCount int) {
 	// connect success
 	client.timer = nil
 	client.logger.Info("client connect success %s", client.raddr.String())
-	client.fconn = NewTcpConnection(conn, client.handler)
+	conf := ConnectionConfig{WriteChLen: DefaultWriteChLen, WriteChWaitTime: DefaultWriteChWaitTime, ErrLog: true}
+	client.fconn = NewTcpConnection(conn, client.handler, conf)
 	atomic.StoreInt32(&client.state, ST_CONNECTED)
 	// Start may cause OnConnectionClose, so run it after ST_CONNECTED
 	client.fconn.Start()
@@ -125,6 +125,6 @@ func (client *TcpClient) OnConnectionClose() {
 }
 
 func (client *TcpClient) SendData(buf []byte) error {
-	if atomic.LoadInt32(&client.state) != ST_CONNECTED { return errors.New("TcpClient.SendData: not connected") }
+	if atomic.LoadInt32(&client.state) != ST_CONNECTED { return ErrSendClientNotReady }
 	return client.fconn.SendData(buf)
 }

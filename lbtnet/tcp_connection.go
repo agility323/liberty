@@ -7,19 +7,20 @@ import (
 	"encoding/binary"
 	"io"
 	"bytes"
-	"errors"
+	"time"
 
 	"github.com/agility323/liberty/lbtutil"
 )
 
 const (
 	SizeLen uint32 = 4
-	WriteChLen int = 200
 )
 
 var (
 	MaxMsgLenOnRead uint32 = 500000
 	MaxMsgLenOnWrite uint32 = 450000
+	DefaultWriteChLen int = 2000
+	DefaultWriteChWaitTime time.Duration = 5	// time in second
 )
 
 type TcpConnection struct {
@@ -36,14 +37,19 @@ type TcpConnection struct {
 	stopCh chan struct{}
 	vars map[string]interface{}	// customed variables
 	readLoopFunc func() bool
+	conf ConnectionConfig
+	errlog func(format string, params ...interface{})
 }
 
-func NewTcpConnection(conn net.Conn, handler ConnectionHandler) *TcpConnection {
+func NewTcpConnection(conn net.Conn, handler ConnectionHandler, conf ConnectionConfig) *TcpConnection {
 	laddrStr := ""
 	raddrStr := ""
 	if laddr := conn.LocalAddr(); laddr != nil { laddrStr = laddr.String() }
 	if raddr := conn.RemoteAddr(); raddr != nil { raddrStr = raddr.String() }
 	bufsize := SizeLen + MaxMsgLenOnRead
+	if conf.WriteChLen < 0 {
+		conf.WriteChLen = 0
+	}
 	c := &TcpConnection{
 		started: 0,
 		laddr: laddrStr,
@@ -53,11 +59,17 @@ func NewTcpConnection(conn net.Conn, handler ConnectionHandler) *TcpConnection {
 		r: conn,
 		w: conn,
 		handler: handler,
-		writeCh: make(chan []byte, WriteChLen),
+		writeCh: make(chan []byte, conf.WriteChLen),
 		stopCh: make(chan struct{}, 1),
 		vars: make(map[string]interface{}),
+		conf: conf,
 	}
 	c.readLoopFunc = c.readLoopOnce
+	if conf.ErrLog {
+		c.errlog = logger.Error
+	} else {
+		c.errlog = logger.Warn
+	}
 	return c
 }
 
@@ -90,20 +102,20 @@ func (c *TcpConnection) readLoopOnce() bool {
 	// read head
 	_, err := io.ReadFull(c.r, bufHead)
 	if err != nil {
-		logger.Warn("tcp conn %s read head fail %v", c.raddr, err)
+		c.errlog("tcp conn %s read head fail %v", c.raddr, err)
 		c.Close()
 		return true
 	}
 	err = binary.Read(bytes.NewReader(bufHead), byteOrder, &bodyLen)
 	if err != nil || bodyLen == 0 || bodyLen > uint32(len(c.buf)) - SizeLen {
-		logger.Warn("tcp conn %s invalid body len %d %v", c.raddr, bodyLen, err)
+		c.errlog("tcp conn %s invalid body len %d %v", c.raddr, bodyLen, err)
 		c.Close()
 		return true
 	}
 	// read body
 	_, err = io.ReadFull(c.r, c.buf[SizeLen:SizeLen + bodyLen])
 	if err != nil {
-		logger.Warn("tcp conn %s read body fail %d %v", c.raddr, bodyLen, err)
+		c.errlog("tcp conn %s read body fail %d %v", c.raddr, bodyLen, err)
 		c.Close()
 		return true
 	}
@@ -113,7 +125,7 @@ func (c *TcpConnection) readLoopOnce() bool {
 	//logger.Debug("tcp conn read %s %v", c.raddr, data)
 	err = c.handler.HandleProto(c, data)
 	if err != nil {
-		logger.Warn("tcp conn %s proto fail %v", c.raddr, err)
+		c.errlog("tcp conn %s proto fail %v", c.raddr, err)
 	}
 	return false
 }
@@ -128,7 +140,7 @@ func (c *TcpConnection) writeLoop() {
 			//logger.Debug("tcp conn write %s %v", c.raddr, data)
 			n, err := c.w.Write(data)
 			if err != nil {
-				logger.Warn("tcp conn %s write fail %d %d %s", c.raddr, len(data), n, err.Error())
+				c.errlog("tcp conn %s write fail %d %d %v", c.raddr, len(data), n, err)
 				c.Close()
 				return
 			}
@@ -160,31 +172,48 @@ func (c *TcpConnection) CloseWithoutCallback() bool {
 }
 
 func (c *TcpConnection) SendData(data []byte) error {
+	if c == nil {
+		logger.Error("tcp conn send fail invalid connection")
+		return ErrSendInvalidConnection
+	}
 	if data == nil {
-		logger.Warn("tcp conn send fail 1")
-		return errors.New("TcpConnection.SendData: fail 1")
+		logger.Error("tcp conn send fail invalid data")
+		return ErrSendInvalidData
 	}
 	if uint32(len(data)) > MaxMsgLenOnWrite {
-		logger.Error("tcp conn send fail 2 data len %d", len(data))
-		return errors.New("TcpConnection.SendData: fail 2")
-	}
-	if c == nil {
-		logger.Warn("tcp conn send fail 3")
-		return errors.New("TcpConnection.SendData: fail 3")
+		logger.Error("tcp conn send fail long data %d", len(data))
+		return ErrSendLongData
 	}
 	if c.writeCh == nil {
-		logger.Warn("tcp conn send fail 4")
-		return errors.New("TcpConnection.SendData: fail 4")
+		logger.Error("tcp conn send fail invalid chan")
+		return ErrSendInvalidChan
 	}
-	/*
+	// block for limited seconds
 	select {
 	case c.writeCh<- data:
+		return nil
 	default:
-		return errors.New("TcpConnection.SendData: fail 4")
+		if c.conf.WriteChWaitTime == 0 {
+			logger.Error("tcp conn send fail chan full %s %s", c.laddr, c.raddr)
+			c.Close()
+			return ErrSendChanFull
+		} else {
+			ts := time.Now().UnixMilli()
+			t := time.NewTimer(c.conf.WriteChWaitTime * time.Second)
+			select {
+			case c.writeCh<- data:
+				if !t.Stop() {
+					// do nothing
+				}
+				logger.Error("tcp conn send block for %d ms %s %s", time.Now().UnixMilli() - ts, c.laddr, c.raddr)
+				return nil
+			case <-t.C:
+				logger.Error("tcp conn send fail chan full %s %s", c.laddr, c.raddr)
+				c.Close()
+				return ErrSendChanFull
+			}
+		}
 	}
-	*/
-	c.writeCh<- data	// block when channel full, no data loss
-	return nil
 }
 
 func (c *TcpConnection) SetVar(k string, v interface{}) {
@@ -221,7 +250,7 @@ func (c *TcpConnection) EnableEncryptAndCompress(key []byte) error {
 		defer func() { c.readLoopFunc = c.readLoopOnce }()
 		cr, err := NewCompressReader(c.r)
 		if err != nil {
-			logger.Error("EnableEncryptAndCompress fail 4 %s %v", c.raddr, err)
+			logger.Warn("EnableEncryptAndCompress fail 4 %s %v", c.raddr, err)
 			c.Close()
 			return true
 		}

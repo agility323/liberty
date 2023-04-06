@@ -11,7 +11,12 @@ type GateConnectionHandler struct {
 func GateConnectionCreator(conn net.Conn) {
 	handler := &GateConnectionHandler{
 	}
-	c := lbtnet.NewTcpConnection(conn, handler)
+	conf := lbtnet.ConnectionConfig{
+		WriteChLen: lbtnet.DefaultWriteChLen,
+		WriteChWaitTime: lbtnet.DefaultWriteChWaitTime,
+		ErrLog: true,
+	}
+	c := lbtnet.NewTcpConnection(conn, handler, conf)
 	handler.OnConnectionReady(c)
 	c.Start()
 }

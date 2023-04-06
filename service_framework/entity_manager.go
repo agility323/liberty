@@ -117,11 +117,11 @@ func CallEntityMethodLocal(id lbtutil.ObjectID, method string, paramBytes []byte
 	return nil
 }
 
-func CallEntityMethod(addr string, id lbtutil.ObjectID, method string, params interface{}) {
+func CallEntityMethod(addr string, id lbtutil.ObjectID, method string, params interface{}) error {
 	b, err := msgpack.Marshal(&params)
 	if err != nil {
 		logger.Error("CallEntityMethod fail 1 %s", err.Error())
-		return
+		return ErrRpcInvalidParams
 	}
 	//logger.Debug("CallEntityMethod %s %s %s %v", addr, id.Hex(), method, params)
 	msg := &lbtproto.EntityMsg{
@@ -133,9 +133,11 @@ func CallEntityMethod(addr string, id lbtutil.ObjectID, method string, params in
 	c := gateManager.getPrimaryGate()
 	if c == nil {
 		logger.Error("CallEntityMethod fail 2 no gate connection")
-		return
+		return ErrRpcNoRoute
 	}
 	if err = lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_entity_msg, msg); err != nil {
 		logger.Error("CallEntityMethod fail 3 %v", err)
+		return err
 	}
+	return nil
 }

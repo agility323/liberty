@@ -28,3 +28,9 @@ type ProtoHandlerType func(*TcpConnection, []byte) error
 type connectionCreatorFunc func(net.Conn)
 
 const WriteWaitTime = 200 * time.Millisecond
+
+type ConnectionConfig struct {
+	WriteChLen int
+	WriteChWaitTime time.Duration
+	ErrLog bool
+}

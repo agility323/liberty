@@ -17,18 +17,20 @@ func SendSetFilterData(typ lbtproto.FilterData_FilterDataType, addr, id string, 
 	}
 	data, err := lbtproto.EncodeMessage(lbtproto.ServiceGate.Method_set_filter_data, msg)
 	if err != nil {
-		logger.Error("send set filter data fail %s %s %v %v", addr, id, msg, err)
+		logger.Error("set filter data fail at encode %s %s %v %v", addr, id, msg, err)
 		return
 	}
 	if c := gateManager.getGateByAddr(addr); c != nil {
-		c.SendData(data)
+		if err = c.SendData(data); err != nil {
+			logger.Error("set filter data fail at send %s %s %v %v", addr ,id, msg, err)
+		}
 	}
 }
 
 func SendFilterMsg(method string, params interface{}, filters []*Filter) {
 	b, err := msgpack.Marshal(&params)
 	if err != nil {
-		logger.Error("send filter msg fail 1 %v", err)
+		logger.Error("send filter msg fail at msgpack %s %v", method, err)
 		return
 	}
 	fs := []*lbtproto.Filter{}
@@ -40,11 +42,13 @@ func SendFilterMsg(method string, params interface{}, filters []*Filter) {
 	}
 	data, err := lbtproto.EncodeMessage(lbtproto.ServiceGate.Method_filter_msg, msg)
 	if err != nil {
-		logger.Error("send filter msg fail 2 %v", err)
+		logger.Error("send filter msg fail at encode %s %v", method, err)
 		return
 	}
 	gates := gateManager.getAllGates()
 	for _, c := range gates {
-		c.SendData(data)
+		if err = c.SendData(data); err != nil {
+			logger.Error("send filter msg fail at send %s %s %v", method, c.LocalAddr(), err)
+		}
 	}
 }
