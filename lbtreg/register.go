@@ -89,19 +89,19 @@ func startRegJob(ctx context.Context, tickTime int, etcdKey string, data RegData
 		select {
 		case <-ctx.Done():
 			stopped = true
-			lctx, cancel = context.WithTimeout(ctx, 5 * time.Second)
+			lctx, cancel = context.WithTimeout(context.Background(), 5 * time.Second)
 			if _, err = etcdClient.Revoke(lctx, leaseID); err != nil {
-				logger.Error("register job revoke fail %s", etcdKey)
+				logger.Error("register job revoke fail %s %s", etcdKey, err.Error())
 			}
 			cancel()
 			logger.Info("register job stopped %s", etcdKey)
 			return
 		case <-ticker.C:
-			lctx, cancel = context.WithTimeout(ctx, 5 * time.Second)
+			lctx, cancel = context.WithTimeout(context.Background(), 5 * time.Second)
 			_, err := etcdClient.KeepAliveOnce(lctx, leaseID)
 			cancel()
 			if err != nil {
-				logger.Warn("register job failed: etcd ka %s", etcdKey)
+				logger.Warn("register job failed: etcd ka %s %s", etcdKey, err.Error())
 				return
 			}
 		}

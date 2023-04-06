@@ -136,7 +136,7 @@ func Service_gate_stop(c *lbtnet.TcpConnection, buf []byte) error {
 		logger.Warn("Service_gate_stop fail decode %v", err)
 		return nil
 	}
-	gateManager.onGateStop(msg.Addr)
+	gateManager.onGateStop(c.RemoteAddr())
 	return nil
 }
 /********** ProtoHandler End **********/

@@ -109,6 +109,6 @@ func (m *GateManager) notifyServiceStop() {
 }
 
 func (m *GateManager) onGateStop(addr string) {
-	m.removeGate(addr)
+	//m.removeGate(addr)
 	logger.Info("on gate stop %s", addr)
 }
