@@ -65,7 +65,7 @@ func startRegJob(ctx context.Context, tickTime int, etcdKey string, data RegData
 		return
 	}
 	// create lease
-	lctx, cancel := context.WithTimeout(ctx, 3 * time.Second)
+	lctx, cancel := context.WithTimeout(ctx, 5 * time.Second)
 	margin := tickTime / 5
 	if margin < 1 { margin = 1 }
 	resp, err := etcdClient.Grant(lctx, int64(tickTime + margin))
@@ -76,7 +76,7 @@ func startRegJob(ctx context.Context, tickTime int, etcdKey string, data RegData
 	}
 	leaseID	:= resp.ID
 	// etcd put
-	lctx, cancel = context.WithTimeout(ctx, 3 * time.Second)
+	lctx, cancel = context.WithTimeout(ctx, 5 * time.Second)
 	kvc := clientv3.NewKV(etcdClient)
 	_, err = kvc.Put(lctx, etcdKey, etcdVal, clientv3.WithLease(leaseID))
 	cancel()
@@ -89,10 +89,15 @@ func startRegJob(ctx context.Context, tickTime int, etcdKey string, data RegData
 		select {
 		case <-ctx.Done():
 			stopped = true
+			lctx, cancel = context.WithTimeout(ctx, 5 * time.Second)
+			if _, err = etcdClient.Revoke(lctx, leaseID); err != nil {
+				logger.Error("register job revoke fail %s", etcdKey)
+			}
+			cancel()
 			logger.Info("register job stopped %s", etcdKey)
 			return
 		case <-ticker.C:
-			lctx, cancel = context.WithTimeout(ctx, 3 * time.Second)
+			lctx, cancel = context.WithTimeout(ctx, 5 * time.Second)
 			_, err := etcdClient.KeepAliveOnce(lctx, leaseID)
 			cancel()
 			if err != nil {

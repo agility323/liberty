@@ -25,8 +25,8 @@ func initServiceMethodHandler() {
 	ServiceMethodHandler[lbtproto.Service.Method_service_reply] = Service_service_reply
 	ServiceMethodHandler[lbtproto.Service.Method_client_service_request] = Service_client_service_request
 	ServiceMethodHandler[lbtproto.Service.Method_entity_msg] = Service_entity_msg
-	ServiceMethodHandler[lbtproto.Service.Method_service_shutdown] = Service_service_shutdown
 	ServiceMethodHandler[lbtproto.Service.Method_heartbeat] = Service_heartbeat
+	ServiceMethodHandler[lbtproto.Service.Method_gate_stop] = Service_gate_stop
 }
 
 func processGateProto(c *lbtnet.TcpConnection, buf []byte) error {
@@ -125,21 +125,26 @@ func Service_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 	return nil
 }
 
-func Service_service_shutdown(c *lbtnet.TcpConnection, buf []byte) error {
-	Stop()
-	return nil
-}
-
 func Service_heartbeat(c *lbtnet.TcpConnection, buf []byte) error {
 	c.OnHeartbeat(0)
 	return c.SendData(buf)
+}
+
+func Service_gate_stop(c *lbtnet.TcpConnection, buf []byte) error {
+	msg := &lbtproto.ServiceInfo{}
+	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
+		logger.Warn("Service_gate_stop fail decode %v", err)
+		return nil
+	}
+	gateManager.onGateStop(msg.Addr)
+	return nil
 }
 /********** ProtoHandler End **********/
 
 /********** ProtoSender **********/
 func sendRegisterService(c *lbtnet.TcpConnection) {
 	msg := &lbtproto.ServiceInfo{
-		Addr: c.LocalAddr(),
+		Addr: serviceAddr,
 		Type: serviceConf.ServiceType,
 		Entityid: []byte {},
 	}
@@ -226,6 +231,15 @@ func SendClientEntityMsg(c *lbtnet.TcpConnection, addr string, id lbtutil.Object
 		return err
 	}
 	return nil
+}
+
+func makeServiceStopData() ([]byte, error) {
+	msg := &lbtproto.ServiceInfo{
+		Addr: serviceAddr,
+		Type: serviceConf.ServiceType,
+		Entityid: []byte {},
+	}
+	return lbtproto.EncodeMessage(lbtproto.ServiceGate.Method_service_stop, msg)
 }
 
 /********** ProtoSender End **********/

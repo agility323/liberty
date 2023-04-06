@@ -46,5 +46,6 @@ type BroadcastCmdData struct {
 
 type BanServiceCmdData struct {
 	BaseCmdData
+	Type string `json:"type"`
 	Addr string `json:"addr"`
 }

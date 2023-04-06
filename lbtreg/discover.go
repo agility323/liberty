@@ -39,7 +39,7 @@ func startDiscoverJob(ctx context.Context, tickTime int, cb DiscoverCallback, et
 			return
 		case <-ticker.C:
 			// etcd get
-			lctx, cancel := context.WithTimeout(ctx, 3 * time.Second)
+			lctx, cancel := context.WithTimeout(ctx, 5 * time.Second)
 			kvc := clientv3.NewKV(etcdClient)
 			resp, err := kvc.Get(lctx, etcdKey, clientv3.WithPrefix())
 			cancel()

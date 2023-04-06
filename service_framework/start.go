@@ -15,7 +15,14 @@ import (
 	"github.com/agility323/liberty/lbtreg"
 )
 
-var stopCh = make(chan os.Signal, 1)
+var (
+	stopCh = make(chan os.Signal, 1)
+	softStopCh = make(chan bool, 1)
+)
+
+var (
+	cancelRegister context.CancelFunc = nil
+)
 
 func Start(cb func()) {
 	// check
@@ -41,10 +48,11 @@ func Start(cb func()) {
 
 	// register
 	lbtreg.InitWithEtcd(serviceConf.Etcd)
-	ctx, cancel := context.WithCancel(context.Background())
+	var ctx context.Context
+	ctx, cancelRegister = context.WithCancel(context.Background())
 	go lbtreg.StartRegisterService(
 		ctx,
-		11,
+		31,
 		serviceConf.Host,
 		serviceConf.ServiceType,
 		serviceAddr,
@@ -58,12 +66,13 @@ func Start(cb func()) {
 
 	// wait for stop
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
-	<-stopCh
-
-	// on stop
-	cancel()
-	onStop()
-	cb()
+	select {
+	case <-stopCh:
+		stop()
+	case <-softStopCh:
+		beforeStop(cb)
+		stop()
+	}
 }
 
 func onStart() {
@@ -75,12 +84,32 @@ func onStart() {
 	tickmgr.Start()
 }
 
-func onStop() {
-	tickmgr.Stop()
-	logger.Info("service stopped %s", serviceConf.ServiceType)
+func InitiateStop() {
+	select {
+	case stopCh<- syscall.SIGTERM:
+	default:
+	}
 }
 
-func Stop() {
-	serviceCheckStopCh <- true
-	stopCh <- syscall.SIGTERM
+func InitiateSoftStop() {
+	select {
+	case softStopCh<- true:
+	default:
+	}
+}
+
+func beforeStop(cb func()) {
+	logger.Info("service stop begin %s", serviceConf.ServiceType)
+	cancelRegister()
+	gateManager.notifyServiceStop()
+	cb()
+}
+
+func stop() {
+	select {
+	case serviceCheckStopCh<- true:
+	default:
+	}
+	tickmgr.Stop()
+	logger.Info("service stop finish %s", serviceConf.ServiceType)
 }

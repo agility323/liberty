@@ -33,11 +33,15 @@ func (m *GateManager) gateConnect(c *lbtnet.TcpConnection) {
 func (m *GateManager) gateDisconnect(c *lbtnet.TcpConnection) {
 	//TODO.OnConnectionClose()
 	addr := c.RemoteAddr()
+	m.removeGate(addr)
+	logger.Info("gate disconnect %s", addr)
+}
+
+func (m *GateManager) removeGate(addr string) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 	delete(m.gateMap, addr)
 	if m.primaryGateAddr == addr { m.primaryGateAddr = "" }
-	logger.Info("gate disconnect %s", addr)
 }
 
 func (m *GateManager) getPrimaryGate() *lbtnet.TcpConnection {
@@ -88,4 +92,23 @@ func (m *GateManager) getAllGates() []*lbtnet.TcpConnection {
 		gates = append(gates, c)
 	}
 	return gates
+}
+
+func (m *GateManager) notifyServiceStop() {
+	b, err := makeServiceStopData()
+	if err != nil {
+		logger.Warn("notify gate stop fail encode [%v]", err)
+		return
+	}
+	gates := gateManager.getAllGates()
+	for _, c := range gates {
+		if err = c.SendData(b); err != nil {
+			logger.Warn("notify service stop fail send %s [%v]", c.RemoteAddr(), err)
+		}
+	}
+}
+
+func (m *GateManager) onGateStop(addr string) {
+	m.removeGate(addr)
+	logger.Info("on gate stop %s", addr)
 }

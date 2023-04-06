@@ -78,9 +78,9 @@ type QuitCmd struct {
 func(c *QuitCmd) Process() {
 	if c.Mode & lbtreg.QuitModeMaskSingleAll <= 0 && c.Addr != serviceConf.GateServerAddr { return }
 	if c.Mode & lbtreg.QuitModeMaskSoftHard > 0 {
-		Stop()
+		InitiateStop()
 	} else {
-		Stop()	// TODO soft stop
+		InitiateSoftStop()
 	}
 }
 
