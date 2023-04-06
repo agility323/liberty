@@ -33,11 +33,11 @@ func (w *Worker) Start() {
 	if !atomic.CompareAndSwapInt32(&w.state, 0, 1) { return }
 	w.taskq = make(chan taskWithNoReturn, w.qlen)
 	w.stopq = make(chan struct{}, 1)
-	go w.workLoop(w.qlen)
+	go w.workLoop()
 }
 
-func (w *Worker) workLoop(qlen int) {
-	defer lbtutil.Recover("Worker.workLoop " + w.name, func() { go w.workLoop(qlen) })
+func (w *Worker) workLoop() {
+	defer lbtutil.Recover("Worker.workLoop " + w.name, func() { go w.workLoop() })
 
 	for {
 		select {

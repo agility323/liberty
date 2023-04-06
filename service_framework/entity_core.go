@@ -4,8 +4,8 @@ import (
 	//"sync/atomic"
 
 	"github.com/agility323/liberty/lbtactor"
-	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtproto"
+	"github.com/agility323/liberty/lbtutil"
 )
 
 type EntityCore struct {
@@ -66,7 +66,11 @@ func (ec *EntityCore) PushMainTask(task func()) bool {
 	return ec.mw.PushTask(task)
 }
 
+//if not init ec.hw, will push to ec.mw
 func (ec *EntityCore) PushHashedTask(task func(), hval int) bool {
+	if ec.hw == nil {
+		return ec.mw.PushTask(task)
+	}
 	return ec.hw.PushTask(task, hval)
 }
 

@@ -1,6 +1,7 @@
 package service_framework
 
 import (
+	"github.com/agility323/liberty/lbtnet"
 	"sync"
 	"time"
 
@@ -78,10 +79,13 @@ func (caller *ServiceMethodCaller) Call() error {
 		msg.Routet = caller.routet
 		msg.Routep = caller.routep
 	}
+	var gate *lbtnet.TcpConnection
 	if caller.hval > 0 {
 		msg.Hval = caller.hval
+		gate = gateManager.getPrimaryGate()
+	}else{
+		gate = gateManager.getRandomGate()
 	}
-	gate := gateManager.getRandomGate()
 	if gate == nil {
 		logger.Error("service method call fail no gate connection")
 		return ErrRpcNoRoute
