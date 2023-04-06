@@ -20,6 +20,7 @@ const (
 var (
 	logLevel = int32(Ldebug)
 	logOut io.Writer = os.Stdout
+	logLenLimit int = 1000
 )
 
 func SetLogLevel(level int) { atomic.StoreInt32(&logLevel, int32(level)) }
@@ -63,11 +64,14 @@ func logByLevel(level int, lvstr, prefix, format string, params ...interface{}) 
 	if level < int(atomic.LoadInt32(&logLevel)) { return }
 	// time str
 	now := time.Now()
-	tstr := fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d",
+	tstr := fmt.Sprintf("%04d-%02d-%02d %02d:%02d:%02d.%03d",
 		now.Year(), now.Month(), now.Day(),
-		now.Hour(), now.Minute(), now.Second())
+		now.Hour(), now.Minute(), now.Second(), now.Nanosecond()/1e6)
 	// format
 	body := fmt.Sprintf(format, params...)
+	if len(body) > logLenLimit {
+		body = body[:logLenLimit]
+	}
 	// build str
 	var sepStr = "] ["
 	pathInfo := ""
