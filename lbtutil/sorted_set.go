@@ -84,3 +84,10 @@ func (s *SortedSetStr) HashGet(hval uint64) string {
 	idx := int(hval * uint64(len(s.arr)) / s.hsize) % len(s.arr)
 	return s.arr[idx]
 }
+
+func (s *SortedSetStr) Size() int {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
+	return len(s.arr)
+}

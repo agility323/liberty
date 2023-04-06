@@ -26,4 +26,5 @@ func TestSortedSetStr(t *testing.T) {
 	fmt.Printf("SortedSetStr hash get: %v\n", s.HashGet(13107))
 	fmt.Printf("SortedSetStr hash get: %v\n", s.HashGet(52427))
 	fmt.Printf("SortedSetStr hash get: %v\n", s.HashGet(52428))
+	fmt.Printf("SortedSetStr size: %v\n", s.Size())
 }
