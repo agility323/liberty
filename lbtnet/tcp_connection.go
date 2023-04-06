@@ -259,3 +259,7 @@ func (c *TcpConnection) EnableEncryptAndCompress(key []byte) error {
 	}
 	return nil
 }
+
+func (c *TcpConnection) OnHeartbeat(t int64) {
+	c.handler.OnHeartbeat(c, t)
+}

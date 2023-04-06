@@ -36,3 +36,7 @@ func (handler *GateConnectionHandler) OnConnectionClose(c *lbtnet.TcpConnection)
 
 func (handler *GateConnectionHandler) OnConnectionFail(cli *lbtnet.TcpClient) {
 }
+
+func (handler *GateConnectionHandler) OnHeartbeat(c *lbtnet.TcpConnection, t int64) {
+	// handled at proto layer, nothing here
+}

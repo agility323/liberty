@@ -35,7 +35,8 @@ type ServiceType struct {
 	Method_service_reply,
 	Method_client_service_request,
 	Method_entity_msg,
-	Method_service_shutdown uint16
+	Method_service_shutdown,
+	Method_heartbeat uint16
 }
 
 // service - gate
@@ -50,7 +51,8 @@ type ServiceGateType struct {
 	Method_entity_msg,
 	Method_client_entity_msg,
 	Method_set_filter_data,
-	Method_filter_msg uint16
+	Method_filter_msg,
+	Method_heartbeat uint16
 }
 
 // gate - client

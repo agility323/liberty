@@ -26,6 +26,7 @@ func initServiceMethodHandler() {
 	ServiceMethodHandler[lbtproto.Service.Method_client_service_request] = Service_client_service_request
 	ServiceMethodHandler[lbtproto.Service.Method_entity_msg] = Service_entity_msg
 	ServiceMethodHandler[lbtproto.Service.Method_service_shutdown] = Service_service_shutdown
+	ServiceMethodHandler[lbtproto.Service.Method_heartbeat] = Service_heartbeat
 }
 
 func processGateProto(c *lbtnet.TcpConnection, buf []byte) error {
@@ -117,6 +118,10 @@ func Service_entity_msg(c *lbtnet.TcpConnection, buf []byte) error {
 func Service_service_shutdown(c *lbtnet.TcpConnection, buf []byte) error {
 	Stop()
 	return nil
+}
+
+func Service_heartbeat(c *lbtnet.TcpConnection, buf []byte) error {
+	return c.SendData(buf)
 }
 /********** ProtoHandler End **********/
 
