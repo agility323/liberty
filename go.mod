@@ -12,7 +12,6 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/vmihailenco/msgpack v4.0.4+incompatible
 	github.com/vmihailenco/msgpack/v5 v5.3.5
-	gitlab-gz.funplus.io/liberty/compress v0.0.0-20220718094851-9284aa212a68
 	go.etcd.io/etcd/client/v3 v3.5.2
 	go.mongodb.org/mongo-driver v1.8.4
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
