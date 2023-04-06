@@ -48,6 +48,8 @@ service IServiceGate {
 	rpc client_entity_msg(EntityMsg) returns (Void);
 	rpc set_filter_data(FilterData) returns(Void);
 	rpc filter_msg(FilterMsg) returns (Void);
+	rpc heartbeat(Heartbeat) returns (Void);
+	rpc service_stop(ServiceInfo) returns (Void);
 }
 
 // gate-service rpc
@@ -58,6 +60,7 @@ service IService {
 	rpc service_reply(ServiceReply) returns (Void);
 	rpc client_service_request(ServiceRequest) returns (Void);
 	rpc entity_msg(EntityMsg) returns (Void);
-	rpc service_shutdown(Void) returns (Void);
+	rpc heartbeat(Heartbeat) returns (Void);
+	rpc gate_stop(GateInfo) returns (Void);
 }
 

@@ -14,6 +14,10 @@ message ServiceInfo {
 	bytes entityid = 3;
 }
 
+message GateInfo {
+	string addr = 1;
+}
+
 message ServiceRequest {
 	string addr = 1;	// src addr
 	bytes reqid = 2;	// for requester callback
@@ -22,6 +26,7 @@ message ServiceRequest {
 	bytes params = 5;
 	int32 routet = 6;	// route type
 	bytes routep = 7;	// route param
+	int32 hval = 8;	// hash value for hashed method
 }
 
 message ServiceReply {
@@ -49,6 +54,7 @@ message EntityMsg {
 	bytes id = 2;	// target entity id
 	string method = 3;
 	bytes params = 4;
+	int32 hval = 5;	// hash value for hashed entity method
 }
 
 /*
@@ -59,4 +65,8 @@ message ClientEntityMsg {	// service-gate-client entity msg
 	bytes params = 4;
 }
 */
+
+message Heartbeat {
+	int64 t = 1;
+}
 
