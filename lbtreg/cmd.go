@@ -37,6 +37,10 @@ func StartWatchServiceCmd(ctx context.Context, cb WatchCallback, host int) {
 	startWatchJob(ctx, cb, etcdKey)
 }
 
+func StartWatchJobCmd(ctx context.Context, cb WatchCallback, etcdKey string) {
+	startWatchJob(ctx, cb, etcdKey)
+}
+
 func startWatchJob(ctx context.Context, cb WatchCallback, etcdKey string) {
 	stopped := false
 	defer func() {

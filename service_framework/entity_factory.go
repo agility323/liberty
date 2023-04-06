@@ -37,13 +37,37 @@ func RegisterEntityType(name string, ptyp reflect.Type, rpcList []string) {
 			continue
 		}
 		n := m.Type.NumIn()
-		pts := make([]reflect.Type, 0, n-1)
+		pts := make([]reflect.Type, 0, n - 1)
 		for i := 1; i < n; i++ {
 			pts = append(pts, m.Type.In(i))
 		}
 		entityRpcMap[name][rpc] = rpcInfo{m: m, pts: pts}
 		logger.Info("register entity rpc %s %s %s %v", name, typ.String(), rpc, pts)
 	}
+}
+
+func AppendEntityRpcMethod(name string, method string) bool {
+	typ, ok := entityTypeMap[name]
+	if !ok {
+		logger.Error("append entity rpc fail no entity %s %s", name, method)
+		return false
+	}
+	m, ok := reflect.PtrTo(typ).MethodByName(method)
+	if !ok {
+		logger.Error("append entity rpc fail no method %s %s", name, method)
+		return false
+	}
+	n := m.Type.NumIn()
+	pts := make([]reflect.Type, 0, n - 1)
+	for i := 1; i < n; i++ {
+		pts = append(pts, m.Type.In(i))
+	}
+	if _, ok = entityRpcMap[name]; !ok {
+		entityRpcMap[name] = make(map[string]rpcInfo)
+	}
+	entityRpcMap[name][method] = rpcInfo{m: m, pts: pts}
+	logger.Info("append entity rpc %s %s %s %v", name, typ.String(), method, pts)
+	return true
 }
 
 func CreateEntity(name string, id lbtutil.ObjectID) interface{} {

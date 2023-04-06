@@ -45,6 +45,10 @@ func StartRegisterService(ctx context.Context, tickTime int, host int, serviceTy
 	startRegJob(ctx, tickTime, etcdKey, data)
 }
 
+func StartRegisterJob(ctx context.Context, tickTime int, etcdKey string, data RegData) {
+	startRegJob(ctx, tickTime, etcdKey, data)
+}
+
 func startRegJob(ctx context.Context, tickTime int, etcdKey string, data RegData) {
 	stopped := false
 	ticker := time.NewTicker(time.Duration(tickTime) * time.Second)
