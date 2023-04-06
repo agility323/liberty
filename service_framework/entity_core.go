@@ -122,7 +122,7 @@ func (stub *RemoteEntityStub) Disconnect() bool {
 		SendUnbindClient(c, stub.localAddr, stub.remoteAddr)
 	}
 	unregisterClientCallback(stub.remoteAddr)
-	stub.disconnectCallback()
+	stub.core.PushActorTask(stub.disconnectCallback)
 	return true
 }
 
@@ -130,7 +130,7 @@ func (stub *RemoteEntityStub) OnClientDisconnect() {
 	if stub == nil { return }
 	if stub.disconnected == 1 { return }
 	stub.disconnected = 1
-	stub.disconnectCallback()
+	stub.core.PushActorTask(stub.disconnectCallback)
 }
 
 func (stub *RemoteEntityStub) Yield(core *EntityCore) *RemoteEntityStub {
