@@ -2,8 +2,6 @@ package service_framework
 
 import (
 	"errors"
-	"context"
-	"time"
 
 	"github.com/agility323/liberty/lbtutil"
 	"github.com/agility323/liberty/lbtnet"
@@ -67,23 +65,22 @@ func Service_service_request(c *lbtnet.TcpConnection, buf []byte) error {
 }
 
 func runServiceRequestTask(c *lbtnet.TcpConnection, req *lbtproto.ServiceRequest, fromService bool) {
-	ctx, _ := context.WithTimeout(context.Background(), time.Duration(serviceConf.ServiceRequestTimeout) * time.Second)
-	task := func() struct{} {
+	task := func() {
 		reqid := string(req.Reqid)
 		replyData, err := processServiceMethod(c, req.Addr, reqid, req.Method, req.Params)
 		if err != nil {
 			logger.Warn("service request task fail [%v] [%v]", err, req)
-			return struct{}{}
+			return
 		}
-		if replyData == nil { return struct{}{} }
+		if replyData == nil { return }
 		if fromService {
 			sendServiceReply(c, req.Addr, reqid, replyData)
 		} else {
 			sendClientServiceReply(c, req.Addr, reqid, replyData)
 		}
-		return struct{}{}
+		return
 	}
-	lbtactor.RunTaskActor(ctx, "runServiceRequestTask." + req.Method, task)
+	lbtactor.RunTaskActor("runServiceRequestTask." + req.Method, task)
 }
 
 func Service_service_reply(c *lbtnet.TcpConnection, buf []byte) error {
