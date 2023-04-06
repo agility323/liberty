@@ -26,15 +26,43 @@ func init() {
 	go lbtutil.StartTickJob("checkServiceCallback", 17, serviceCheckStopCh, checkServiceCallback)
 }
 
-func CallServiceMethod(service, method string, params map[string]interface{}, handler callbackHandler, expire int64) error {
-	return CallServiceMethodWithRoute(service, method, params, handler, expire, lbtproto.DefaultRouteType, []byte{})
+type ServiceMethodCaller struct {
+	service string
+	method string
+	params map[string]interface{}
+	handler callbackHandler
+	expire int64
+
+	routet int32
+	routep []byte
+	hval int32
 }
 
-func CallServiceMethodWithRoute(service, method string, params map[string]interface{}, handler callbackHandler, expire int64, routeType int32, routParam []byte) error {
+func NewServiceMethodCaller(service, method string, params map[string]interface{}, handler callbackHandler, expire int64) *ServiceMethodCaller {
+	if expire <= 0 { expire = 15 }
+	return &ServiceMethodCaller{
+		service: service,
+		method: method,
+		params: params,
+		handler: handler,
+		expire: expire,
+	}
+}
+
+func (caller *ServiceMethodCaller) SetRoute(routet int32, routep []byte) {
+	caller.routet = routet
+	caller.routep = routep
+}
+
+func (caller *ServiceMethodCaller) SetHval(hval int) {
+	caller.hval = int32(hval)
+}
+
+func (caller *ServiceMethodCaller) Call() error {
 	// marshal
-	b, err := msgpack.Marshal(&params)
+	b, err := msgpack.Marshal(&caller.params)
 	if err != nil {
-		logger.Error("CallServiceMethod fail 1 %v", err)
+		logger.Error("service method call fail msgpack marshal %v", err)
 		return ErrRpcInvalidParams
 	}
 	// proto msg
@@ -42,26 +70,34 @@ func CallServiceMethodWithRoute(service, method string, params map[string]interf
 	msg := &lbtproto.ServiceRequest{
 		Addr: serviceAddr,
 		Reqid: reqid[:],
-		Type: service,
-		Method: method,
+		Type: caller.service,
+		Method: caller.method,
 		Params: b,
-		Routet: routeType,
-		Routep: routParam,
 	}
-	c := gateManager.getRandomGate()
-	if c == nil {
-		logger.Error("CallServiceMethod fail 2 no gate connection")
+	if caller.routet > 0 {
+		msg.Routet = caller.routet
+		msg.Routep = caller.routep
+	}
+	if caller.hval > 0 {
+		msg.Hval = caller.hval
+	}
+	gate := gateManager.getRandomGate()
+	if gate == nil {
+		logger.Error("service method call fail no gate connection")
 		return ErrRpcNoRoute
 	}
-	if expire <= 0 { expire = 15 }
 	// calback
-	serviceCallbackMap.Store(reqid, serviceCallback{handler: handler, expire: time.Now().Unix() + expire})
-	if err := lbtproto.SendMessage(c, lbtproto.ServiceGate.Method_service_request, msg); err != nil {
-		logger.Error("CallServiceMethod fail 3 %s", err.Error())
+	serviceCallbackMap.Store(reqid, serviceCallback{handler: caller.handler, expire: time.Now().Unix() + caller.expire})
+	if err := lbtproto.SendMessage(gate, lbtproto.ServiceGate.Method_service_request, msg); err != nil {
+		logger.Error("service method fail send %v", err)
 		serviceCallbackMap.Delete(reqid)
 		return err
 	}
 	return nil
+}
+
+func CallServiceMethod(service, method string, params map[string]interface{}, handler callbackHandler, expire int64) error {
+	return NewServiceMethodCaller(service, method, params, handler, expire).Call()
 }
 
 func processServiceReply(reqid lbtutil.ObjectID, replyByte []byte) {

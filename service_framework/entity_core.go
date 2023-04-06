@@ -44,8 +44,8 @@ func (ec *EntityCore) InitMainWorker(qlen int) {
 	ec.mw = lbtactor.NewWorker("entity." + ec.id.Hex(), qlen)
 }
 
-func (ec *EntityCore) initHashedWorker(size, qlen int) {
-	ec.hw = lbtactor.NewHashedWorker(size, "entity." + ec.id.Hex(), qlen)
+func (ec *EntityCore) initHashedWorker(qlen, size int) {
+	ec.hw = lbtactor.NewHashedWorker("entity." + ec.id.Hex(), qlen, size)
 }
 
 func (ec *EntityCore) StartWorker() {

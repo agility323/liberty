@@ -81,7 +81,17 @@ func runServiceRequestTask(c *lbtnet.TcpConnection, req *lbtproto.ServiceRequest
 		}
 		return
 	}
-	lbtactor.RunTask("runServiceRequestTask." + req.Method, task)
+	hval := int(req.Hval - 1)
+	if hval < 0 {
+		lbtactor.RunTask("runServiceRequestTask." + req.Method, task)
+		return
+	}
+	if HashedMethodWorker == nil {
+		logger.Warn("HashedMethodWorker is nil")
+		lbtactor.RunTask("runServiceRequestTask." + req.Method, task)
+		return
+	}
+	HashedMethodWorker.PushTask(task, hval)
 }
 
 func Service_service_reply(c *lbtnet.TcpConnection, buf []byte) error {

@@ -12,7 +12,7 @@ type HashedWorker struct {
 
 var MaxHashedWorkerCap int = 10000
 
-func NewHashedWorker(size int, name string, qlen int) *HashedWorker {
+func NewHashedWorker(name string, qlen int, size int) *HashedWorker {
 	if qlen * size > MaxHashedWorkerCap {
 		panic(fmt.Sprintf("HashedWorker size too big %d * %d", size, qlen))
 	}

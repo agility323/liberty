@@ -4,6 +4,7 @@ import (
 	"github.com/vmihailenco/msgpack"
 
 	"github.com/agility323/liberty/lbtnet"
+	"github.com/agility323/liberty/lbtactor"
 )
 
 type MethodHandler interface {
@@ -64,4 +65,18 @@ func processServiceMethod(c *lbtnet.TcpConnection, srcAddr, reqid, method string
 		return nil, err
 	}
 	return replyData, nil
+}
+
+var HashedMethodWorker *lbtactor.HashedWorker
+
+func InitHashedMethodWorker(qlen, size int) {
+	logger.Info("HashedMethodWorker init %d %d", qlen, size)
+	HashedMethodWorker = lbtactor.NewHashedWorker("HashedMethodWorker", qlen, size)
+	HashedMethodWorker.Start()
+}
+
+func StopHashedMethodWorker() {
+	if HashedMethodWorker != nil {
+		HashedMethodWorker.Stop()
+	}
 }

@@ -114,8 +114,8 @@ func CallEntityMethodLocal(id lbtutil.ObjectID, method string, paramBytes []byte
 		// call
 		_ = rpc.m.Func.Call(params)
 	}
-	if hval >= 0 {
-		pec.PushHashedTask(task, hval)
+	if hval > 0 {
+		pec.PushHashedTask(task, hval - 1)
 	} else {
 		pec.PushMainTask(task)
 	}
