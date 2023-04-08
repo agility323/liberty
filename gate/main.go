@@ -2,19 +2,19 @@ package main
 
 import (
 	"context"
-	"runtime"
-	"runtime/debug"
-	"os"
-	"os/signal"
-	"syscall"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
+	"os/signal"
+	"runtime"
+	"runtime/debug"
+	"syscall"
 
 	"github.com/agility323/liberty/lbtnet"
-	"github.com/agility323/liberty/lbtutil"
-	"github.com/agility323/liberty/lbtreg"
 	"github.com/agility323/liberty/lbtproto"
+	"github.com/agility323/liberty/lbtreg"
+	"github.com/agility323/liberty/lbtutil"
 
 	"github.com/agility323/liberty/gate/legacy"
 )

@@ -16,7 +16,7 @@ TAG="latest" # `date +"%Y%m%d_%H%M%S"`
 DOCKER_REPO="$NAMESPACE/$APP"
 IMAGE=${DOCKER_REGISTRY}/$DOCKER_REPO:$TAG
 
-docker login -u "xxx" -p "123" $DOCKER_REGISTRY
+docker login -u "admin" -p "Harbor12345" $DOCKER_REGISTRY
 
 echo "$ docker rmi $IMAGE"
 docker rmi $IMAGE
