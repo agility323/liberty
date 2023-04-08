@@ -145,7 +145,7 @@ func (m *ServiceManager) sendToService(addr string, buf []byte) {
 		return
 	}
 	if err := entry.cli.SendData(buf); err != nil {
-		logger.Warn("send to service fail 3 %s %v", addr, err)
+		logger.Error("send to service fail 3 %s [%v]", addr, err)
 	} else {
 		logger.Debug("send to service done %s", addr)
 	}
@@ -168,7 +168,7 @@ func (m *ServiceManager) serviceRequest(buf []byte) bool {
 		if err := entry.cli.SendData(buf); err == nil {
 			logger.Debug("service request sent to %s", entry.addr)
 		} else {
-			logger.Warn("service request fail 3 at %s %v", entry.addr, err)
+			logger.Error("service request fail 3 at %s [%v]", entry.addr, err)
 		}
 	}
 	return true

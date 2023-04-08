@@ -9,7 +9,7 @@ import (
 
 var (
 	WriteChLen int = 200
-	WriteChWaitTime time.Duration = 10
+	WriteChWaitTime time.Duration = 0
 )
 
 type ClientConnectionHandler struct {

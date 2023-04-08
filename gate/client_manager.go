@@ -70,7 +70,9 @@ func (m *ClientManager) clientDisconnect(c *lbtnet.TcpConnection) {
 		info := lbtproto.BindClientInfo{Caddr: addr, Saddr: saddr}
 		serviceEntry := serviceManager.getServiceEntry(saddr)	// service manager lock
 		if serviceEntry != nil && serviceEntry.state == ServiceStateConnected {
-			lbtproto.SendMessage(serviceEntry.cli, lbtproto.Service.Method_client_disconnect, &info)
+			if err := lbtproto.SendMessage(serviceEntry.cli, lbtproto.Service.Method_client_disconnect, &info); err != nil {
+				logger.Error("send client disconnect fail %v [%v]", info, err)
+			}
 		}
 	}
 	logger.Info("client disconnect %s %s", addr, saddr)
@@ -207,7 +209,11 @@ func (m *ClientManager) broadcastMsgBySlot(slot int, data []byte) {
 	m.locks[slot].RLock()
 	defer m.locks[slot].RUnlock()
 	for _, entry := range m.clientSlots[slot] {
-		entry.c.SendData(data)
+		if err := entry.c.SendData(data); err != nil {
+			addr := "nil"
+			if entry.c != nil { addr = entry.c.RemoteAddr() }
+			logger.Warn("broadcast msg fail at %d %s [%v]", slot, addr, err)
+		}
 	}
 }
 

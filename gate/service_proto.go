@@ -56,7 +56,7 @@ func ServiceGate_register_service(c *lbtnet.TcpConnection, buf []byte) error {
 	logger.Info("register service %s %s", msg.Type, msg.Addr)
 	// reply
 	if err := lbtproto.SendMessage(entry.cli, lbtproto.Service.Method_register_reply, msg); err != nil {
-		logger.Warn("service register reply send fail - %v %v", err, msg)
+		logger.Error("service register reply send fail %v [%v] %v", msg, err)
 	}
 	return nil
 }
@@ -180,8 +180,11 @@ func ServiceGate_filter_msg(c *lbtnet.TcpConnection, buf []byte) error {
 	}
 	arr := clientManager.filterClients(msg.Filters)
 	for _, clients := range arr {
-		for _, c := range clients {
-			c.SendData(data)
+		for _, cc := range clients {
+			if cc == nil { continue }
+			if err := cc.SendData(data); err != nil {
+				logger.Warn("send filter msg fail at %s [%v]", cc.RemoteAddr(), err)
+			}
 		}
 	}
 	return nil

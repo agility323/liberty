@@ -174,14 +174,18 @@ func LP_ClientGate_channelMessage(c *lbtnet.TcpConnection, buf []byte) error {
 func LP_SendResponseEncryptToken(c *lbtnet.TcpConnection, token int64) {
 	msg := &lbtproto.EncryptToken{Token: token}
 	if err := lbtproto.SendMessage(c, lbtproto.Client.Method_responseEncryptToken, msg); err != nil {
-		logger.Warn("LP_SendResponseEncryptToken fail %s %d %v", c.RemoteAddr(), token, err)
+		addr := "nil"
+		if c != nil { addr = c.RemoteAddr() }
+		logger.Warn("LP_SendResponseEncryptToken fail %s %d [%v]", addr, token, err)
 	}
 }
 
 func LP_SendConfirmEncryptKeyAck(c *lbtnet.TcpConnection) {
 	msg := &lbtproto.Void{}
 	if err := lbtproto.SendMessage(c, lbtproto.Client.Method_confirmEncryptKeyAck, msg); err != nil {
-		logger.Warn("LP_SendConfirmEncryptKeyAck fail %s %v", c.RemoteAddr(), err)
+		addr := "nil"
+		if c != nil { addr = c.RemoteAddr() }
+		logger.Warn("LP_SendConfirmEncryptKeyAck fail %s [%v]", addr, err)
 	}
 }
 
@@ -190,13 +194,11 @@ func LP_SendConnectServerResp(c *lbtnet.TcpConnection, typ lbtproto.ConnectServe
 		Type: typ,
 		SessionId: sessionId,
 	}
-	err := lbtproto.SendMessage(
-		c,
-		lbtproto.Client.Method_connectResponse,
-		msg,
-	)
+	err := lbtproto.SendMessage(c, lbtproto.Client.Method_connectResponse, msg)
 	if err != nil {
-		logger.Error("LP_SendConnectServerResp failed: SendMessage - %s", err.Error())
+		addr := "nil"
+		if c != nil { addr = c.RemoteAddr() }
+		logger.Warn("LP_SendConnectServerResp fail %s [%v]", addr, err)
 	}
 }
 
@@ -208,7 +210,9 @@ func LP_SendCreateChannelEntity(c *lbtnet.TcpConnection, id, typ, info []byte) {
 		SessionId: []byte{},
 	}
 	if err := lbtproto.SendMessage(c, lbtproto.Client.Method_createChannelEntity, msg); err != nil {
-		logger.Error("LP_SendCreateChannelEntity fail 1 %s %v", c.RemoteAddr(), err)
+		addr := "nil"
+		if c != nil { addr = c.RemoteAddr() }
+		logger.Warn("LP_SendCreateChannelEntity fail %s [%v]", addr, err)
 	}
 }
 
@@ -234,13 +238,11 @@ func LP_SendEntityMessage(c *lbtnet.TcpConnection, entityid []byte, method []byt
 		SessionId: []byte {},
 		Context: []byte {},
 	}
-	err := lbtproto.SendMessage(
-		c,
-		lbtproto.Client.Method_entityMessage,
-		msg,
-	)
+	err := lbtproto.SendMessage(c, lbtproto.Client.Method_entityMessage, msg)
 	if err != nil {
-		logger.Error("LP_SendEntityMessage failed: SendMessage - %s", err.Error())
+		addr := "nil"
+		if c != nil { addr = c.RemoteAddr() }
+		logger.Warn("LP_SendEntityMessage fail %s [%v]", addr, err)
 	}
 }
 /********** ProtoSender End **********/
