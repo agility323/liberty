@@ -46,7 +46,11 @@ func (m *ServiceManager) onStart() {
 func (m *ServiceManager) OnTick() {
 	m.lock.RLock()
 	defer m.lock.RUnlock()
-	logger.Info("service manager tick %v %v", m.serviceMap, m.serviceTypeToAddrSet)
+
+	logger.Info("service manager tick: service map %d", len(m.serviceMap))
+	for typ, addrSet := range m.serviceTypeToAddrSet {
+		logger.Info("service manager tick: service type %s %d", typ, addrSet.Size())
+	}
 }
 
 func (m *ServiceManager) OnDiscoverService(services map[string][]byte) {

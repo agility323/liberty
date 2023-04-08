@@ -2,6 +2,7 @@ package main
 
 import (
 	"net"
+	"sync/atomic"
 	"time"
 
 	"github.com/agility323/liberty/lbtnet"
@@ -12,7 +13,10 @@ var (
 	WriteChWaitTime time.Duration = 0
 )
 
+var ClientConnectionHeartbeatTorlerance int64 = 63000 // time in milliseconds
+
 type ClientConnectionHandler struct {
+	hbtime int64
 }
 
 func ClientConnectionCreator(conn net.Conn) {
@@ -43,10 +47,9 @@ func (handler *ClientConnectionHandler) OnConnectionFail(cli *lbtnet.TcpClient) 
 }
 
 func (handler *ClientConnectionHandler) OnHeartbeat(c *lbtnet.TcpConnection, t int64) {
-	// do nothing
+	atomic.StoreInt64(&handler.hbtime, time.Now().UnixMilli())
 }
 
 func (handler *ClientConnectionHandler) CheckHeartbeat() bool {
-	// do nothing
-	return true
+	return time.Now().UnixMilli() - atomic.LoadInt64(&handler.hbtime) < ClientConnectionHeartbeatTorlerance
 }

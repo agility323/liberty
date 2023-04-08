@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"reflect"
 	"strconv"
 
 	"github.com/golang/protobuf/proto"
@@ -187,7 +188,74 @@ func LP_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 }
 
 func LP_ClientGate_channelMessage(c *lbtnet.TcpConnection, buf []byte) error {
-	logger.Debug("proto recv ClientGate_channelMessage %v", buf)
+	//logger.Debug("proto recv ClientGate_channelMessage %v", buf)
+	msg := &lbtproto.ChannelMessage{}
+	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
+		return err
+	}
+	chanMsg := make(map[string]interface{})
+	addr := c.RemoteAddr()
+	if err := msgpack.Unmarshal(msg.ChanMsg, &chanMsg); err != nil {
+		logger.Warn("channel message msgpack decode fail %s", addr)
+		return err
+	}
+	itf, ok := chanMsg["msgType"]
+	if !ok {
+		logger.Warn("channel message missng type %s %v", addr, chanMsg)
+		return nil
+	}
+	var mt int = 0
+	v := reflect.ValueOf(itf)
+	if !v.CanConvert(reflect.TypeOf(mt)) {
+		logger.Warn("channel message invalid msg type %s %v %v", addr, itf, chanMsg)
+		return nil
+	}
+	mt = v.Convert(reflect.TypeOf(mt)).Interface().(int)
+	if !ok {
+		logger.Warn("channel message invalid type %s %v", addr, chanMsg)
+		return nil
+	}
+	itf, ok = chanMsg["channelId"]
+	var cid string
+	if !ok {
+		cid = "NULL"
+	} else {
+		oid := lbtutil.NewObjectID()
+		s, ok := itf.(string)
+		if !ok {
+			cid = "INVALID"
+		}
+		copy(oid[:], s)
+		cid = oid.String()
+	}
+	if mt == 3 {	// heartbeat
+/*
+    hbMsg.channelId = channelId
+    hbMsg.msgType = ChannelConst.MSGTYPE_HEARTBEAT
+*/
+		c.OnHeartbeat(0)
+		lbtproto.SendMessage(c, lbtproto.Client.Method_channelMessage, msg)
+
+	} else if mt == 1 {	// connect
+/*
+    connMsg.channelId = channelId
+    connMsg.channelName = channelName
+    connMsg.peer = peer
+    connMsg.msgType = ChannelConst.MSGTYPE_CONNECT
+*/
+		chanMsg["channelId"] = cid
+		logger.Info("gate channel message connect %v", chanMsg)
+	} else if mt == 2 {	// close
+/*
+    closeMsg.channelId = channelId
+    closeMsg.msgType = ChannelConst.MSGTYPE_CLOSE
+*/
+		chanMsg["channelId"] = cid
+		logger.Info("gate channel message close %v", chanMsg)
+	} else {
+		chanMsg["channelId"] = cid
+		logger.Debug("gate channel message unknown %v", chanMsg)
+	}
 	return nil
 }
 /********** ProtoHandler End **********/
