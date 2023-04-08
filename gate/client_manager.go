@@ -221,7 +221,7 @@ func (m *ClientManager) SoftStop() {
 	// TODO avoid duplicates
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	lbtactor.RunTaskActor("ClientManager.SoftStop", func() {
+	lbtactor.RunTask("ClientManager.SoftStop", func() {
 		ticker := time.NewTicker(50 * time.Second)
 		stop := false
 		defer func() {

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtproto"
@@ -134,8 +135,8 @@ func LP_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 		if saddr == "" { return errors.New("no saddr for " + caddr) }
 		dep.ServiceSender(saddr, newbuf)
 	} else if msgType == "service" {
-		if len(context) != 5 {
-			return fmt.Errorf("ClientGate_entityMessage fail: invalid msg.Context %d!=5", len(context))
+		if len(context) < 5 {
+			return fmt.Errorf("ClientGate_entityMessage fail: invalid msg.Context %d<5", len(context))
 		}
 		typ := context[1]
 		id := context[2]
@@ -147,6 +148,14 @@ func LP_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 			Type: typ,
 			Method: string(msg.MethodName),
 			Params: msg.Parameters,
+		}
+		if len(context) > 5 {
+			hval, err := strconv.Atoi(context[5])
+			if err != nil {
+				logger.Warn("legacy.proto.LP_ClientGate_entityMessage invalid context hval %s %v", context[5], err)
+				hval = 0
+			}
+			newmsg.Hval = int32(hval)
 		}
 		if routeType != 0 || len(routeParam) > 0 {
 			newmsg.Routet = routeType
