@@ -12,6 +12,7 @@ type confType struct {
 	ConnectServerHandler struct {
 		Service string `json:"service"`
 		Method string `json:"method"`
+		Entity string `json:"entity"`
 	} `json:"connect_server_handler"`
 	Etcd []string `json:"etcd"`
 	PrivateRsaKey string `json:"private_rsa_key"`
@@ -30,6 +31,7 @@ var defaultConf map[string]interface{} = map[string]interface{} {
 	"connect_server_handler": map[string]string {
 		"service": "login_service",
 		"method": "connect_server",
+		"entity": "BoostEntity",
 	},
 	"etcd": []string {
 		"http://127.0.0.1:2379",

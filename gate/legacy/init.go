@@ -11,6 +11,7 @@ import (
 type LegacyDependency struct {
 	ConnectServerService string
 	ConnectServerMethod string
+	ConnectServerEntity string
 	LegacyRouteTypeMap map[string]int32
 	ServiceAddrGetter func(string) string
 	ServiceSender func(string, []byte)

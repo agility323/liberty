@@ -48,6 +48,7 @@ func main() {
 	dep := legacy.LegacyDependency{
 		ConnectServerService: Conf.ConnectServerHandler.Service,
 		ConnectServerMethod: Conf.ConnectServerHandler.Method,
+		ConnectServerEntity: Conf.ConnectServerHandler.Entity,
 		LegacyRouteTypeMap: map[string]int32 {
 			"random": lbtproto.RouteTypeRandomOne,
 			"hash": lbtproto.RouteTypeHash,

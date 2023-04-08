@@ -72,6 +72,8 @@ func LP_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
 	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
 		return err
 	}
+
+	/*
 	pdata, err := msgpack.Marshal(&map[string]interface{}{})
 	reqid := lbtutil.NewObjectID()
 	newmsg := &lbtproto.ServiceRequest{
@@ -93,6 +95,12 @@ func LP_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
 	} else {
 		LP_SendConnectServerResp(c, lbtproto.ConnectServerResp_Busy, []byte{})
 	}
+	*/
+	id := lbtutil.NewObjectID()
+	typ := dep.ConnectServerEntity
+	data := lbtutil.MsgpackEmptyMapBytes
+	LP_SendCreateChannelEntity(c, id[:], []byte(typ), data)
+
 	return nil
 }
 
@@ -118,7 +126,7 @@ func LP_ClientGate_entityMessage(c *lbtnet.TcpConnection, buf []byte) error {
 		addr := context[1]
 		id := context[2]
 		newmsg := &lbtproto.EntityMsg{
-			Addr: addr,
+			Addr: addr,	// this field is not used by service
 			Id: []byte(id),	// msg.EntityId from client is empty string (client use SessionId)
 			Method: string(msg.MethodName),
 			Params: msg.Parameters,
