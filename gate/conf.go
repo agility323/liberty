@@ -10,8 +10,6 @@ type confType struct {
 	EntranceAddr string `json:"entrance_addr"`
 	Host int `json:"host"`
 	ConnectServerHandler struct {
-		Service string `json:"service"`
-		Method string `json:"method"`
 		Entity string `json:"entity"`
 	} `json:"connect_server_handler"`
 	Etcd []string `json:"etcd"`

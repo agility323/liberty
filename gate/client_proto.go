@@ -2,11 +2,8 @@ package main
 
 import (
 	"errors"
-
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtproto"
-
-	"github.com/vmihailenco/msgpack"
 
 	"github.com/agility323/liberty/gate/legacy"
 )
@@ -65,9 +62,7 @@ func sendEntityMsg(c *lbtnet.TcpConnection, entityid []byte, method string, para
 	legacy.LP_SendEntityMessage(c, entityid, []byte(method), params)
 }
 
-func makeBroadcastMsgData(method string, param interface{}) ([]byte, error) {
-	parameters, err := msgpack.Marshal(param)
-	if err != nil { return nil, err }
-	return legacy.LP_MakeEntityMessageData([]byte {}, []byte(method), parameters)
+func makeBroadcastMsgData(method string, paramBytes []byte) ([]byte, error) {
+	return legacy.LP_MakeEntityMessageData([]byte {}, []byte(method), paramBytes)
 }
 /********** ProtoSender End **********/

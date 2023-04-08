@@ -1,11 +1,12 @@
 package main
 
 import (
+	"github.com/vmihailenco/msgpack"
 	"plugin"
 
-	"github.com/agility323/liberty/lbtreg"
 	"github.com/agility323/liberty/hotfix"
 	hitf "github.com/agility323/liberty/hotfix/itf"
+	"github.com/agility323/liberty/lbtreg"
 )
 
 func init() {
@@ -60,7 +61,12 @@ type BroadcastCmd struct {
 }
 
 func (c *BroadcastCmd) Process() {
-	data, err := makeBroadcastMsgData(c.Method, c.Param)
+	paramBytes, err := msgpack.Marshal(c.Param)
+	if err != nil {
+		logger.Error("broadcast msgpack marshal err 1 %v", c.Param)
+		return
+	}
+	data, err := makeBroadcastMsgData(c.Method, paramBytes)
 	if err != nil {
 		logger.Error("broadcast fail 1 %v", err)
 		return

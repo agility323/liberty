@@ -6,12 +6,11 @@ import (
 	"math/rand"
 	"strconv"
 
+	"github.com/golang/protobuf/proto"
+	"github.com/vmihailenco/msgpack"
 	"github.com/agility323/liberty/lbtnet"
 	"github.com/agility323/liberty/lbtproto"
 	"github.com/agility323/liberty/lbtutil"
-
-	"github.com/vmihailenco/msgpack"
-	"github.com/golang/protobuf/proto"
 )
 
 /********** init **********/
@@ -96,6 +95,7 @@ func LP_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
 		LP_SendConnectServerResp(c, lbtproto.ConnectServerResp_Busy, []byte{})
 	}
 	*/
+	LP_SendConnectServerResp(c, lbtproto.ConnectServerResp_Connected, []byte{})
 	id := lbtutil.NewObjectID()
 	typ := dep.ConnectServerEntity
 	data := lbtutil.MsgpackEmptyMapBytes

@@ -24,7 +24,8 @@ fi
 if [ "$CONNECT_SERVER_HANDLER" = "" ]; then
 	CONNECT_SERVER_HANDLER="{
 		\"service\": \"login_service\",
-		\"method\": \"connect_server\"
+		\"method\": \"connect_server\",
+		\"entity\": \"BoostEntity\"
 	}"
 	echo "env CONNECT_SERVER_HANDLER is null, set to $CONNECT_SERVER_HANDLER"
 fi
