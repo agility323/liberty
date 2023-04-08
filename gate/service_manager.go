@@ -1,7 +1,6 @@
 package main
 
 import (
-	"sort"
 	"sync"
 
 	"github.com/agility323/liberty/lbtnet"
@@ -28,7 +27,7 @@ type serviceEntry struct {
 type ServiceManager struct {
 	lock sync.RWMutex
 	serviceMap map[string]*serviceEntry
-	serviceTypeToAddrSet map[string]*lbtutil.OrderedSet
+	serviceTypeToAddrSet map[string]*lbtutil.SortedSetStr
 }
 
 var serviceManager *ServiceManager
@@ -36,7 +35,7 @@ var serviceManager *ServiceManager
 func init() {
 	serviceManager = &ServiceManager{
 		serviceMap: make(map[string]*serviceEntry),
-		serviceTypeToAddrSet: make(map[string]*lbtutil.OrderedSet),
+		serviceTypeToAddrSet: make(map[string]*lbtutil.SortedSetStr),
 	}
 }
 
@@ -95,7 +94,7 @@ func (m *ServiceManager) serviceConnect(c *lbtnet.TcpConnection) {
 	if entry, ok := m.serviceMap[addr]; ok {
 		entry.state = ServiceStateConnected
 		if _, ok = m.serviceTypeToAddrSet[entry.typ]; !ok {
-			m.serviceTypeToAddrSet[entry.typ] = lbtutil.NewOrderedSet()
+			m.serviceTypeToAddrSet[entry.typ] = lbtutil.NewSortedSetStr(65536)
 		}
 		m.serviceTypeToAddrSet[entry.typ].Add(addr)
 	} else {
@@ -192,36 +191,28 @@ func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byt
 		return nil
 	}
 	if rt & lbtproto.RouteTypeRandomOne > 0 {
-		v := addrSet.RandomGetOne()
-		if v == nil {
+		addr := addrSet.RandomGet()
+		if addr == "" {
 			return nil
 		}
-		addr := v.(string)
 		if entry, ok := m.serviceMap[addr]; ok && entry.state == ServiceStateConnected {
 			return []*serviceEntry{entry}
 		}
 		return nil
 	} else if rt & lbtproto.RouteTypeHash > 0 {
-		h := int(crc16.Checksum(rp, crc16.IBMTable))
-		vs := addrSet.GetAll()	// TODO service sort with id number
-		if len(vs) == 0 {
+		h := uint64(crc16.Checksum(rp, crc16.IBMTable))
+		addr := addrSet.HashGet(h)
+		if addr == "" {
 			return nil
 		}
-		addrSlice := make([]string, len(vs))
-		for index, v := range vs {
-			addrSlice[index] = v.(string)
-		}
-		sort.Strings(addrSlice)
-		addr := addrSlice[h % len(addrSlice)]
 		if entry, ok := m.serviceMap[addr]; ok && entry.state == ServiceStateConnected {// maybe should try next entry
 			return []*serviceEntry{entry}
 		}
 		return nil
 	} else if rt == lbtproto.RouteTypeAll {
-		vs := addrSet.GetAll()
+		addrs := addrSet.GetAll()
 		entries := make([]*serviceEntry, 0)
-		for _, v := range vs {
-			addr := v.(string)
+		for _, addr := range addrs {
 			if entry, ok := m.serviceMap[addr]; ok && entry.state == ServiceStateConnected {
 				entries = append(entries, entry)
 			}

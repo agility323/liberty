@@ -221,7 +221,7 @@ func (m *ClientManager) SoftStop() {
 	// TODO avoid duplicates
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	lbtactor.RunTaskActor(ctx, "ClientManager.SoftStop", func() struct{} {
+	lbtactor.RunTaskActor("ClientManager.SoftStop", func() {
 		ticker := time.NewTicker(50 * time.Second)
 		stop := false
 		defer func() {
@@ -232,7 +232,7 @@ func (m *ClientManager) SoftStop() {
 		for {
 			select {
 			case <-ctx.Done():
-				return struct{}{}
+				return
 			case <-ticker.C:
 				n := 0
 				for slot := 0; slot < ClientSlotNum; slot++ {
@@ -240,12 +240,12 @@ func (m *ClientManager) SoftStop() {
 				}
 				if n == 0 {
 					stop = true
-					return struct{}{}
+					return
 				}
 				logger.Info("soft stop tick client manager %d", n)
 			}
 		}
-		return struct{}{}
+		return
 	})
 }
 

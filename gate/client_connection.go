@@ -41,3 +41,12 @@ func (handler *ClientConnectionHandler) OnConnectionClose(c *lbtnet.TcpConnectio
 
 func (handler *ClientConnectionHandler) OnConnectionFail(cli *lbtnet.TcpClient) {
 }
+
+func (handler *ClientConnectionHandler) OnHeartbeat(c *lbtnet.TcpConnection, t int64) {
+	// do nothing
+}
+
+func (handler *ClientConnectionHandler) CheckHeartbeat() bool {
+	// do nothing
+	return true
+}

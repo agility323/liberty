@@ -25,6 +25,7 @@ func initServiceGateMethodHandler() {
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_client_entity_msg] = ServiceGate_client_entity_msg
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_set_filter_data] = ServiceGate_set_filter_data
 	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_filter_msg] = ServiceGate_filter_msg
+	ServiceGateMethodHandler[lbtproto.ServiceGate.Method_heartbeat] = ServiceGate_heartbeat
 }
 
 func processServiceProto(c *lbtnet.TcpConnection, buf []byte) error {
@@ -188,4 +189,25 @@ func ServiceGate_filter_msg(c *lbtnet.TcpConnection, buf []byte) error {
 		}
 	}
 	return nil
+}
+
+func ServiceGate_heartbeat(c *lbtnet.TcpConnection, buf []byte) error {
+	msg := &lbtproto.Heartbeat{}
+	if err := lbtproto.DecodeMessage(buf, msg); err != nil {
+		logger.Warn("ServiceGate_heartbeat fail decode %v", err)
+		return nil
+	}
+	c.OnHeartbeat(msg.T)
+	return nil
+}
+
+func SendHeartbeat(c *lbtnet.TcpConnection, t int64) bool {
+	msg := &lbtproto.Heartbeat{T: t}
+	if err := lbtproto.SendMessage(c, lbtproto.Service.Method_heartbeat, msg); err != nil {
+		addr := "nil"
+		if c != nil { addr = c.RemoteAddr() }
+		logger.Warn("send heartbeat fail %s [%v]", addr, err)
+		return false
+	}
+	return true
 }
