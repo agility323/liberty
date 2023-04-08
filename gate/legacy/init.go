@@ -17,6 +17,7 @@ type LegacyDependency struct {
 	ServiceSender func(string, []byte)
 	ServiceRequestHandler func([]byte) bool
 	PrivateRsaKey string
+	AtService func() bool
 }
 
 var dep LegacyDependency

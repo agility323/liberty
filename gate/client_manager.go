@@ -217,21 +217,22 @@ func (m *ClientManager) broadcastMsgBySlot(slot int, data []byte) {
 	}
 }
 
-func (m *ClientManager) SoftStop() {
-	// TODO avoid duplicates
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+func (m *ClientManager) SoftStop(ttl, tt time.Duration) <-chan bool {
+	logger.Info("client manager soft stop begin")
+	done := make(chan bool, 1)
 	lbtactor.RunTask("ClientManager.SoftStop", func() {
-		ticker := time.NewTicker(50 * time.Second)
-		stop := false
 		defer func() {
-			ticker.Stop()
-			if stop { Stop() }
+			done <- true
 		}()
+		ctx, cancel := context.WithTimeout(context.Background(), ttl * time.Second)
+		defer cancel()
+		ticker := time.NewTicker(tt * time.Second)
+		defer ticker.Stop()
 
 		for {
 			select {
 			case <-ctx.Done():
+				logger.Info("client manager soft stop timeout")
 				return
 			case <-ticker.C:
 				n := 0
@@ -239,14 +240,14 @@ func (m *ClientManager) SoftStop() {
 					n += m.getClientsNumBySlot(slot)
 				}
 				if n == 0 {
-					stop = true
+					logger.Info("client manager soft stop finish")
 					return
 				}
-				logger.Info("soft stop tick client manager %d", n)
+				logger.Info("client manager soft stop tick %d", n)
 			}
 		}
-		return
 	})
+	return done
 }
 
 func (m *ClientManager) getClientsNumBySlot(slot int) int {

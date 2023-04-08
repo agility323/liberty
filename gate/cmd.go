@@ -53,7 +53,7 @@ type QuitCmd struct {
 
 func(c *QuitCmd) Process() {
 	if c.Addr != Conf.ClientServerAddr { return }
-	SoftStop()
+	InitiateSoftStop()
 }
 
 type BroadcastCmd struct {
@@ -79,5 +79,5 @@ type BanServiceCmd struct {
 }
 
 func (c *BanServiceCmd) Process() {
-	serviceManager.banService(c.Addr)
+	serviceManager.banService(c.Type, c.Addr)
 }

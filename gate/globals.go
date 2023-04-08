@@ -11,6 +11,8 @@ import (
 
 var logger = lbtutil.NewLogger(strconv.Itoa(os.Getpid()), "gate")
 
+var gateAddr string
+
 var tickmgr *lbtutil.TickManager
 
 func init() {

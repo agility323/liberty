@@ -225,12 +225,45 @@ func (m *ServiceManager) getServiceEntriesByRoute(typ string, rt int32, rp []byt
 	return nil
 }
 
-func (m *ServiceManager) banService(addr string) {
+func (m *ServiceManager) banService(typ, addr string) {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
 	if entry, ok := m.serviceMap[addr]; ok {
 		entry.state = ServiceStateBanned
+		m.serviceTypeToAddrSet[typ].Remove(addr)
 	}
-	logger.Info("ban service %s", addr)
+	logger.Info("ban service %s %s", typ, addr)
+}
+
+func (m *ServiceManager) getAllServiceClients() []*lbtnet.TcpClient {
+	m.lock.Lock()
+	defer m.lock.Unlock()
+
+	n := len(m.serviceMap)
+	clients := make([]*lbtnet.TcpClient, n, n)
+	i := 0
+	for _, entry := range m.serviceMap {
+		clients[i] = entry.cli
+		i++
+	}
+	return clients
+}
+
+func (m *ServiceManager) notifyGateStop() {
+	b, err := makeGateStopData()
+	if err != nil {
+		logger.Warn("notify gate stop fail encode [%v]", err)
+		return
+	}
+	clients := m.getAllServiceClients()
+	for _, cli := range clients {
+		if err = cli.SendData(b); err != nil {
+			logger.Warn("notify gate stop fail send %s [%v]", cli.RemoteAddr(), err)
+		}
+	}
+}
+
+func (m *ServiceManager) onServiceStop(typ, addr string) {
+	m.banService(typ, addr)
 }

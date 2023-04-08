@@ -95,6 +95,11 @@ func LP_ClientGate_connectServer(c *lbtnet.TcpConnection, buf []byte) error {
 		LP_SendConnectServerResp(c, lbtproto.ConnectServerResp_Busy, []byte{})
 	}
 	*/
+
+	if !dep.AtService() {
+		LP_SendConnectServerResp(c, lbtproto.ConnectServerResp_Busy, []byte{})
+		return nil
+	}
 	LP_SendConnectServerResp(c, lbtproto.ConnectServerResp_Connected, []byte{})
 	id := lbtutil.NewObjectID()
 	typ := dep.ConnectServerEntity

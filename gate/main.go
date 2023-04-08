@@ -29,7 +29,10 @@ var (
 	cancelWatchCmd context.CancelFunc = nil
 )
 
-var stopCh = make(chan os.Signal, 1)
+var (
+	stopCh = make(chan os.Signal, 1)
+	softStopCh = make(chan bool, 1)
+)
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
@@ -57,6 +60,7 @@ func main() {
 		ServiceSender: serviceManager.sendToService,
 		ServiceRequestHandler: serviceManager.serviceRequest,
 		PrivateRsaKey: Conf.PrivateRsaKey,
+		AtService: AtService,
 	}
 	if err := legacy.InitLegacyDependency(dep); err != nil {
 		panic(fmt.Sprintf("InitLegacyDependency fail %v\n\t%v", dep, err))
@@ -70,6 +74,7 @@ func main() {
 			Conf.ClientServerAddr = localip + Conf.ClientServerAddr
 		}
 	}
+	gateAddr = Conf.ClientServerAddr
 	clientServer := lbtnet.NewTcpServer(Conf.ClientServerAddr, ClientConnectionCreator)
 	logger.Info("create client server at %s entrance is %s", clientServer.GetAddr(), Conf.EntranceAddr)
 	clientServer.Start()
@@ -77,14 +82,15 @@ func main() {
 	// register, discrover, watch
 	InitRegData()
 	lbtreg.InitWithEtcd(Conf.Etcd)
-	ctxRegister, cancelRegister := context.WithCancel(context.Background())
+	var ctxRegister, ctxDiscover, ctxWatchCmd context.Context
+	ctxRegister, cancelRegister = context.WithCancel(context.Background())
 	// usually, gate exposes its addr directly to clients, so the entrance addr should be unique
 	// otherwise, such as there are proxies between gates and clients, the entrance varies
 	// so here we use listen addr as unique addr
 	go lbtreg.StartRegisterGate(ctxRegister, 11, Conf.Host, Conf.ClientServerAddr, regData)
-	ctxDiscover, cancelDiscover := context.WithCancel(context.Background())
+	ctxDiscover, cancelDiscover = context.WithCancel(context.Background())
 	go lbtreg.StartDiscoverService(ctxDiscover, 11, serviceManager.OnDiscoverService, Conf.Host)
-	ctxWatchCmd, cancelWatchCmd := context.WithCancel(context.Background())
+	ctxWatchCmd, cancelWatchCmd = context.WithCancel(context.Background())
 	go lbtreg.StartWatchGateCmd(ctxWatchCmd, OnWatchGateCmd, Conf.Host)
 
 	// on start
@@ -92,13 +98,16 @@ func main() {
 
 	// wait for stop
 	signal.Notify(stopCh, syscall.SIGINT, syscall.SIGTERM)
-	<-stopCh
-
-	// on stop
-	cancelRegister()
-	cancelDiscover()
-	cancelWatchCmd()
-	onStop()
+	select {
+	case <-stopCh:
+		stop()
+	case <-softStopCh:
+		done := beforeStop()
+		select {
+		case <-done:
+			stop()
+		}
+	}
 }
 
 func onStart() {
@@ -110,19 +119,36 @@ func onStart() {
 	tickmgr.Start()
 }
 
-func onStop() {
-	tickmgr.Stop()
-	logger.Info("gate stopped")
+func InitiateStop() {
+	select {
+	case stopCh<- syscall.SIGTERM:
+	default:
+	}
 }
 
-func Stop() {
-	logger.Info("gate stop begin")
-	stopCh <- syscall.SIGTERM
+func InitiateSoftStop() {
+	select {
+	case softStopCh<- true:
+	default:
+	}
 }
 
-func SoftStop() {
+func AtService() bool {
+	if stopping { return false }
+	return true
+}
+
+func beforeStop() <-chan bool {
 	stopping = true
+	logger.Info("gate stop begin")
+	cancelWatchCmd()
 	cancelRegister()
 	cancelDiscover()
-	clientManager.SoftStop()
+	serviceManager.notifyGateStop()
+	return clientManager.SoftStop(120, 20)
+}
+
+func stop() {
+	tickmgr.Stop()
+	logger.Info("gate stop finish")
 }
